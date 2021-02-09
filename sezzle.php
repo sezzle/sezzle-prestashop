@@ -38,7 +38,6 @@ class Sezzle extends PaymentModule
 
     protected $_formFields = [
         "api_mode" => "SEZZLE_LIVE_MODE",
-        "enable" => "SEZZLE_ENABLE",
         "public_key" => "SEZZLE_PUBLIC_KEY",
         "private_key" => "SEZZLE_PRIVATE_KEY",
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
@@ -191,25 +190,6 @@ class Sezzle extends PaymentModule
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Enable'),
-                        'name' => $this->_formFields['enable'],
-                        'is_bool' => true,
-                        'desc' => $this->l('Enable this module'),
-                        'values' => array(
-                            array(
-                                'id' => 'enable_yes',
-                                'value' => true,
-                                'label' => $this->l('Yes')
-                            ),
-                            array(
-                                'id' => 'enable_no',
-                                'value' => false,
-                                'label' => $this->l('No')
-                            )
-                        ),
-                    ),
-                    array(
-                        'type' => 'switch',
                         'label' => $this->l('Live mode'),
                         'name' => $this->_formFields['api_mode'],
                         'is_bool' => true,
@@ -297,7 +277,6 @@ class Sezzle extends PaymentModule
     {
         return array(
             $this->_formFields['api_mode'] => Configuration::get($this->_formFields['api_mode']),
-            $this->_formFields['enable'] => Configuration::get($this->_formFields['enable']),
             $this->_formFields['public_key'] => Configuration::get($this->_formFields['public_key']),
             $this->_formFields['private_key'] => Configuration::get($this->_formFields['private_key']),
             $this->_formFields['payment_action'] => Configuration::get($this->_formFields['payment_action']),
@@ -326,7 +305,6 @@ class Sezzle extends PaymentModule
         $form_values = $this->getConfigFormValues();
         foreach (array_keys($form_values) as $key) {
             if ($key === $this->_formFields['api_mode']
-                || $key === $this->_formFields['enable']
                 || $key === $this->_formFields['tokenize']) {
                 continue;
             }
