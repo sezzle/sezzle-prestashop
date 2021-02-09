@@ -43,6 +43,10 @@ class Sezzle extends PaymentModule
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
         "tokenize" => "SEZZLE_TOKENIZE"
     ];
+    /**
+     * @var string
+     */
+    private $logo_url;
 
     public function __construct()
     {
@@ -51,7 +55,11 @@ class Sezzle extends PaymentModule
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
         $this->need_instance = 1;
+        $this->controllers = array('validation');
+        $this->logo_url = 'https://d34uoa9py2cgca.cloudfront.net/branding/sezzle-logos/png/sezzle-logo-sm-100w.png';
 
+        $this->currencies = true;
+        $this->currencies_mode = 'checkbox';
         /**
          * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
          */
@@ -64,9 +72,7 @@ class Sezzle extends PaymentModule
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
 
-        //$this->limited_countries = array('FR');
-
-        //$this->limited_currencies = array('EUR');
+        $this->limited_countries = array('US', 'CA');
 
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
     }
@@ -84,17 +90,16 @@ class Sezzle extends PaymentModule
 
         $iso_code = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
 
-//        if (in_array($iso_code, $this->limited_countries) == false)
-//        {
-//            $this->_errors[] = $this->l('This module is not available in your country');
-//            return false;
-//        }
+        if (in_array($iso_code, $this->limited_countries) == false) {
+            $this->_errors[] = $this->l('This module is not available in your country');
+            return false;
+        }
 
         foreach ($this->_formFields as $field) {
             Configuration::updateValue($field, false);
         }
 
-        include(dirname(__FILE__) . '/sql/install.php');
+        //include(dirname(__FILE__) . '/sql/install.php');
 
         return parent::install() &&
             $this->registerHook('header') &&
@@ -111,7 +116,7 @@ class Sezzle extends PaymentModule
             Configuration::deleteByName($field);
         }
 
-        include(dirname(__FILE__) . '/sql/uninstall.php');
+        //include(dirname(__FILE__) . '/sql/uninstall.php');
 
         return parent::uninstall();
     }
@@ -333,19 +338,26 @@ class Sezzle extends PaymentModule
      *
      * @param array Hook parameters
      *
-     * @return array|null
+     * @return PaymentOption[]|void
      */
     public function hookPaymentOptions($params)
     {
         if (!$this->active) {
             return;
         }
+
+        $public_key = Configuration::get($this->_formFields['public_key']);
+        $private_key = Configuration::get($this->_formFields['private_key']);
+        if (!$public_key || !$private_key) {
+            return;
+        }
+
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
         $option = new PaymentOption();
-        $option->setCallToActionText($this->l('Sezzle'))
-            ->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true));
+        $option->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+            ->setLogo($this->logo_url);
 
         return [
             $option
