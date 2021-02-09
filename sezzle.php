@@ -61,7 +61,7 @@ class Sezzle extends PaymentModule
         parent::__construct();
 
         $this->displayName = $this->l('Sezzle');
-        $this->description = $this->l('Sezzle | Buy Now Pay Later');
+        $this->description = $this->l('Sezzle is a public-benefit corporation on a mission to financially empower the next generation. Sezzle’s Buy Now, Pay Later product gives eCommerce shoppers more buying power by allowing them to split their payment in four, and pay over the course of six weeks. You get paid right away, in full, and Sezzle assumes all risk of fraud, chargeback and repayment.');
 
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
 
