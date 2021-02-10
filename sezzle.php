@@ -228,12 +228,12 @@ class Sezzle extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'payment_action' => 'sandbox',
-                                    'payment_action_label' => 'Sandbox'
+                                    'payment_action' => 'authorize',
+                                    'payment_action_label' => 'Authorize Only'
                                 ),
                                 array(
-                                    'payment_action' => 'production',
-                                    'payment_action_label' => 'Production'
+                                    'payment_action' => 'authorize_capture',
+                                    'payment_action_label' => 'Authorize and Capture'
                                 )
                             ),
                             'id' => 'payment_action',
@@ -346,9 +346,9 @@ class Sezzle extends PaymentModule
             return;
         }
 
-        $public_key = Configuration::get($this->_formFields['public_key']);
-        $private_key = Configuration::get($this->_formFields['private_key']);
-        if (!$public_key || !$private_key) {
+        $publicKey = Configuration::get($this->_formFields['public_key']);
+        $privateKey = Configuration::get($this->_formFields['private_key']);
+        if (!$publicKey || !$privateKey) {
             return;
         }
 
