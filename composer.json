@@ -1,0 +1,23 @@
+{
+  "name": "sezzle/prestashop",
+  "authors": [
+    {
+      "name": "Sezzle",
+      "email": "dev@sezzle.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.0",
+    "afterpay-global/afterpay-sdk-php": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "PrestaShop\\Module\\Sezzle\\": "src/",
+      "Sezzle\\": "vendor/sezzle/php-sdk/src/"
+    },
+    "config": {
+      "prepend-autoloader": false
+    },
+    "type": "prestashop-module"
+  }
+}
