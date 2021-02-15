@@ -73,10 +73,12 @@ class Order
 
     /**
      * @param string $intent
+     * @return Order
      */
     public function setIntent($intent)
     {
         $this->intent = $intent;
+        return $this;
     }
 
     /**
@@ -89,10 +91,12 @@ class Order
 
     /**
      * @param string $referenceId
+     * @return Order
      */
     public function setReferenceId($referenceId)
     {
         $this->referenceId = $referenceId;
+        return $this;
     }
 
     /**
@@ -105,10 +109,12 @@ class Order
 
     /**
      * @param string $description
+     * @return Order
      */
     public function setDescription($description)
     {
         $this->description = $description;
+        return $this;
     }
 
     /**
@@ -121,10 +127,12 @@ class Order
 
     /**
      * @param bool $requiresShippingInfo
+     * @return Order
      */
     public function setRequiresShippingInfo($requiresShippingInfo)
     {
         $this->requiresShippingInfo = $requiresShippingInfo;
+        return $this;
     }
 
     /**
@@ -137,10 +145,12 @@ class Order
 
     /**
      * @param Item[] $items
+     * @return Order
      */
     public function setItems(array $items)
     {
         $this->items = $items;
+        return $this;
     }
 
     /**
@@ -153,10 +163,12 @@ class Order
 
     /**
      * @param Discount[] $discounts
+     * @return Order
      */
     public function setDiscounts(array $discounts)
     {
         $this->discounts = $discounts;
+        return $this;
     }
 
     /**
@@ -169,10 +181,12 @@ class Order
 
     /**
      * @param Amount $shippingAmount
+     * @return Order
      */
     public function setShippingAmount(Amount $shippingAmount)
     {
         $this->shippingAmount = $shippingAmount;
+        return $this;
     }
 
     /**
@@ -185,10 +199,12 @@ class Order
 
     /**
      * @param Amount $taxAmount
+     * @return Order
      */
     public function setTaxAmount(Amount $taxAmount)
     {
         $this->taxAmount = $taxAmount;
+        return $this;
     }
 
     /**
@@ -201,10 +217,12 @@ class Order
 
     /**
      * @param Amount $orderAmount
+     * @return Order
      */
     public function setOrderAmount(Amount $orderAmount)
     {
         $this->orderAmount = $orderAmount;
+        return $this;
     }
 
     /**
@@ -217,10 +235,12 @@ class Order
 
     /**
      * @param string $uuid
+     * @return Order
      */
     public function setUuid($uuid)
     {
         $this->uuid = $uuid;
+        return $this;
     }
 
     /**
@@ -233,10 +253,12 @@ class Order
 
     /**
      * @param string $checkoutUrl
+     * @return Order
      */
     public function setCheckoutUrl($checkoutUrl)
     {
         $this->checkoutUrl = $checkoutUrl;
+        return $this;
     }
 
     /**

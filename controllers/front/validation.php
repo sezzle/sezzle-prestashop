@@ -5,6 +5,9 @@ use Sezzle\HttpClient\GuzzleFactory;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\Services\AuthenticationService;
 use Sezzle\Services\SessionService;
+use SezzleService\SezzleAuthentication;
+
+//require_once __DIR__."../../services/SezzleAuthentication.php";
 
 /**
  * 2007-2021 PrestaShop
@@ -45,20 +48,8 @@ class SezzleValidationModuleFrontController extends ModuleFrontController
             die;
         }
 
-        $apiMode = Configuration::get(Sezzle::FORM_FIELDS["api_mode"]);
-        $publicKey = Configuration::get(Sezzle::FORM_FIELDS["public_key"]);
-        $privateKey = Configuration::get(Sezzle::FORM_FIELDS["private_key"]);
-        $tokenService = new AuthenticationService(new ClientService(
-            new GuzzleFactory(),
-            $apiMode
-        ));
-        $tokenModel = $tokenService->get(
-            [
-                "public_key" => $publicKey,
-                "private_key" => $privateKey
-            ]
-        );
-        echo $tokenModel->getToken();
+        echo "<pre>";
+        print_r($_REQUEST['public_key']);
         die();
 
 //        $sessionService = new SessionService(

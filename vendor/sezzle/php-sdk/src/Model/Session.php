@@ -44,10 +44,12 @@ class Session
 
     /**
      * @param Url $cancelUrl
+     * @return Session
      */
     public function setCancelUrl(Url $cancelUrl)
     {
         $this->cancelUrl = $cancelUrl;
+        return $this;
     }
 
     /**
@@ -60,10 +62,12 @@ class Session
 
     /**
      * @param Url $completeUrl
+     * @return Session
      */
     public function setCompleteUrl(Url $completeUrl)
     {
         $this->completeUrl = $completeUrl;
+        return $this;
     }
 
     /**
@@ -76,10 +80,12 @@ class Session
 
     /**
      * @param Customer $customer
+     * @return Session
      */
     public function setCustomer(Customer $customer)
     {
         $this->customer = $customer;
+        return $this;
     }
 
     /**
@@ -92,10 +98,12 @@ class Session
 
     /**
      * @param Order $order
+     * @return Session
      */
     public function setOrder(Order $order)
     {
         $this->order = $order;
+        return $this;
     }
 
     /**
@@ -108,10 +116,12 @@ class Session
 
     /**
      * @param Tokenize $tokenize
+     * @return Session
      */
     public function setTokenize(Tokenize $tokenize)
     {
         $this->tokenize = $tokenize;
+        return $this;
     }
 
     /**

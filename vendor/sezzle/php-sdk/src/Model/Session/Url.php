@@ -24,10 +24,12 @@ class Url
 
     /**
      * @param string $href
+     * @return Url
      */
     public function setHref($href)
     {
         $this->href = $href;
+        return $this;
     }
 
     /**
@@ -40,10 +42,12 @@ class Url
 
     /**
      * @param string $method
+     * @return Url
      */
     public function setMethod($method)
     {
         $this->method = $method;
+        return $this;
     }
 
     /**

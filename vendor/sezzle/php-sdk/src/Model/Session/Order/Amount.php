@@ -24,10 +24,12 @@ class Amount
 
     /**
      * @param int $amountInCents
+     * @return Amount
      */
     public function setAmountInCents($amountInCents)
     {
         $this->amountInCents = $amountInCents;
+        return $this;
     }
 
     /**
@@ -40,10 +42,12 @@ class Amount
 
     /**
      * @param string $currency
+     * @return Amount
      */
     public function setCurrency($currency)
     {
         $this->currency = $currency;
+        return $this;
     }
 
     /**

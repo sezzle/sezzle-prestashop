@@ -39,8 +39,11 @@ class Sezzle extends PaymentModule
     protected $_postErrors = array();
     protected $_html = "";
 
-    const FORM_FIELDS = [
-        "api_mode" => "SEZZLE_LIVE_MODE",
+    const MODE_SANDBOX = "sandbox";
+    const MODE_PRODUCTION = "production";
+
+    public static $formFields = [
+        "live_mode" => "SEZZLE_LIVE_MODE",
         "public_key" => "SEZZLE_PUBLIC_KEY",
         "private_key" => "SEZZLE_PRIVATE_KEY",
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
@@ -109,7 +112,7 @@ class Sezzle extends PaymentModule
             return false;
         }
 
-        foreach (self::FORM_FIELDS as $field) {
+        foreach (static::$formFields as $field) {
             Configuration::updateValue($field, false);
         }
 
@@ -128,7 +131,7 @@ class Sezzle extends PaymentModule
 
         $result = parent::uninstall() && $installer->uninstall();
 
-        foreach (self::FORM_FIELDS as $field) {
+        foreach (static::$formFields as $field) {
             Configuration::deleteByName($field);
         }
 
@@ -202,7 +205,7 @@ class Sezzle extends PaymentModule
                     array(
                         'type' => 'switch',
                         'label' => $this->l('Live mode'),
-                        'name' => self::FORM_FIELDS['api_mode'],
+                        'name' => static::$formFields['live_mode'],
                         'is_bool' => true,
                         'desc' => $this->l('Use Sezzle in live mode'),
                         'values' => array(
@@ -221,7 +224,7 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'name' => self::FORM_FIELDS['public_key'],
+                        'name' => static::$formFields['public_key'],
                         'desc' => $this->l('Enter a valid public key'),
                         'label' => $this->l('Public Key'),
                         'required' => true,
@@ -229,7 +232,7 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'name' => self::FORM_FIELDS['private_key'],
+                        'name' => static::$formFields['private_key'],
                         'desc' => $this->l('Enter a valid private key'),
                         'label' => $this->l('Private Key'),
                         'required' => true,
@@ -238,7 +241,7 @@ class Sezzle extends PaymentModule
                         'type' => 'select',
                         'label' => $this->l('Payment Action'),
                         'desc' => $this->l('Select a payment action'),
-                        'name' => self::FORM_FIELDS['payment_action'],
+                        'name' => static::$formFields['payment_action'],
                         'options' => array(
                             'query' => array(
                                 array(
@@ -257,7 +260,7 @@ class Sezzle extends PaymentModule
                     array(
                         'type' => 'switch',
                         'label' => $this->l('Allow Customer Tokenization'),
-                        'name' => self::FORM_FIELDS['tokenize'],
+                        'name' => static::$formFields['tokenize'],
                         'is_bool' => true,
                         'desc' => $this->l('Enable tokenization option during checkout'),
                         'values' => array(
@@ -287,11 +290,11 @@ class Sezzle extends PaymentModule
     protected function getConfigFormValues()
     {
         return array(
-            self::FORM_FIELDS['api_mode'] => Configuration::get(self::FORM_FIELDS['api_mode']),
-            self::FORM_FIELDS['public_key'] => Configuration::get(self::FORM_FIELDS['public_key']),
-            self::FORM_FIELDS['private_key'] => Configuration::get(self::FORM_FIELDS['private_key']),
-            self::FORM_FIELDS['payment_action'] => Configuration::get(self::FORM_FIELDS['payment_action']),
-            self::FORM_FIELDS['tokenize'] => Configuration::get(self::FORM_FIELDS['tokenize']),
+            static::$formFields['live_mode'] => Configuration::get(static::$formFields['live_mode']),
+            static::$formFields['public_key'] => Configuration::get(static::$formFields['public_key']),
+            static::$formFields['private_key'] => Configuration::get(static::$formFields['private_key']),
+            static::$formFields['payment_action'] => Configuration::get(static::$formFields['payment_action']),
+            static::$formFields['tokenize'] => Configuration::get(static::$formFields['tokenize']),
         );
     }
 
@@ -315,8 +318,8 @@ class Sezzle extends PaymentModule
     {
         $form_values = $this->getConfigFormValues();
         foreach (array_keys($form_values) as $key) {
-            if ($key === self::FORM_FIELDS['api_mode']
-                || $key === self::FORM_FIELDS['tokenize']) {
+            if ($key === static::$formFields['live_mode']
+                || $key === static::$formFields['tokenize']) {
                 continue;
             }
 
@@ -360,8 +363,8 @@ class Sezzle extends PaymentModule
             return;
         }
 
-        $publicKey = Configuration::get(self::FORM_FIELDS['public_key']);
-        $privateKey = Configuration::get(self::FORM_FIELDS['private_key']);
+        $publicKey = Configuration::get(static::$formFields['public_key']);
+        $privateKey = Configuration::get(static::$formFields['private_key']);
         if (!$publicKey || !$privateKey) {
             return;
         }
