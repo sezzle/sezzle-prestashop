@@ -14,7 +14,10 @@
       "PrestaShop\\Module\\Sezzle\\": "src/",
       "Sezzle\\": "vendor/sezzle/php-sdk/src/"
     },
-    "classmap": ["sezzle.php"]
+    "classmap": [
+      "sezzle.php",
+      "classes/SezzleCheckout.php"
+    ]
   },
   "config": {
     "preferred-install": "dist",

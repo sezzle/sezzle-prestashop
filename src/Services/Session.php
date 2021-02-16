@@ -224,7 +224,7 @@ class Session
     {
         $currency = new Currency($this->cart->id_currency);
         $amountInCents = Sezzle\Util::formatToCents($this->cart->getOrderTotal());
-        return $this->getAmountObject($amountInCents, $currency->iso_code);
+        return Util::getAmountObject($amountInCents, $currency->iso_code);
     }
 
     /**
@@ -236,7 +236,7 @@ class Session
     {
         $currency = new Currency($this->cart->id_currency);
         $amountInCents = Sezzle\Util::formatToCents($this->cart->getAverageProductsTaxRate());
-        return $this->getAmountObject($amountInCents, $currency->iso_code);
+        return Util::getAmountObject($amountInCents, $currency->iso_code);
     }
 
     /**
@@ -248,7 +248,7 @@ class Session
     {
         $currency = new Currency($this->cart->id_currency);
         $amountInCents = Sezzle\Util::formatToCents($this->cart->getTotalShippingCost());
-        return $this->getAmountObject($amountInCents, $currency->iso_code);
+        return Util::getAmountObject($amountInCents, $currency->iso_code);
     }
 
     /**
@@ -261,19 +261,6 @@ class Session
     {
         $currency = new Currency($this->cart->id_currency);
         $amountInCents = Sezzle\Util::formatToCents($amount);
-        return $this->getAmountObject($amountInCents, $currency->iso_code);
-    }
-
-    /**
-     * Get Amount Object
-     *
-     * @param int $amountInCents
-     * @param string $currencyCode
-     * @return Sezzle\Model\Session\Order\Amount
-     */
-    private function getAmountObject($amountInCents, $currencyCode)
-    {
-        $amountModel = new Sezzle\Model\Session\Order\Amount();
-        return $amountModel->setAmountInCents($amountInCents)->setCurrency($currencyCode);
+        return Util::getAmountObject($amountInCents, $currency->iso_code);
     }
 }

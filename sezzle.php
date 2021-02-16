@@ -43,6 +43,9 @@ class Sezzle extends PaymentModule
     const MODE_PRODUCTION = "production";
     const MODULE_NAME = "sezzle";
 
+    const ACTION_AUTHORIZE = "authorize";
+    const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
+
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
         "public_key" => "SEZZLE_PUBLIC_KEY",
@@ -246,11 +249,11 @@ class Sezzle extends PaymentModule
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'payment_action' => 'authorize',
+                                    'payment_action' => self::ACTION_AUTHORIZE,
                                     'payment_action_label' => 'Authorize Only'
                                 ),
                                 array(
-                                    'payment_action' => 'authorize_capture',
+                                    'payment_action' => self::ACTION_AUTHORIZE_CAPTURE,
                                     'payment_action_label' => 'Authorize and Capture'
                                 )
                             ),

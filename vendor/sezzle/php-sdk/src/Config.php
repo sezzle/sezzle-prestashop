@@ -28,5 +28,5 @@ class Config
     const CAPTURE_RESOURCE = 'order/%s/capture';
     const CUSTOMER_ORDER_RESOURCE = 'customer/%s/order';
     const TOKENIZE_RESOURCE = 'token/%s/session';
-    const ORDER_RESOURCE = 'order';
+    const ORDER_RESOURCE = 'order/%s';
 }

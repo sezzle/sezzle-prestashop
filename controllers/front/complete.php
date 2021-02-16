@@ -1,5 +1,7 @@
 <?php
 
+use PrestaShop\Module\Sezzle\Services\Capture;
+
 /**
  * 2007-2021 PrestaShop
  *
@@ -28,8 +30,11 @@ class SezzleCompleteModuleFrontController extends ModuleFrontController
 {
     public function postProcess()
     {
+        if (!$this->isValidCheckout()) {
+            Tools::redirect('index.php?controller=order&step=1');
+        }
         $cart = $this->context->cart;
-        $customer = new Customer((int) $cart->id_customer);
+        $customer = new Customer((int)$cart->id_customer);
         $isValid = $this->module->validateOrder(
             $cart->id,
             Configuration::get('PS_OS_PAYMENT'),
@@ -37,7 +42,7 @@ class SezzleCompleteModuleFrontController extends ModuleFrontController
             $this->module->name,
             "",
             array(),
-            (int) Context::getContext()->currency->id,
+            (int)Context::getContext()->currency->id,
             false,
             $customer->secure_key
         );
@@ -45,8 +50,15 @@ class SezzleCompleteModuleFrontController extends ModuleFrontController
         if (!$isValid) {
             Tools::redirect('index.php?controller=order&step=1');
         }
+        $paymentAction = Configuration::get(Sezzle::$formFields['payment_action']);
+        if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
+            $captureService = new Capture($cart);
+            $response = $captureService->capturePayment(false);
+            if ($response->getUuid()) {
+            }
+        }
 
-        $orderId = Order::getIdByCartId((int) $cart->id);
+        $orderId = Order::getIdByCartId((int)$cart->id);
         if ($orderId) {
             /**
              * The order has been placed so we redirect the customer on the confirmation page.
@@ -65,5 +77,10 @@ class SezzleCompleteModuleFrontController extends ModuleFrontController
 
             $this->redirectWithNotifications('index.php?controller=order&step=1');
         }
+    }
+
+    private function isValidCheckout()
+    {
+        return true;
     }
 }

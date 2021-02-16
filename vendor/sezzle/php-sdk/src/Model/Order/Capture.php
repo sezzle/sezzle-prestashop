@@ -3,7 +3,6 @@
 
 namespace Sezzle\Model\Order;
 
-
 use Sezzle\Model\Session;
 use Sezzle\Model\Session\Order;
 use Sezzle\Model\Session\Order\Amount;
@@ -31,14 +30,16 @@ class Capture
     /**
      * @return string
      */
-    public function getUuid() {
+    public function getUuid()
+    {
         return $this->uuid;
     }
 
     /**
      * @param string $uuid
      */
-    public function setUuid($uuid) {
+    public function setUuid($uuid)
+    {
         $this->uuid = $uuid;
     }
 
@@ -52,10 +53,12 @@ class Capture
 
     /**
      * @param Amount $captureAmount
+     * @return Capture
      */
     public function setCaptureAmount(Amount $captureAmount)
     {
         $this->captureAmount = $captureAmount;
+        return $this;
     }
 
     /**
@@ -68,10 +71,12 @@ class Capture
 
     /**
      * @param bool $partialCapture
+     * @return Capture
      */
     public function setPartialCapture($partialCapture)
     {
         $this->partialCapture = $partialCapture;
+        return $this;
     }
 
     /**
@@ -97,7 +102,4 @@ class Capture
             'partial_capture' => $this->isPartialCapture()
         ];
     }
-
-
-
 }

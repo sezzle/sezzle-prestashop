@@ -3,7 +3,6 @@
 
 namespace Sezzle\Model;
 
-
 use Sezzle\Model\Order\Authorization;
 use Sezzle\Model\Order\Links;
 use Sezzle\Model\Session\Order\Amount;
@@ -46,14 +45,16 @@ class Order
     /**
      * @return string
      */
-    public function getUuid() {
+    public function getUuid()
+    {
         return $this->uuid;
     }
 
     /**
      * @param string $uuid
      */
-    public function setUuid($uuid) {
+    public function setUuid($uuid)
+    {
         $this->uuid = $uuid;
     }
 
@@ -61,14 +62,16 @@ class Order
     /**
      * @return Links[]
      */
-    public function getLinks() {
+    public function getLinks()
+    {
         return $this->links;
     }
 
     /**
      * @param Links[] $links
      */
-    public function setLinks(array $links) {
+    public function setLinks(array $links)
+    {
         $this->links = $links;
     }
 
@@ -76,14 +79,16 @@ class Order
     /**
      * @return string
      */
-    public function getIntent() {
+    public function getIntent()
+    {
         return $this->intent;
     }
 
     /**
      * @param string $intent
      */
-    public function setIntent($intent) {
+    public function setIntent($intent)
+    {
         $this->intent = $intent;
     }
 
@@ -91,14 +96,16 @@ class Order
     /**
      * @return string
      */
-    public function getExpiration() {
+    public function getExpiration()
+    {
         return $this->expiration;
     }
 
     /**
      * @param string $expiration
      */
-    public function setExpiration($expiration) {
+    public function setExpiration($expiration)
+    {
         $this->expiration = $expiration;
     }
 
@@ -106,14 +113,16 @@ class Order
     /**
      * @return string
      */
-    public function getReferenceId() {
+    public function getReferenceId()
+    {
         return $this->referenceId;
     }
 
     /**
      * @param string $referenceId
      */
-    public function setReferenceId($referenceId) {
+    public function setReferenceId($referenceId)
+    {
         $this->referenceId = $referenceId;
     }
 
@@ -121,14 +130,16 @@ class Order
     /**
      * @return string
      */
-    public function getDescription() {
+    public function getDescription()
+    {
         return $this->description;
     }
 
     /**
      * @param string $description
      */
-    public function setDescription($description) {
+    public function setDescription($description)
+    {
         $this->description = $description;
     }
 
@@ -136,14 +147,16 @@ class Order
     /**
      * @return Amount
      */
-    public function getOrderAmount() {
+    public function getOrderAmount()
+    {
         return $this->orderAmount;
     }
 
     /**
      * @param Amount $orderAmount
      */
-    public function setOrderAmount(Amount $orderAmount) {
+    public function setOrderAmount(Amount $orderAmount)
+    {
         $this->orderAmount = $orderAmount;
     }
 
@@ -151,14 +164,16 @@ class Order
     /**
      * @return Authorization
      */
-    public function getAuthorization() {
+    public function getAuthorization()
+    {
         return $this->authorization;
     }
 
     /**
      * @param Authorization $authorization
      */
-    public function setAuthorization(Authorization $authorization) {
+    public function setAuthorization(Authorization $authorization)
+    {
         $this->authorization = $authorization;
     }
 
@@ -192,5 +207,4 @@ class Order
 
         return $result;
     }
-
 }
