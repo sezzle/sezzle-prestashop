@@ -34,10 +34,12 @@ class Item
 
     /**
      * @param string $name
+     * @return Item
      */
     public function setName($name)
     {
         $this->name = $name;
+        return $this;
     }
 
     /**
@@ -50,10 +52,12 @@ class Item
 
     /**
      * @param string $sku
+     * @return Item
      */
     public function setSku($sku)
     {
         $this->sku = $sku;
+        return $this;
     }
 
     /**
@@ -66,10 +70,12 @@ class Item
 
     /**
      * @param int $quantity
+     * @return Item
      */
     public function setQuantity($quantity)
     {
         $this->quantity = $quantity;
+        return $this;
     }
 
     /**
@@ -82,10 +88,12 @@ class Item
 
     /**
      * @param Amount $price
+     * @return Item
      */
     public function setPrice(Amount $price)
     {
         $this->price = $price;
+        return $this;
     }
 
     /**

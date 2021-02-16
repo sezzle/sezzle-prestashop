@@ -1,13 +1,6 @@
 <?php
 
-use Sezzle\Factory\AuthFactory;
-use Sezzle\HttpClient\GuzzleFactory;
-use Sezzle\HttpClient\ClientService;
-use Sezzle\Services\AuthenticationService;
-use Sezzle\Services\SessionService;
-use SezzleService\SezzleAuthentication;
-
-//require_once __DIR__."../../services/SezzleAuthentication.php";
+use PrestaShop\Module\Sezzle\Services\Session;
 
 /**
  * 2007-2021 PrestaShop
@@ -41,16 +34,21 @@ class SezzleValidationModuleFrontController extends ModuleFrontController
      */
     public function postProcess()
     {
+        $cart = $this->context->cart;
+        $currencyCode = $this->context->currency->iso_code;
+
         /*
-         * If the module is not active anymore, no need to process anything.
+         * If the below condition does not satisfy, no need to process anything.
          */
-        if ($this->module->active == false) {
-            die;
+        if ($cart->id_customer == 0 || $cart->id_address_delivery == 0
+            || $cart->id_address_invoice == 0 || !$this->module->active) {
+            Tools::redirect('index.php?controller=order&step=1');
         }
 
-        echo "<pre>";
-        print_r($_REQUEST['public_key']);
-        die();
+
+
+        $s = new Session($this->context->cart);
+        Tools::redirectLink($s->createSession()->getOrder()->getCheckoutUrl());
 
 //        $sessionService = new SessionService(
 //            new ClientService(

@@ -41,6 +41,7 @@ class Sezzle extends PaymentModule
 
     const MODE_SANDBOX = "sandbox";
     const MODE_PRODUCTION = "production";
+    const MODULE_NAME = "sezzle";
 
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
@@ -56,7 +57,7 @@ class Sezzle extends PaymentModule
 
     public function __construct()
     {
-        $this->name = 'sezzle';
+        $this->name = self::MODULE_NAME;
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
@@ -373,7 +374,7 @@ class Sezzle extends PaymentModule
             return;
         }
         $option = new PaymentOption();
-        $option->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+        $option->setAction($this->context->link->getModuleLink($this->name, 'redirect', array(), true))
             ->setLogo($this->logo_url);
 
         return [

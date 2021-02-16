@@ -28,6 +28,8 @@ class SessionService
     }
 
     /**
+     * Create Session
+     *
      * @param string $token
      * @param array $payload
      * @return Session

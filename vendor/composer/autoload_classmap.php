@@ -88,6 +88,8 @@ return array(
     'GuzzleHttp\\RetryMiddleware' => $vendorDir . '/guzzlehttp/guzzle/src/RetryMiddleware.php',
     'GuzzleHttp\\TransferStats' => $vendorDir . '/guzzlehttp/guzzle/src/TransferStats.php',
     'GuzzleHttp\\Utils' => $vendorDir . '/guzzlehttp/guzzle/src/Utils.php',
+    'PrestaShop\\Module\\Sezzle\\Services\\SezzleAuthentication' => $baseDir . '/src/Services/SezzleAuthentication.php',
+    'PrestaShop\\Module\\Sezzle\\Services\\SezzleSession' => $baseDir . '/src/Services/SezzleSession.php',
     'PrestaShop\\Module\\Sezzle\\Setup\\Installer' => $baseDir . '/src/Setup/Installer.php',
     'PrestaShop\\Module\\Sezzle\\Setup\\InstallerFactory' => $baseDir . '/src/Setup/InstallerFactory.php',
     'Psr\\Http\\Client\\ClientExceptionInterface' => $vendorDir . '/psr/http-client/src/ClientExceptionInterface.php',
@@ -102,7 +104,6 @@ return array(
     'Psr\\Http\\Message\\UploadedFileInterface' => $vendorDir . '/psr/http-message/src/UploadedFileInterface.php',
     'Psr\\Http\\Message\\UriInterface' => $vendorDir . '/psr/http-message/src/UriInterface.php',
     'Sezzle' => $baseDir . '/sezzle.php',
-    'SezzleService\\SezzleAuthentication' => $baseDir . '/services/SezzleAuthentication.php',
     'Sezzle\\Config' => $vendorDir . '/sezzle/php-sdk/src/Config.php',
     'Sezzle\\Factory\\AuthFactory' => $vendorDir . '/sezzle/php-sdk/src/Factory/AuthFactory.php',
     'Sezzle\\Factory\\SessionFactory' => $vendorDir . '/sezzle/php-sdk/src/Factory/SessionFactory.php',
@@ -133,4 +134,6 @@ return array(
     'Sezzle\\Model\\Tokenize' => $vendorDir . '/sezzle/php-sdk/src/Model/Tokenize.php',
     'Sezzle\\Model\\Tokenize\\Customer' => $vendorDir . '/sezzle/php-sdk/src/Model/Tokenize/Customer.php',
     'Sezzle\\Services\\AuthenticationService' => $vendorDir . '/sezzle/php-sdk/src/Services/AuthenticationService.php',
+    'Sezzle\\Services\\SessionService' => $vendorDir . '/sezzle/php-sdk/src/Services/SessionService.php',
+    'Sezzle\\Util' => $vendorDir . '/sezzle/php-sdk/src/Util.php',
 );

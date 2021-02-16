@@ -56,10 +56,12 @@ class Customer
 
     /**
      * @param bool $tokenize
+     * @return Customer
      */
     public function setTokenize($tokenize)
     {
         $this->tokenize = $tokenize;
+        return $this;
     }
 
     /**
@@ -72,10 +74,12 @@ class Customer
 
     /**
      * @param string $email
+     * @return Customer
      */
     public function setEmail($email)
     {
         $this->email = $email;
+        return $this;
     }
 
     /**
@@ -88,10 +92,12 @@ class Customer
 
     /**
      * @param string $firstName
+     * @return Customer
      */
     public function setFirstName($firstName)
     {
         $this->firstName = $firstName;
+        return $this;
     }
 
     /**
@@ -104,10 +110,12 @@ class Customer
 
     /**
      * @param string $lastName
+     * @return Customer
      */
     public function setLastName($lastName)
     {
         $this->lastName = $lastName;
+        return $this;
     }
 
     /**
@@ -120,10 +128,12 @@ class Customer
 
     /**
      * @param string $phone
+     * @return Customer
      */
     public function setPhone($phone)
     {
         $this->phone = $phone;
+        return $this;
     }
 
     /**
@@ -136,10 +146,12 @@ class Customer
 
     /**
      * @param string $dob
+     * @return Customer
      */
     public function setDob($dob)
     {
         $this->dob = $dob;
+        return $this;
     }
 
     /**
@@ -152,10 +164,12 @@ class Customer
 
     /**
      * @param Address $billingAddress
+     * @return Customer
      */
     public function setBillingAddress(Address $billingAddress)
     {
         $this->billingAddress = $billingAddress;
+        return $this;
     }
 
     /**
@@ -168,10 +182,12 @@ class Customer
 
     /**
      * @param Address $shippingAddress
+     * @return Customer
      */
     public function setShippingAddress(Address $shippingAddress)
     {
         $this->shippingAddress = $shippingAddress;
+        return $this;
     }
 
     /**

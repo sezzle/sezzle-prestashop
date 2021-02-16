@@ -12,8 +12,7 @@
   "autoload": {
     "psr-4": {
       "PrestaShop\\Module\\Sezzle\\": "src/",
-      "Sezzle\\": "vendor/sezzle/php-sdk/src/",
-      "SezzleService\\": "services/"
+      "Sezzle\\": "vendor/sezzle/php-sdk/src/"
     },
     "classmap": ["sezzle.php"]
   },

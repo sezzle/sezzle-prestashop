@@ -17,7 +17,6 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'S' => 
         array (
             'Sezzle\\' => 7,
-            'SezzleService\\' => 14,
         ),
         'P' => 
         array (
@@ -37,10 +36,6 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'Sezzle\\' => 
         array (
             0 => __DIR__ . '/..' . '/sezzle/php-sdk/src',
-        ),
-        'SezzleService\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/services',
         ),
         'Psr\\Http\\Message\\' => 
         array (
@@ -151,6 +146,8 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'GuzzleHttp\\RetryMiddleware' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/RetryMiddleware.php',
         'GuzzleHttp\\TransferStats' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/TransferStats.php',
         'GuzzleHttp\\Utils' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Utils.php',
+        'PrestaShop\\Module\\Sezzle\\Services\\SezzleAuthentication' => __DIR__ . '/../..' . '/src/Services/SezzleAuthentication.php',
+        'PrestaShop\\Module\\Sezzle\\Services\\SezzleSession' => __DIR__ . '/../..' . '/src/Services/SezzleSession.php',
         'PrestaShop\\Module\\Sezzle\\Setup\\Installer' => __DIR__ . '/../..' . '/src/Setup/Installer.php',
         'PrestaShop\\Module\\Sezzle\\Setup\\InstallerFactory' => __DIR__ . '/../..' . '/src/Setup/InstallerFactory.php',
         'Psr\\Http\\Client\\ClientExceptionInterface' => __DIR__ . '/..' . '/psr/http-client/src/ClientExceptionInterface.php',
@@ -165,7 +162,6 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'Psr\\Http\\Message\\UploadedFileInterface' => __DIR__ . '/..' . '/psr/http-message/src/UploadedFileInterface.php',
         'Psr\\Http\\Message\\UriInterface' => __DIR__ . '/..' . '/psr/http-message/src/UriInterface.php',
         'Sezzle' => __DIR__ . '/../..' . '/sezzle.php',
-        'SezzleService\\SezzleAuthentication' => __DIR__ . '/../..' . '/services/SezzleAuthentication.php',
         'Sezzle\\Config' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Config.php',
         'Sezzle\\Factory\\AuthFactory' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Factory/AuthFactory.php',
         'Sezzle\\Factory\\SessionFactory' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Factory/SessionFactory.php',
@@ -196,6 +192,8 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'Sezzle\\Model\\Tokenize' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Model/Tokenize.php',
         'Sezzle\\Model\\Tokenize\\Customer' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Model/Tokenize/Customer.php',
         'Sezzle\\Services\\AuthenticationService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/AuthenticationService.php',
+        'Sezzle\\Services\\SessionService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/SessionService.php',
+        'Sezzle\\Util' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Util.php',
     );
 
     public static function getInitializer(ClassLoader $loader)

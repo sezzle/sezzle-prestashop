@@ -7,7 +7,6 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Sezzle\\' => array($vendorDir . '/sezzle/php-sdk/src'),
-    'SezzleService\\' => array($baseDir . '/services'),
     'Psr\\Http\\Message\\' => array($vendorDir . '/psr/http-message/src'),
     'Psr\\Http\\Client\\' => array($vendorDir . '/psr/http-client/src'),
     'PrestaShop\\Module\\Sezzle\\' => array($baseDir . '/src'),

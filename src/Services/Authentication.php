@@ -1,6 +1,6 @@
 <?php
 
-namespace SezzleService;
+namespace PrestaShop\Module\Sezzle\Services;
 
 use Configuration;
 use Sezzle;
@@ -11,9 +11,9 @@ use Sezzle\Model\AuthCredentials;
 use Sezzle\Services\AuthenticationService;
 
 /**
- * Class SezzleAuthentication
+ * Class Authentication
  */
-class SezzleAuthentication
+class Authentication
 {
 
     /**
