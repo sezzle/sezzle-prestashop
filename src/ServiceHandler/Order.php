@@ -1,7 +1,7 @@
 <?php
 
 
-namespace PrestaShop\Module\Sezzle\Services;
+namespace PrestaShop\Module\Sezzle\ServiceHandler;
 
 use Cart;
 use Configuration;
@@ -12,7 +12,7 @@ use Sezzle\HttpClient\GuzzleFactory;
 
 /**
  * Class Order
- * @package PrestaShop\Module\Sezzle\Services
+ * @package PrestaShop\Module\Sezzle\ServiceHandler
  */
 class Order
 {

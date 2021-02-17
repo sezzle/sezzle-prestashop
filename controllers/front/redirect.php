@@ -1,6 +1,6 @@
 <?php
 
-use PrestaShop\Module\Sezzle\Services\Session;
+use PrestaShop\Module\Sezzle\ServiceHandler\Session;
 
 /**
  * 2007-2021 PrestaShop

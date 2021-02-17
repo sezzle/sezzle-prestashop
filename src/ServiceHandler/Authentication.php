@@ -1,6 +1,6 @@
 <?php
 
-namespace PrestaShop\Module\Sezzle\Services;
+namespace PrestaShop\Module\Sezzle\ServiceHandler;
 
 use Configuration;
 use Sezzle;

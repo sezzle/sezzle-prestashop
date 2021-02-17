@@ -1,6 +1,6 @@
 <?php
 
-namespace PrestaShop\Module\Sezzle\Services;
+namespace PrestaShop\Module\Sezzle\ServiceHandler;
 
 use Address;
 use Cart;
@@ -22,6 +22,7 @@ use State;
 
 /**
  * Class Session
+ * @package PrestaShop\Module\Sezzle\ServiceHandler
  */
 class Session
 {

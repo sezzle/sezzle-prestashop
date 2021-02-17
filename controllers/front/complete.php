@@ -1,7 +1,7 @@
 <?php
 
-use PrestaShop\Module\Sezzle\Services\Capture;
-use PrestaShop\Module\Sezzle\Services\Order as SezzleOrder;
+use PrestaShop\Module\Sezzle\ServiceHandler\Capture;
+use PrestaShop\Module\Sezzle\ServiceHandler\Order as SezzleOrder;
 use Sezzle\HttpClient\RequestException;
 
 /**
