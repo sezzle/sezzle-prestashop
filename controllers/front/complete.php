@@ -1,6 +1,8 @@
 <?php
 
 use PrestaShop\Module\Sezzle\Services\Capture;
+use PrestaShop\Module\Sezzle\Services\Order as SezzleOrder;
+use Sezzle\HttpClient\RequestException;
 
 /**
  * 2007-2021 PrestaShop
@@ -26,61 +28,82 @@ use PrestaShop\Module\Sezzle\Services\Capture;
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-class SezzleCompleteModuleFrontController extends ModuleFrontController
+class SezzleCompleteModuleFrontController extends SezzleAbstarctModuleFrontController
 {
+    /**
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Exception
+     */
     public function postProcess()
     {
-        if (!$this->isValidCheckout()) {
-            Tools::redirect('index.php?controller=order&step=1');
-        }
         $cart = $this->context->cart;
+        $txn = SezzleTransaction::getByCartId($this->context->cart->id);
+
+        // validate checkout
+        if (!$this->isCheckoutValid($txn)) {
+            $this->handleError('Unable to validate the Checkout.');
+        }
+
+        $orderUuid = $txn->getOrderUuid();
         $customer = new Customer((int)$cart->id_customer);
-        $isValid = $this->module->validateOrder(
+
+        // order create in store
+        $isOrderValid = $this->module->validateOrder(
             $cart->id,
-            Configuration::get('PS_OS_PAYMENT'),
+            Configuration::get('SEZZLE_AWAITING_PAYMENT'),
             $cart->getOrderTotal(),
             $this->module->name,
             "",
-            array(),
+            [],
             (int)Context::getContext()->currency->id,
             false,
             $customer->secure_key
         );
 
-        if (!$isValid) {
-            Tools::redirect('index.php?controller=order&step=1');
+        if (!$isOrderValid) {
+            $this->handleError("Failed to create the order.");
         }
+
+        $order = Order::getByCartId((int)$cart->id);
+
+        // capture handling
         $paymentAction = Configuration::get(Sezzle::$formFields['payment_action']);
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
-            $captureService = new Capture($cart);
-            $response = $captureService->capturePayment(false);
-            if ($response->getUuid()) {
+            try {
+                $captureService = new Capture($cart);
+                $response = $captureService->capturePayment($orderUuid, false);
+                if ($response->getUuid()) {
+                    SezzleTransaction::storeCaptureAmount($cart->getOrderTotal(), $orderUuid);
+                    $order->setCurrentState(Configuration::get('PS_OS_PAYMENT'));
+                    $order->save();
+                }
+            } catch (RequestException $e) {
+                $this->handleError("Failed to process the payment");
+            } catch (PrestaShopException $e) {
+                // ignore this exception as of now
             }
         }
 
-        $orderId = Order::getIdByCartId((int)$cart->id);
-        if ($orderId) {
-            /**
-             * The order has been placed so we redirect the customer on the confirmation page.
-             */
-            Tools::redirect(
-                'index.php?controller=order-confirmation&id_cart=' . $cart->id .
-                '&id_module=' . $this->module->id . '&id_order=' . $orderId . '&key=' . $customer->secure_key
+        if (!$order->id) {
+            // An error occured and is shown on a new page.
+            $this->handleError(
+                'An error occured while fetching order details.
+             Please contact the merchant to have more informations'
             );
-        } else {
-            /*
-             * An error occured and is shown on a new page.
-             */
-            $this->errors[] = $this->module->l(
-                'An error occured. Please contact the merchant to have more informations'
-            );
-
-            $this->redirectWithNotifications('index.php?controller=order&step=1');
         }
-    }
 
-    private function isValidCheckout()
-    {
-        return true;
+        // order reference handle in store and sezzle
+        SezzleTransaction::storeOrderReference($order->reference, $txn->getOrderUuid());
+        try {
+            SezzleOrder::updateOrderReferenceId($orderUuid, $order->reference);
+        } catch (RequestException $e) {
+            // ignore this exception as of now
+        }
+        // The order has been placed so we redirect the customer on the confirmation page.
+        Tools::redirect(
+            'index.php?controller=order-confirmation&id_cart=' . $cart->id .
+            '&id_module=' . $this->module->id . '&id_order=' . $order->id . '&key=' . $customer->secure_key
+        );
     }
 }

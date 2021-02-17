@@ -105,9 +105,9 @@ class Sezzle extends PaymentModule
             return false;
         }
 
-        $iso_code = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
+        $isoCode = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
 
-        if (in_array($iso_code, $this->limited_countries) == false) {
+        if (in_array($isoCode, $this->limited_countries) == false) {
             $this->_errors[] = $this->l('This module is not available in your country');
             return false;
         }
@@ -120,7 +120,7 @@ class Sezzle extends PaymentModule
             Configuration::updateValue($field, false);
         }
 
-        //include(dirname(__FILE__) . '/sql/install.php');
+        include(dirname(__FILE__) . '/sql/install.php');
 
         $installer = InstallerFactory::create($this);
 

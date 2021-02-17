@@ -12,6 +12,7 @@ use Customer;
 use Exception;
 use PrestaShopDatabaseException;
 use PrestaShopException;
+use Ramsey\Uuid\Uuid;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
@@ -117,7 +118,7 @@ class Session
         $order = new Sezzle\Model\Session\Order();
         return $order->setIntent("AUTH")
             ->setDescription("Prestashop Order")
-            ->setReferenceId($this->cart->secure_key)
+            ->setReferenceId(strval($this->cart->id))
             ->setRequiresShippingInfo(false)
             ->setOrderAmount($this->getOrderAmountObject())
             ->setTaxAmount($this->getTaxAmountObject())

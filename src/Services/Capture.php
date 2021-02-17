@@ -34,11 +34,12 @@ class Capture
     /**
      * Capture Payment
      *
+     * @param string $orderUuid
      * @param bool $isPartial
      * @return Sezzle\Model\Order\Capture
      * @throws Sezzle\HttpClient\RequestException
      */
-    public function capturePayment($isPartial = false)
+    public function capturePayment($orderUuid, $isPartial = false)
     {
         $currency = new Currency($this->cart->id_currency);
         $captureModel = new Sezzle\Model\Order\Capture();
@@ -54,7 +55,7 @@ class Capture
         ));
         return $captureService->capturePayment(
             Authentication::getToken(),
-            "1",
+            $orderUuid,
             $captureModel->toArray()
         );
     }

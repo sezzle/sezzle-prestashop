@@ -22,8 +22,14 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Sezzle\Setup;
 
+use Configuration;
 use Db;
+use Language;
 use Module;
+use OrderState;
+use PrestaShopDatabaseException;
+use PrestaShopException;
+use Validate;
 
 /**
  * Class responsible for modifications needed during installation/uninstallation of the module.
@@ -60,6 +66,10 @@ class Installer
             return false;
         }
 
+//        if (!$this->installOrderState()) {
+//            return false;
+//        }
+
         return true;
     }
 
@@ -71,6 +81,46 @@ class Installer
     public function uninstall(): bool
     {
         return $this->uninstallDatabase();
+    }
+
+    /**
+     * Install Sezzle related Order State
+     */
+    private function installOrderState()
+    {
+        if (Configuration::get('SEZZLE_AWAITING_PAYMENT')
+            && !Validate::isLoadedObject(new OrderState(Configuration::get('SEZZLE_AWAITING_PAYMENT')))) {
+            return false;
+        }
+        $orderState = new OrderState();
+        $orderState->name = array();
+        $orderState->module_name = $this->module->name;
+        $orderState->send_email = true;
+        $orderState->color = 'blue';
+        $orderState->hidden = false;
+        $orderState->delivery = false;
+        $orderState->logable = true;
+        $orderState->invoice = false;
+        $orderState->paid = false;
+        foreach (Language::getLanguages() as $language) {
+            $orderState->template[$language['id_lang']] = 'payment';
+            $orderState->name[$language['id_lang']] = 'Awaiting Sezzle Payment';
+        }
+
+        try {
+            if ($orderState->add()) {
+                $sezzleIcon = dirname(__FILE__) . '/logo.gif';
+                $newStateIcon = dirname(__FILE__) . '/../../img/os/' . (int)$orderState->id . '.gif';
+                copy($sezzleIcon, $newStateIcon);
+            }
+
+            Configuration::updateValue('SEZZLE_AWAITING_PAYMENT', (int)$orderState->id);
+            return true;
+        } catch (PrestaShopDatabaseException $e) {
+            return false;
+        } catch (PrestaShopException $e) {
+            return false;
+        }
     }
 
     /**

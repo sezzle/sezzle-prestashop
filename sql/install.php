@@ -25,17 +25,17 @@
  */
 $sql = array();
 
-$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'sezzle_checkout` (
-    `id_sezzle_checkout` int(11) NOT NULL AUTO_INCREMENT,
+$sql[] = 'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'sezzle_transaction` (
+    `id_sezzle_transaction` int(11) NOT NULL AUTO_INCREMENT,
     `reference` varchar(255) NOT NULL,
     `id_cart` int(11) NOT NULL,
     `order_uuid` varchar(255) NOT NULL,
     `checkout_url` varchar(255) NOT NULL,
     `checkout_expiration` datetime NOT NULL,
-    `order_amount` int(11) NOT NULL,
-    `capture_amount` int(11) NOT NULL,
-    `refund_amount` int(11) NOT NULL,
-    PRIMARY KEY  (`id_sezzle_checkout`)
+    `authorized_amount` decimal(20,6) NOT NULL,
+    `capture_amount` decimal(20,6) NOT NULL,
+    `refund_amount` decimal(20,6) NOT NULL,
+    PRIMARY KEY  (`id_sezzle_transaction`)
 ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;';
 
 foreach ($sql as $query) {
