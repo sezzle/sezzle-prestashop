@@ -90,6 +90,7 @@ return array(
     'GuzzleHttp\\Utils' => $vendorDir . '/guzzlehttp/guzzle/src/Utils.php',
     'Payment' => $baseDir . '/classes/Payment.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Order' => $baseDir . '/src/Handler/Order.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Authorization' => $baseDir . '/src/Handler/Payment/Authorization.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Capture' => $baseDir . '/src/Handler/Payment/Capture.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Authentication' => $baseDir . '/src/Handler/Service/Authentication.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Capture' => $baseDir . '/src/Handler/Service/Capture.php',
