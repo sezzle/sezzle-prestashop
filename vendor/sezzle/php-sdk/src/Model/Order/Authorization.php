@@ -35,14 +35,16 @@ class Authorization
     /**
      * @return Amount
      */
-    public function getAuthorizationAmount() {
+    public function getAuthorizationAmount()
+    {
         return $this->authorizationAmount;
     }
 
     /**
      * @param Amount $authorizationAmount
      */
-    public function setAuthorizationAmount(Amount $authorizationAmount) {
+    public function setAuthorizationAmount(Amount $authorizationAmount)
+    {
         $this->authorizationAmount = $authorizationAmount;
     }
 
@@ -50,14 +52,16 @@ class Authorization
     /**
      * @return bool
      */
-    public function isApproved() {
+    public function isApproved()
+    {
         return $this->approved;
     }
 
     /**
      * @param bool $approved
      */
-    public function setApproved($approved) {
+    public function setApproved($approved)
+    {
         $this->approved = $approved;
     }
 
@@ -65,14 +69,16 @@ class Authorization
     /**
      * @return string
      */
-    public function getExpiration() {
+    public function getExpiration()
+    {
         return $this->expiration;
     }
 
     /**
      * @param string $expiration
      */
-    public function setExpiration($expiration) {
+    public function setExpiration($expiration)
+    {
         $this->expiration = $expiration;
     }
 
@@ -80,14 +86,16 @@ class Authorization
     /**
      * @return Authorization\State[]
      */
-    public function getReleases() {
+    public function getReleases()
+    {
         return $this->releases;
     }
 
     /**
      * @param Authorization\State[] $releases
      */
-    public function setReleases(array $releases) {
+    public function setReleases(array $releases)
+    {
         $this->releases = $releases;
     }
 
@@ -95,14 +103,16 @@ class Authorization
     /**
      * @return Authorization\State[]
      */
-    public function getCaptures() {
+    public function getCaptures()
+    {
         return $this->captures;
     }
 
     /**
      * @param Authorization\State[] $captures
      */
-    public function setCaptures(array $captures) {
+    public function setCaptures(array $captures)
+    {
         $this->captures = $captures;
     }
 
@@ -110,14 +120,16 @@ class Authorization
     /**
      * @return Authorization\State[]
      */
-    public function getRefunds() {
+    public function getRefunds()
+    {
         return $this->refunds;
     }
 
     /**
      * @param Authorization\State[] $refunds
      */
-    public function setRefunds(array $refunds) {
+    public function setRefunds(array $refunds)
+    {
         $this->refunds = $refunds;
     }
 
@@ -135,26 +147,31 @@ class Authorization
             $result->setAuthorizationAmount(Amount::fromArray($data['authorization_amount']));
         }
 
-        $captures = [];
-        foreach ($data['captures'] as $item) {
-            $captures[] = State::fromArray($item);
+        if (array_key_exists('captures', $data)) {
+            $captures = [];
+            foreach ($data['captures'] as $item) {
+                $captures[] = State::fromArray($item);
+            }
+            $result->setCaptures($captures);
         }
 
-        $result->setCaptures($captures);
 
-        $releases = [];
-        foreach ($data['releases'] as $item) {
-            $releases[] = State::fromArray($item);
+        if (array_key_exists('releases', $data)) {
+            $releases = [];
+            foreach ($data['releases'] as $item) {
+                $releases[] = State::fromArray($item);
+            }
+            $result->setReleases($releases);
         }
-        $result->setReleases($releases);
 
-        $refunds = [];
-        foreach ($data['refunds'] as $item) {
-            $refunds[] = State::fromArray($item);
+        if (array_key_exists('refunds', $data)) {
+            $refunds = [];
+            foreach ($data['refunds'] as $item) {
+                $refunds[] = State::fromArray($item);
+            }
+            $result->setRefunds($refunds);
         }
-        $result->setRefunds($refunds);
 
         return $result;
     }
-
 }

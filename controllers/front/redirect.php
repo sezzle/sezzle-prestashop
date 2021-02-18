@@ -1,6 +1,6 @@
 <?php
 
-use PrestaShop\Module\Sezzle\ServiceHandler\Session;
+use PrestaShop\Module\Sezzle\Handler\Service\Session;
 
 /**
  * 2007-2021 PrestaShop
@@ -28,18 +28,15 @@ use PrestaShop\Module\Sezzle\ServiceHandler\Session;
 class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
-     * Do whatever you have to before redirecting the customer on the website of your payment processor.
+     * Checkout building before redirection to Sezzle Checkout
+     * @throws Exception
      */
     public function postProcess()
     {
         $cart = $this->context->cart;
         // If the below condition does not satisfy, no need to process anything.
-        if ($cart->id_customer == 0
-            || $cart->id_address_delivery == 0
-            || $cart->id_address_invoice == 0
-            || !$this->module->active
-            || empty($this->context->cart->getProducts())) {
-            $this->handleError();
+        if (!$this->isCheckoutValid()) {
+            $this->handleError('Checkout Validation failed.');
         }
 
         // Check that this payment option is still available in case
@@ -57,6 +54,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                            Please contact website administrator.');
         }
 
+        // session build and redirect
         try {
             $session = new Session($cart);
             $checkoutSession = $session->createSession();

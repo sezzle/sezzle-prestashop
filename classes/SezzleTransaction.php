@@ -270,7 +270,8 @@ class SezzleTransaction extends ObjectModel
         $sql = new DbQuery();
         $sql->select(self::$definition['primary'])
             ->from(self::$definition['table'])
-            ->where('id_cart = ' . (int)$cartId);
+            ->where('id_cart = ' . (int)$cartId)
+            ->orderBy(self::$definition['primary'] . " DESC");
         $idSezzleTransaction = Db::getInstance()->getValue($sql);
         return new self($idSezzleTransaction);
     }

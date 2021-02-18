@@ -23,7 +23,7 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+namespace PrestaShop\Module\Sezzle\Handler\Service;
 
 use Address;
 use Cart;
@@ -45,7 +45,7 @@ use State;
 
 /**
  * Class Session
- * @package PrestaShop\Module\Sezzle\ServiceHandler
+ * @package PrestaShop\Module\Sezzle\Handler\Service
  */
 class Session
 {
@@ -81,7 +81,11 @@ class Session
             new GuzzleFactory(),
             $apiMode
         ));
+
+        // session payload building
         $payload = $this->buildSessionPayload();
+
+        // session response
         return $sessionService->createSession(Authentication::getToken(), $payload->toArray());
     }
 
@@ -93,15 +97,12 @@ class Session
      */
     private function buildSessionPayload()
     {
-        // session
+        // session model
         $sessionModel = new Sezzle\Model\Session();
-
-        $sessionModel->setCompleteUrl($this->getUrlObject(self::REDIRECT_COMPLETE))
+        return $sessionModel->setCompleteUrl($this->getUrlObject(self::REDIRECT_COMPLETE))
             ->setCancelUrl($this->getUrlObject(self::REDIRECT_CANCEL))
             ->setOrder($this->getOrderObject())
             ->setCustomer($this->getCustomerObject());
-
-        return $sessionModel;
     }
 
     /**
@@ -112,6 +113,7 @@ class Session
      */
     private function getUrlObject($action)
     {
+        // url model
         $urlModel = new Sezzle\Model\Session\Url();
         $urlModel->setMethod(Sezzle\Config::POST);
         $link = Context::getContext()->link;
@@ -139,6 +141,7 @@ class Session
      */
     private function getOrderObject()
     {
+        // order model
         $order = new Sezzle\Model\Session\Order();
         return $order->setIntent("AUTH")
             ->setDescription("Prestashop Order")
@@ -161,6 +164,7 @@ class Session
 
         $items = [];
         foreach ($products as $key => $product) {
+            // item model
             $item = new Sezzle\Model\Session\Order\Item();
             if (!empty($product["reduction_applies"])
                 && !empty($product["price_with_reduction"])
@@ -173,6 +177,7 @@ class Session
                     $itemAmount = $item["price"];
                 }
             }
+
             $item->setName($product['name'])
                 ->setQuantity($product['quantity'])
                 ->setSku($product['reference'])
@@ -196,6 +201,7 @@ class Session
         // billing address
         $billingAddress = new Address($this->cart->id_address_invoice);
 
+        // customer model
         $customerModel = new Sezzle\Model\Session\Customer();
         return $customerModel->setEmail($customer->email)
             ->setFirstName($customer->firstname)
@@ -228,6 +234,7 @@ class Session
         $country = new Country($address->id_country); // country
         $state = new State($address->id_state); // state
 
+        // address model
         $addressModel = new Sezzle\Model\Session\Customer\Address();
         return $addressModel->setName(sprintf('%s %s', $address->firstname, $address->lastname))
             ->setStreet($address->address1)

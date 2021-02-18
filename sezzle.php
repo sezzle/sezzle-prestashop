@@ -71,9 +71,7 @@ class Sezzle extends PaymentModule
 
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
-        /**
-         * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
-         */
+        // Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
         $this->bootstrap = true;
 
         parent::__construct();
@@ -87,11 +85,8 @@ class Sezzle extends PaymentModule
                 and pay over the course of six weeks. You get paid right away, in full,
                 and Sezzle assumes all risk of fraud, chargeback and repayment.'
         );
-
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
-
         $this->limited_countries = array('US', 'CA');
-
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
     }
 
@@ -106,8 +101,8 @@ class Sezzle extends PaymentModule
             return false;
         }
 
+        // checking merchant country
         $isoCode = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
-
         if (in_array($isoCode, $this->limited_countries) == false) {
             $this->_errors[] = $this->l('This module is not available in your country');
             return false;
@@ -121,19 +116,14 @@ class Sezzle extends PaymentModule
             Configuration::updateValue($field, false);
         }
 
-        //include(dirname(__FILE__) . '/sql/install.php');
-
+        // install essentials
         $installer = InstallerFactory::create($this);
-
         return $installer->install();
     }
 
     public function uninstall()
     {
         $installer = InstallerFactory::create($this);
-
-        //include(dirname(__FILE__) . '/sql/uninstall.php');
-
         $result = parent::uninstall() && $installer->uninstall();
 
         foreach (static::$formFields as $field) {
@@ -148,9 +138,7 @@ class Sezzle extends PaymentModule
      */
     public function getContent()
     {
-        /**
-         * If values have been submitted in the form, process.
-         */
+        // If values have been submitted in the form, process.
         if (((bool)Tools::isSubmit('submitSezzleModule'))) {
             $this->validateConfigForm();
             if (!count($this->postErrors)) {
@@ -370,6 +358,7 @@ class Sezzle extends PaymentModule
 
         $publicKey = Configuration::get(static::$formFields['public_key']);
         $privateKey = Configuration::get(static::$formFields['private_key']);
+        // hide sezzle if either of public and private key are missing
         if (!$publicKey || !$privateKey) {
             return;
         }

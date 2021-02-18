@@ -23,26 +23,31 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+namespace PrestaShop\Module\Sezzle\Handler;
 
-use Sezzle;
+use PrestaShopException;
+use OrderCore as CoreOrder;
 
 /**
- * Class Util
- * @package PrestaShop\Module\Sezzle\ServiceHandler
+ * Class Order
+ * @package PrestaShop\Module\Sezzle\Handler
  */
-class Util
+class Order
 {
+
     /**
-     * Get Amount Object
+     * Change Order State
      *
-     * @param int $amountInCents
-     * @param string $currencyCode
-     * @return Sezzle\Model\Session\Order\Amount
+     * @param CoreOrder $order
+     * @param int $state
+     * @throws PrestaShopException
      */
-    public static function getAmountObject($amountInCents, $currencyCode)
+    public static function changeOrderState(CoreOrder $order, $state)
     {
-        $amountModel = new Sezzle\Model\Session\Order\Amount();
-        return $amountModel->setAmountInCents($amountInCents)->setCurrency($currencyCode);
+        if (!$state) {
+            return;
+        }
+        $order->setCurrentState($state);
+        $order->save();
     }
 }

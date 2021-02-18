@@ -23,43 +23,72 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+namespace PrestaShop\Module\Sezzle\Handler\Service;
 
-use Cart;
 use Configuration;
 use Currency;
+use OrderCore;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Order
- * @package PrestaShop\Module\Sezzle\ServiceHandler
+ * Class Capture
+ * @package PrestaShop\Module\Sezzle\Handler\Service
  */
-class Order
+class Capture
 {
+    /**
+     * @var OrderCore
+     */
+    private $order;
 
     /**
-     * Update Order Reference ID
+     * Capture constructor.
+     * @param OrderCore $order
+     */
+    public function __construct(OrderCore $order)
+    {
+        $this->order = $order;
+    }
+
+    /**
+     * Capture Payment
      *
      * @param string $orderUuid
-     * @param string $referenceId
-     * @return bool
+     * @param bool $isPartial
+     * @return Sezzle\Model\Order\Capture
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function updateOrderReferenceId($orderUuid, $referenceId)
+    public function capturePayment($orderUuid, $isPartial = false)
     {
+        $currency = new Currency($this->order->id_currency);
+
+        // capture payload building
+        $captureModel = new Sezzle\Model\Order\Capture();
+        $captureModel->setCaptureAmount(
+            Util::getAmountObject(
+                Sezzle\Util::formatToCents($this->order->getTotalPaid()),
+                $currency->iso_code
+            )
+        )
+            ->setPartialCapture($isPartial);
+
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $orderService = new Sezzle\Services\OrderService(new ClientService(
+
+        // instantiate capture service
+        $captureService = new Sezzle\Services\CaptureService(new ClientService(
             new GuzzleFactory(),
             $apiMode
         ));
-        return $orderService->updateOrder(
+
+        // get capture response
+        return $captureService->capturePayment(
             Authentication::getToken(),
             $orderUuid,
-            ['reference_id' => $referenceId]
+            $captureModel->toArray()
         );
     }
 }

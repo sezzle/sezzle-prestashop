@@ -23,67 +23,71 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+namespace PrestaShop\Module\Sezzle\Handler\Service;
 
-use Cart;
 use Configuration;
-use Currency;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Capture
- * @package PrestaShop\Module\Sezzle\ServiceHandler
+ * Class Order
+ * @package PrestaShop\Module\Sezzle\Handler\Service
  */
-class Capture
+class Order
 {
 
     /**
-     * @var Cart
-     */
-    private $cart;
-
-    /**
-     * Capture constructor.
-     * @param Cart $cart
-     */
-    public function __construct(Cart $cart)
-    {
-        $this->cart = $cart;
-    }
-
-    /**
-     * Capture Payment
+     * Get Order
      *
      * @param string $orderUuid
-     * @param bool $isPartial
-     * @return Sezzle\Model\Order\Capture
+     * @return Sezzle\Model\Order
      * @throws Sezzle\HttpClient\RequestException
      */
-    public function capturePayment($orderUuid, $isPartial = false)
+    public static function getOrder($orderUuid)
     {
-        $currency = new Currency($this->cart->id_currency);
-        $captureModel = new Sezzle\Model\Order\Capture();
-        $captureModel->setCaptureAmount(
-            Util::getAmountObject(
-                Sezzle\Util::formatToCents($this->cart->getOrderTotal()),
-                $currency->iso_code
-            )
-        )
-            ->setPartialCapture($isPartial);
-
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $captureService = new Sezzle\Services\CaptureService(new ClientService(
+
+        // instantiate order service
+        $orderService = new Sezzle\Services\OrderService(new ClientService(
             new GuzzleFactory(),
             $apiMode
         ));
-        return $captureService->capturePayment(
+
+        // order response
+        return $orderService->getOrder(
+            Authentication::getToken(),
+            $orderUuid
+        );
+    }
+
+    /**
+     * Update Order Reference ID
+     *
+     * @param string $orderUuid
+     * @param string $referenceId
+     * @return bool
+     * @throws Sezzle\HttpClient\RequestException
+     */
+    public static function updateOrderReferenceId($orderUuid, $referenceId)
+    {
+        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+
+        // instantiate order service
+        $orderService = new Sezzle\Services\OrderService(new ClientService(
+            new GuzzleFactory(),
+            $apiMode
+        ));
+
+        // get response status
+        return $orderService->updateOrder(
             Authentication::getToken(),
             $orderUuid,
-            $captureModel->toArray()
+            ['reference_id' => $referenceId]
         );
     }
 }

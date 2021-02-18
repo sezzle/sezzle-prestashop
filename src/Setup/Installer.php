@@ -63,14 +63,17 @@ class Installer
      */
     public function install(): bool
     {
+        // register hooks
         if (!$this->registerHooks()) {
             return false;
         }
 
+        // install database
         if (!$this->installDatabase()) {
             return false;
         }
 
+        // install sezzle order state
         if (!$this->installOrderState()) {
             return false;
         }
@@ -97,6 +100,8 @@ class Installer
             && !Validate::isLoadedObject(new OrderState(Configuration::get('SEZZLE_AWAITING_PAYMENT')))) {
             return false;
         }
+
+        // instantiate order state
         $orderState = new OrderState();
         $orderState->name = array();
         $orderState->module_name = $this->module->name;
@@ -113,6 +118,7 @@ class Installer
         }
 
         try {
+            // store new order state
             if ($orderState->add()) {
                 $sezzleIcon = dirname(__FILE__) . '/../../logo.gif';
                 $newStateIcon = dirname(__FILE__) . '/../../../../img/os/' . (int)$orderState->id . '.gif';
@@ -174,7 +180,6 @@ class Installer
      */
     private function registerHooks(): bool
     {
-        // Hooks available in the order view page.
         $hooks = [
             'header',
             'backOfficeHeader',

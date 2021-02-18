@@ -23,7 +23,7 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+namespace PrestaShop\Module\Sezzle\Handler\Service;
 
 use Configuration;
 use Sezzle;
@@ -35,6 +35,7 @@ use Sezzle\Services\AuthenticationService;
 
 /**
  * Class Authentication
+ * @package PrestaShop\Module\Sezzle\Handler\Service
  */
 class Authentication
 {
@@ -53,13 +54,17 @@ class Authentication
         $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
         $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
 
+        // auth credentials set
         $authModel = new AuthCredentials();
         $authModel->setPublicKey($publicKey)->setPrivateKey($privateKey);
 
+        // instantiate authentication service
         $tokenService = new AuthenticationService(new ClientService(
             new GuzzleFactory(),
             $apiMode
         ));
+
+        // get token
         $tokenModel = $tokenService->get($authModel->toArray());
         return $tokenModel->getToken();
     }

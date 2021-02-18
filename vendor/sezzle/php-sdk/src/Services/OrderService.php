@@ -37,7 +37,7 @@ class OrderService
         $response = $this->clientService->sendRequest(
             Config::GET,
             sprintf(Config::ORDER_RESOURCE, $orderUUID),
-            null,
+            [],
             $token
         );
         return Order::fromArray($response);

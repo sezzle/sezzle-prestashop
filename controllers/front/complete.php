@@ -1,7 +1,7 @@
 <?php
 
-use PrestaShop\Module\Sezzle\ServiceHandler\Capture;
-use PrestaShop\Module\Sezzle\ServiceHandler\Order as SezzleOrder;
+use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
+use PrestaShop\Module\Sezzle\Handler\Service\Order as SezzleOrder;
 use Sezzle\HttpClient\RequestException;
 
 /**
@@ -30,6 +30,8 @@ use Sezzle\HttpClient\RequestException;
 class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
+     * Order process after successful Sezzle Checkout
+     *
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      * @throws Exception
@@ -40,7 +42,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         $txn = SezzleTransaction::getByCartId($this->context->cart->id);
 
         // validate checkout
-        if (!$this->isCheckoutValid($txn)) {
+        if (!$this->isCheckoutValid($txn, true)) {
             $this->handleError('Unable to validate the Checkout.');
         }
 
@@ -70,18 +72,10 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         $paymentAction = Configuration::get(Sezzle::$formFields['payment_action']);
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
             try {
-                $captureService = new Capture($cart);
-                $response = $captureService->capturePayment($orderUuid, false);
-                if ($captureUuid = $response->getUuid()) {
-                    Payment::setTransactionId($order->reference, $captureUuid);
-                    SezzleTransaction::storeCaptureAmount($cart->getOrderTotal(), $orderUuid);
-                    $order->setCurrentState(Configuration::get('PS_OS_PAYMENT'));
-                    $order->save();
-                }
+                $captureHandler = new Capture($order);
+                $captureHandler->execute($orderUuid, false);
             } catch (RequestException $e) {
                 $this->handleError("Failed to process the payment");
-            } catch (PrestaShopException $e) {
-                // ignore this exception as of now
             }
         }
 
@@ -93,7 +87,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             );
         }
 
-        // order reference handle in store and sezzle
+        // order reference handling in store and sezzle
         SezzleTransaction::storeOrderReference($order->reference, $txn->getOrderUuid());
         try {
             SezzleOrder::updateOrderReferenceId($orderUuid, $order->reference);

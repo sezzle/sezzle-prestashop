@@ -23,6 +23,9 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use Sezzle\HttpClient\RequestException;
+use PrestaShop\Module\Sezzle\Handler\Service\Order as OrderService;
+
 /**
  * Class SezzleAbstractModuleFrontController
  */
@@ -33,16 +36,31 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
      * Validate Checkout
      *
      * @param SezzleTransaction $sezzleTransaction
+     * @param bool $postRedirect
      * @return bool
      * @throws Exception
      */
-    public function isCheckoutValid(SezzleTransaction $sezzleTransaction)
+    public function isCheckoutValid(SezzleTransaction $sezzleTransaction = null, $postRedirect = false)
     {
         $cart = $this->context->cart;
-        if (!$sezzleTransaction->getIdSezzleTransaction()) {
+        $customer = new Customer((int)$cart->id_customer);
+
+        if ($cart->secure_key !== $customer->secure_key
+            || $cart->id_customer == 0
+            || $cart->id_address_delivery == 0
+            || $cart->id_address_invoice == 0
+            || !$this->module->active
+            || empty($this->context->cart->getProducts())) {
             return false;
         }
-        if (!$this->isAmountMatched($sezzleTransaction->getAuthorizedAmount(), $cart->getOrderTotal())) {
+
+        if ($postRedirect &&
+            (
+                !$sezzleTransaction->getIdSezzleTransaction()
+                || !$this->isCheckoutApproved($sezzleTransaction->getOrderUuid())
+                || !$this->isAmountMatched($sezzleTransaction->getAuthorizedAmount(), $cart->getOrderTotal())
+            )
+        ) {
             return false;
         }
         return true;
@@ -65,13 +83,34 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
     }
 
     /**
+     * Checking if the checkout was approved by Sezzle
+     *
+     * @param string $orderUUID
+     * @return bool
+     * @throws RequestException
+     */
+    private function isCheckoutApproved($orderUUID)
+    {
+        if (!$orderUUID) {
+            return false;
+        }
+        $sezzleOrder = OrderService::getOrder($orderUUID);
+        if (!$sezzleOrder->getAuthorization() || !$sezzleOrder->getAuthorization()->isApproved()) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Handle Error
      *
      * @param string $msg
      */
     public function handleError($msg = "")
     {
-        $this->errors[] = $this->module->l($msg);
+        if ($msg) {
+            $this->errors[] = $this->module->l($msg);
+        }
         $this->redirectWithNotifications('index.php?controller=order&step=1');
     }
 }

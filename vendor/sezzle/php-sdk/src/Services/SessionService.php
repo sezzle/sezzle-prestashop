@@ -59,7 +59,7 @@ class SessionService
         $response = $this->clientService->sendRequest(
             Config::POST,
             sprintf(Config::SESSION_RESOURCE, $orderUUID),
-            null,
+            [],
             $token
         );
         return Session::fromArray($response);
