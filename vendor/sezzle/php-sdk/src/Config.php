@@ -21,7 +21,7 @@ class Config
     const DELETE = "DELETE";
     const PUT = "PUT";
 
-    const SESSION_RESOURCE = 'session';
+    const SESSION_RESOURCE = 'session/%s';
     const AUTHENTICATION_RESOURCE = 'authentication';
     const REFUND_RESOURCE = 'order/%s/refund';
     const RELEASE_RESOURCE = 'order/%s/release';

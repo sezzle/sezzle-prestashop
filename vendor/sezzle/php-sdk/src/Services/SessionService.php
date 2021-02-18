@@ -39,8 +39,27 @@ class SessionService
     {
         $response = $this->clientService->sendRequest(
             Config::POST,
-            Config::SESSION_RESOURCE,
+            sprintf(Config::SESSION_RESOURCE, ""),
             $payload,
+            $token
+        );
+        return Session::fromArray($response);
+    }
+
+    /**
+     * Get Session
+     *
+     * @param string $token
+     * @param string $orderUUID
+     * @return Session
+     * @throws RequestException
+     */
+    public function getSession($token, $orderUUID)
+    {
+        $response = $this->clientService->sendRequest(
+            Config::POST,
+            sprintf(Config::SESSION_RESOURCE, $orderUUID),
+            null,
             $token
         );
         return Session::fromArray($response);
