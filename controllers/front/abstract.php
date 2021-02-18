@@ -25,9 +25,9 @@
  */
 
 /**
- * Class SezzleAbstarctModuleFrontController
+ * Class SezzleAbstractModuleFrontController
  */
-abstract class SezzleAbstarctModuleFrontController extends ModuleFrontController
+abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
 {
 
     /**

@@ -26,7 +26,7 @@ use PrestaShop\Module\Sezzle\ServiceHandler\Session;
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-class SezzleRedirectModuleFrontController extends SezzleAbstarctModuleFrontController
+class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
      * Do whatever you have to before redirecting the customer on the website of your payment processor.
@@ -47,7 +47,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstarctModuleFrontContr
         // the customer changed his address just before the end of the checkout process
         $isAvailable = false;
         foreach (Module::getPaymentModules() as $module) {
-            if ($module['name'] === 'sezzle') {
+            if ($module['name'] === $this->module->name) {
                 $isAvailable = true;
                 break;
             }

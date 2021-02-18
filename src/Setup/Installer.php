@@ -66,9 +66,9 @@ class Installer
             return false;
         }
 
-//        if (!$this->installOrderState()) {
-//            return false;
-//        }
+        if (!$this->installOrderState()) {
+            return false;
+        }
 
         return true;
     }
@@ -109,8 +109,8 @@ class Installer
 
         try {
             if ($orderState->add()) {
-                $sezzleIcon = dirname(__FILE__) . '/logo.gif';
-                $newStateIcon = dirname(__FILE__) . '/../../img/os/' . (int)$orderState->id . '.gif';
+                $sezzleIcon = dirname(__FILE__) . '/../../logo.gif';
+                $newStateIcon = dirname(__FILE__) . '/../../../../img/os/' . (int)$orderState->id . '.gif';
                 copy($sezzleIcon, $newStateIcon);
             }
 
@@ -130,19 +130,22 @@ class Installer
      */
     private function installDatabase(): bool
     {
-//        $queries = [
-//            'CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'order_signature` (
-//              `id_signature` int(11) NOT NULL AUTO_INCREMENT,
-//              `id_order` int(11) NOT NULL,
-//              `filename` varchar(64) NOT NULL,
-//              PRIMARY KEY (`id_signature`),
-//              UNIQUE KEY (`id_order`)
-//            ) ENGINE='._MYSQL_ENGINE_.' DEFAULT CHARSET=utf8;',
-//        ];
-//
-//        return $this->executeQueries($queries);
+        $queries = [
+            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'sezzle_transaction` (
+                `id_sezzle_transaction` int(11) NOT NULL AUTO_INCREMENT,
+                `reference` varchar(255) NOT NULL,
+                `id_cart` int(11) NOT NULL,
+                `order_uuid` varchar(255) NOT NULL,
+                `checkout_url` varchar(255) NOT NULL,
+                `checkout_expiration` datetime NOT NULL,
+                `authorized_amount` decimal(20,6) NOT NULL,
+                `capture_amount` decimal(20,6) NOT NULL,
+                `refund_amount` decimal(20,6) NOT NULL,
+                PRIMARY KEY  (`id_sezzle_transaction`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
+        ];
 
-        return true;
+        return $this->executeQueries($queries);
     }
 
     /**
@@ -152,12 +155,11 @@ class Installer
      */
     private function uninstallDatabase(): bool
     {
-//        $queries = [
-//            'DROP TABLE IF EXISTS `'._DB_PREFIX_.'order_signature`',
-//        ];
-//
-//        return $this->executeQueries($queries);
-        return true;
+        $queries = [
+            'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'sezzle_transaction`',
+        ];
+
+        return $this->executeQueries($queries);
     }
 
     /**

@@ -266,7 +266,7 @@ class SezzleTransaction extends ObjectModel
             array(
                 'capture_amount' => (float)$amount,
             ),
-            'order_uuid = ' . $orderUUID
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
         );
     }
 
@@ -281,9 +281,9 @@ class SezzleTransaction extends ObjectModel
         Db::getInstance()->update(
             self::$definition['table'],
             array(
-                'reference' => $reference,
+                'reference' => pSQL($reference),
             ),
-            'order_uuid = ' . $orderUUID
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
         );
     }
 }

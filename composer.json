@@ -17,7 +17,9 @@
     },
     "classmap": [
       "sezzle.php",
-      "classes/SezzleTransaction.php"
+      "classes/SezzleTransaction.php",
+      "classes/Payment.php",
+      "controllers/front/abstract.php"
     ]
   },
   "config": {

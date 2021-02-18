@@ -55,7 +55,7 @@ class OrderService
     public function updateOrder($token, $orderUUID, array $payload)
     {
         $response = $this->clientService->sendRequest(
-            Config::PUT,
+            Config::PATCH,
             sprintf(Config::ORDER_RESOURCE, $orderUUID),
             $payload,
             $token

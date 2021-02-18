@@ -43,7 +43,12 @@ class Capture
     {
         $currency = new Currency($this->cart->id_currency);
         $captureModel = new Sezzle\Model\Order\Capture();
-        $captureModel->setCaptureAmount(Util::getAmountObject($this->cart->getOrderTotal(), $currency->iso_code))
+        $captureModel->setCaptureAmount(
+            Util::getAmountObject(
+                Sezzle\Util::formatToCents($this->cart->getOrderTotal()),
+                $currency->iso_code
+            )
+        )
             ->setPartialCapture($isPartial);
 
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])

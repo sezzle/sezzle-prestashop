@@ -28,7 +28,7 @@ use Sezzle\HttpClient\RequestException;
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *  International Registered Trademark & Property of PrestaShop SA
  */
-class SezzleCompleteModuleFrontController extends SezzleAbstarctModuleFrontController
+class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
      * @throws PrestaShopDatabaseException
@@ -53,7 +53,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstarctModuleFrontContr
             $cart->id,
             Configuration::get('SEZZLE_AWAITING_PAYMENT'),
             $cart->getOrderTotal(),
-            $this->module->name,
+            $this->module->displayName,
             "",
             [],
             (int)Context::getContext()->currency->id,
@@ -73,7 +73,8 @@ class SezzleCompleteModuleFrontController extends SezzleAbstarctModuleFrontContr
             try {
                 $captureService = new Capture($cart);
                 $response = $captureService->capturePayment($orderUuid, false);
-                if ($response->getUuid()) {
+                if ($captureUuid = $response->getUuid()) {
+                    Payment::setTransactionId($order->reference, $captureUuid);
                     SezzleTransaction::storeCaptureAmount($cart->getOrderTotal(), $orderUuid);
                     $order->setCurrentState(Configuration::get('PS_OS_PAYMENT'));
                     $order->save();

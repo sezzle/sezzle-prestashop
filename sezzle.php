@@ -120,7 +120,7 @@ class Sezzle extends PaymentModule
             Configuration::updateValue($field, false);
         }
 
-        include(dirname(__FILE__) . '/sql/install.php');
+        //include(dirname(__FILE__) . '/sql/install.php');
 
         $installer = InstallerFactory::create($this);
 
