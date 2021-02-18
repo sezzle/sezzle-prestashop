@@ -1,5 +1,6 @@
 <?php
 
+use PrestaShop\Module\Sezzle\Handler\Payment\Authorization;
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Service\Order as SezzleOrder;
 use Sezzle\HttpClient\RequestException;
@@ -46,7 +47,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $this->handleError('Unable to validate the Checkout.');
         }
 
-        $orderUuid = $txn->getOrderUuid();
+        $orderUUID = $txn->getOrderUUID();
         $customer = new Customer((int)$cart->id_customer);
 
         // order create in store
@@ -66,14 +67,21 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $this->handleError("Failed to create the order.");
         }
 
-        $order = Order::getByCartId((int)$cart->id);
+        // authorization handling
+        if ($this->sezzleOrder && $this->sezzleOrder->getAuthorization()) {
+            $authorizeHandler = new Authorization();
+            $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization()
+                ->getAuthorizationAmount()
+                ->getAmountInCents());
+        }
 
+        $order = Order::getByCartId((int)$cart->id);
         // capture handling
         $paymentAction = Configuration::get(Sezzle::$formFields['payment_action']);
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
             try {
                 $captureHandler = new Capture($order);
-                $captureHandler->execute($orderUuid, false);
+                $captureHandler->execute($orderUUID, false);
             } catch (RequestException $e) {
                 $this->handleError("Failed to process the payment");
             }
@@ -88,9 +96,9 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         }
 
         // order reference handling in store and sezzle
-        SezzleTransaction::storeOrderReference($order->reference, $txn->getOrderUuid());
+        SezzleTransaction::storeOrderReference($order->reference, $txn->getOrderUUID());
         try {
-            SezzleOrder::updateOrderReferenceId($orderUuid, $order->reference);
+            SezzleOrder::updateOrderReferenceId($orderUUID, $order->reference);
         } catch (RequestException $e) {
             // ignore this exception as of now
         }

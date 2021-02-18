@@ -149,6 +149,7 @@ class Installer
                 `order_uuid` varchar(255) NOT NULL,
                 `checkout_url` varchar(255) NOT NULL,
                 `checkout_expiration` datetime NOT NULL,
+                `checkout_amount` decimal(20,6) NOT NULL,
                 `authorized_amount` decimal(20,6) NOT NULL,
                 `capture_amount` decimal(20,6) NOT NULL,
                 `refund_amount` decimal(20,6) NOT NULL,

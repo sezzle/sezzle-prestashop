@@ -54,6 +54,9 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                            Please contact website administrator.');
         }
 
+        // TODO : Use uncompleted checkout again if not expired.
+        // TODO : Before that check with Dan on how the session expiration works.
+
         // session build and redirect
         try {
             $session = new Session($cart);

@@ -31,6 +31,10 @@ use PrestaShop\Module\Sezzle\Handler\Service\Order as OrderService;
  */
 abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
 {
+    /**
+     * @var \Sezzle\Model\Order
+     */
+    public $sezzleOrder = null;
 
     /**
      * Validate Checkout
@@ -57,8 +61,8 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
         if ($postRedirect &&
             (
                 !$sezzleTransaction->getIdSezzleTransaction()
-                || !$this->isCheckoutApproved($sezzleTransaction->getOrderUuid())
-                || !$this->isAmountMatched($sezzleTransaction->getAuthorizedAmount(), $cart->getOrderTotal())
+                || !$this->isCheckoutApproved($sezzleTransaction->getOrderUUID())
+                || !$this->isAmountMatched($sezzleTransaction->getCheckoutAmount(), $cart->getOrderTotal())
             )
         ) {
             return false;
@@ -98,7 +102,13 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
         if (!$sezzleOrder->getAuthorization() || !$sezzleOrder->getAuthorization()->isApproved()) {
             return false;
         }
+        $this->sezzleOrder = $sezzleOrder;
         return true;
+    }
+
+    public function setAuthorizedAmount()
+    {
+
     }
 
     /**

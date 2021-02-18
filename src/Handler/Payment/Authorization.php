@@ -25,51 +25,28 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
-use Configuration;
-use Exception;
-use Payment;
-use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
-use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
-use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
 
 /**
- * Class Capture
+ * Class Authorization
  * @package PrestaShop\Module\Sezzle\Handler\Payment
  */
-class Capture extends Order
+class Authorization extends Order
 {
-    /**
-     * @var CoreOrder
-     */
-    private $order;
 
     /**
-     * Capture constructor.
-     * @param CoreOrder $order
-     */
-    public function __construct(CoreOrder $order)
-    {
-        $this->order = $order;
-    }
-
-    /**
-     * Capture Action
+     * Authorization Action
      *
      * @param string $orderUUID
-     * @param bool $isPartial
-     * @throws RequestException
-     * @throws Exception
+     * @param int $amount
      */
-    public function execute($orderUUID, $isPartial = false)
+    public function execute($orderUUID, $amount)
     {
-        $captureService = new CaptureServiceHandler($this->order);
-        $response = $captureService->capturePayment($orderUUID, $isPartial);
-        if ($captureUuid = $response->getUuid()) {
-            Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($this->order->getTotalPaid(), $orderUUID);
-            $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+        if ($amount <= 0) {
+            return;
         }
+        $authorizedAmount = (float)$amount / 100;
+        SezzleTransaction::storeAuthorizeAmount($authorizedAmount, $orderUUID);
     }
 }

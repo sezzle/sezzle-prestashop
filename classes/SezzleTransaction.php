@@ -48,6 +48,9 @@ class SezzleTransaction extends ObjectModel
     /** @var string Sezzle Checkout Expiration */
     public $checkout_expiration;
 
+    /** @var float Sezzle Transaction Amount */
+    public $checkout_amount;
+
     /** @var float Sezzle Transaction Auth Amount */
     public $authorized_amount;
 
@@ -70,6 +73,7 @@ class SezzleTransaction extends ObjectModel
             'order_uuid' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'checkout_url' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'checkout_expiration' => array('type' => self::TYPE_DATE, 'validate' => 'isDateFormat'),
+            'checkout_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'authorized_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'capture_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'refund_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
@@ -134,7 +138,7 @@ class SezzleTransaction extends ObjectModel
     /**
      * @return string
      */
-    public function getOrderUuid()
+    public function getOrderUUID()
     {
         return $this->order_uuid;
     }
@@ -143,7 +147,7 @@ class SezzleTransaction extends ObjectModel
      * @param string $order_uuid
      * @return SezzleTransaction
      */
-    public function setOrderUuid(string $order_uuid)
+    public function setOrderUUID(string $order_uuid)
     {
         $this->order_uuid = $order_uuid;
         return $this;
@@ -182,6 +186,24 @@ class SezzleTransaction extends ObjectModel
     public function setCheckoutExpiration(string $checkout_expiration)
     {
         $this->checkout_expiration = $checkout_expiration;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getCheckoutAmount()
+    {
+        return $this->checkout_amount;
+    }
+
+    /**
+     * @param float $checkout_amount
+     * @return SezzleTransaction
+     */
+    public function setCheckoutAmount(float $checkout_amount)
+    {
+        $this->checkout_amount = $checkout_amount;
         return $this;
     }
 
@@ -251,8 +273,8 @@ class SezzleTransaction extends ObjectModel
     public function storeCheckoutSession(Cart $cart, Sezzle\Model\Session $session)
     {
         $this->setIdCart($cart->id)
-            ->setAuthorizedAmount($cart->getOrderTotal())
-            ->setOrderUuid($session->getOrder()->getUuid())
+            ->setCheckoutAmount($cart->getOrderTotal())
+            ->setOrderUUID($session->getOrder()->getUuid())
             ->setCheckoutUrl($session->getOrder()->getCheckoutUrl())
             ->save();
     }
@@ -274,6 +296,23 @@ class SezzleTransaction extends ObjectModel
             ->orderBy(self::$definition['primary'] . " DESC");
         $idSezzleTransaction = Db::getInstance()->getValue($sql);
         return new self($idSezzleTransaction);
+    }
+
+    /**
+     * Store Authorize Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeAuthorizeAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'authorized_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
     }
 
     /**

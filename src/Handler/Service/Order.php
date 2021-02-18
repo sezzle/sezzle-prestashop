@@ -40,11 +40,11 @@ class Order
     /**
      * Get Order
      *
-     * @param string $orderUuid
+     * @param string $orderUUID
      * @return Sezzle\Model\Order
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function getOrder($orderUuid)
+    public static function getOrder($orderUUID)
     {
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
@@ -59,19 +59,19 @@ class Order
         // order response
         return $orderService->getOrder(
             Authentication::getToken(),
-            $orderUuid
+            $orderUUID
         );
     }
 
     /**
      * Update Order Reference ID
      *
-     * @param string $orderUuid
+     * @param string $orderUUID
      * @param string $referenceId
      * @return bool
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function updateOrderReferenceId($orderUuid, $referenceId)
+    public static function updateOrderReferenceId($orderUUID, $referenceId)
     {
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
@@ -86,7 +86,7 @@ class Order
         // get response status
         return $orderService->updateOrder(
             Authentication::getToken(),
-            $orderUuid,
+            $orderUUID,
             ['reference_id' => $referenceId]
         );
     }

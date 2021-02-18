@@ -35,7 +35,6 @@ use Customer;
 use Exception;
 use PrestaShopDatabaseException;
 use PrestaShopException;
-use Ramsey\Uuid\Uuid;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;

@@ -197,7 +197,7 @@ class Sezzle extends PaymentModule
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Live mode'),
+                        'label' => $this->l('Live Mode'),
                         'name' => static::$formFields['live_mode'],
                         'is_bool' => true,
                         'desc' => $this->l('Use Sezzle in live mode'),
