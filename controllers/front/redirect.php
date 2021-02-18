@@ -21,10 +21,9 @@ use PrestaShop\Module\Sezzle\ServiceHandler\Session;
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author    PrestaShop SA <contact@prestashop.com>
- * @copyright 2007-2021 PrestaShop SA
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontController
 {

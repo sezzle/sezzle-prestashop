@@ -22,27 +22,12 @@
  * @copyright Copyright (c) Sezzle
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-namespace PrestaShop\Module\Sezzle\ServiceHandler;
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
 
-use Sezzle;
-
-/**
- * Class Util
- * @package PrestaShop\Module\Sezzle\ServiceHandler
- */
-class Util
-{
-    /**
-     * Get Amount Object
-     *
-     * @param int $amountInCents
-     * @param string $currencyCode
-     * @return Sezzle\Model\Session\Order\Amount
-     */
-    public static function getAmountObject($amountInCents, $currencyCode)
-    {
-        $amountModel = new Sezzle\Model\Session\Order\Amount();
-        return $amountModel->setAmountInCents($amountInCents)->setCurrency($currencyCode);
-    }
-}
+header('Location: ../');
+exit;

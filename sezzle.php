@@ -18,10 +18,9 @@
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author    PrestaShop SA <contact@prestashop.com>
- * @copyright 2007-2021 PrestaShop SA
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
@@ -35,9 +34,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 class Sezzle extends PaymentModule
 {
-    protected $config_form = false;
-    protected $_postErrors = array();
-    protected $_html = "";
+    protected $postErrors = array();
+    protected $html = "";
 
     const MODE_SANDBOX = "sandbox";
     const MODE_PRODUCTION = "production";
@@ -58,6 +56,9 @@ class Sezzle extends PaymentModule
      */
     private $logo_url;
 
+    /**
+     * Sezzle constructor.
+     */
     public function __construct()
     {
         $this->name = self::MODULE_NAME;
@@ -65,7 +66,7 @@ class Sezzle extends PaymentModule
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
         $this->need_instance = 1;
-        $this->controllers = array('validation');
+        $this->controllers = array('complete', 'redirect');
         $this->logo_url = 'https://d34uoa9py2cgca.cloudfront.net/branding/sezzle-logos/png/sezzle-logo-sm-100w.png';
 
         $this->currencies = true;
@@ -152,18 +153,18 @@ class Sezzle extends PaymentModule
          */
         if (((bool)Tools::isSubmit('submitSezzleModule'))) {
             $this->validateConfigForm();
-            if (!count($this->_postErrors)) {
+            if (!count($this->postErrors)) {
                 $this->postProcess();
             } else {
-                foreach ($this->_postErrors as $err) {
-                    $this->_html .= $this->displayError($err);
+                foreach ($this->postErrors as $err) {
+                    $this->html .= $this->displayError($err);
                 }
             }
         } else {
-            $this->_html .= '<br />';
+            $this->html .= '<br />';
         }
 
-        return $this->_html . $this->renderForm();
+        return $this->html . $this->renderForm();
     }
 
     /**
@@ -307,12 +308,12 @@ class Sezzle extends PaymentModule
      */
     protected function postProcess()
     {
-        $form_values = $this->getConfigFormValues();
+        $formValues = $this->getConfigFormValues();
 
-        foreach (array_keys($form_values) as $key) {
+        foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
-        $this->_html .= $this->displayConfirmation($this->l('Settings updated'));
+        $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
     /**
@@ -320,8 +321,8 @@ class Sezzle extends PaymentModule
      */
     private function validateConfigForm()
     {
-        $form_values = $this->getConfigFormValues();
-        foreach (array_keys($form_values) as $key) {
+        $formValues = $this->getConfigFormValues();
+        foreach (array_keys($formValues) as $key) {
             if ($key === static::$formFields['live_mode']
                 || $key === static::$formFields['tokenize']) {
                 continue;
@@ -329,7 +330,7 @@ class Sezzle extends PaymentModule
 
             if (!Tools::getValue($key)) {
                 $readableKey = ucwords(str_replace("sezzle ", "", str_replace("_", " ", strtolower($key))));
-                $this->_postErrors[] = sprintf("Invalid %s", $readableKey);
+                $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
     }
@@ -387,11 +388,11 @@ class Sezzle extends PaymentModule
 
     public function checkCurrency($cart)
     {
-        $currency_order = new Currency($cart->id_currency);
-        $currencies_module = $this->getCurrency($cart->id_currency);
-        if (is_array($currencies_module)) {
-            foreach ($currencies_module as $currency_module) {
-                if ($currency_order->id == $currency_module['id_currency']) {
+        $currencyOrder = new Currency($cart->id_currency);
+        $currenciesModule = $this->getCurrency($cart->id_currency);
+        if (is_array($currenciesModule)) {
+            foreach ($currenciesModule as $currencyModule) {
+                if ($currencyOrder->id == $currencyModule['id_currency']) {
                     return true;
                 }
             }
