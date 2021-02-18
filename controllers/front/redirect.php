@@ -54,13 +54,19 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                            Please contact website administrator.');
         }
 
-        // TODO : Use uncompleted checkout again if not expired.
-        // TODO : Before that check with Dan on how the session expiration works.
+        // use uncompleted checkout session if any
+        $txn = SezzleTransaction::getByCartId($this->context->cart->id);
+        if (!$txn->getReference() && $txn->getAuthorizedAmount() == 0 && $checkoutUrl = $txn->getCheckoutUrl()) {
+            Tools::redirectLink($checkoutUrl);
+        }
 
         // session build and redirect
         try {
             $session = new Session($cart);
             $checkoutSession = $session->createSession();
+            if (!$checkoutSession->getOrder()) {
+                throw new Exception("Error creating session");
+            }
             $txn = new SezzleTransaction();
             $txn->storeCheckoutSession($cart, $checkoutSession);
             Tools::redirectLink($checkoutSession->getOrder()->getCheckoutUrl());

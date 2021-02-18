@@ -45,9 +45,6 @@ class SezzleTransaction extends ObjectModel
     /** @var string Sezzle Checkout URL */
     public $checkout_url;
 
-    /** @var string Sezzle Checkout Expiration */
-    public $checkout_expiration;
-
     /** @var float Sezzle Transaction Amount */
     public $checkout_amount;
 
@@ -72,7 +69,6 @@ class SezzleTransaction extends ObjectModel
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'order_uuid' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'checkout_url' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
-            'checkout_expiration' => array('type' => self::TYPE_DATE, 'validate' => 'isDateFormat'),
             'checkout_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'authorized_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'capture_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
@@ -168,24 +164,6 @@ class SezzleTransaction extends ObjectModel
     public function setCheckoutUrl(string $checkout_url)
     {
         $this->checkout_url = $checkout_url;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getCheckoutExpiration()
-    {
-        return $this->checkout_expiration;
-    }
-
-    /**
-     * @param string $checkout_expiration
-     * @return SezzleTransaction
-     */
-    public function setCheckoutExpiration(string $checkout_expiration)
-    {
-        $this->checkout_expiration = $checkout_expiration;
         return $this;
     }
 
