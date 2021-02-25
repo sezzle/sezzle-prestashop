@@ -45,4 +45,17 @@ class Payment
             sprintf('order_reference = "%s"', pSQL($orderReference))
         );
     }
+
+    /**
+     * Set Transaction Id in Order Payment
+     *
+     * @param string $orderReference
+     */
+    public static function deletePayment($orderReference)
+    {
+        Db::getInstance()->delete(
+            OrderPayment::$definition['table'],
+            sprintf('order_reference = "%s"', pSQL($orderReference))
+        );
+    }
 }

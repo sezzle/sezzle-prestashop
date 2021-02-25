@@ -26,11 +26,13 @@
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
 use Configuration;
+use Currency;
 use Exception;
 use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
+use PrestaShopException;
 use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
 
@@ -58,17 +60,23 @@ class Capture extends Order
      * Capture Action
      *
      * @param string $orderUUID
-     * @param bool $isPartial
+     * @param float $amount
      * @throws RequestException
-     * @throws Exception
+     * @throws PrestaShopException
      */
-    public function execute($orderUUID, $isPartial = false)
+    public function execute($orderUUID, $amount)
     {
-        $captureService = new CaptureServiceHandler($this->order);
-        $response = $captureService->capturePayment($orderUUID, $isPartial);
+        if (!$orderUUID) {
+            throw new PrestaShopException("Order UUID not found.");
+        } elseif ($amount > $this->order->getTotalPaid()) {
+            throw new PrestaShopException("Capture amount is greater than the order amount.");
+        }
+        $isPartial = $amount < $this->order->getTotalPaid();
+        $currency = new Currency($this->order->id_currency);
+        $response = CaptureServiceHandler::capturePayment($orderUUID, $amount, $currency->iso_code, $isPartial);
         if ($captureUuid = $response->getUuid()) {
             Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($this->order->getTotalPaid(), $orderUUID);
+            SezzleTransaction::storeCaptureAmount($amount, $orderUUID);
             $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
         }
     }

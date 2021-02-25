@@ -277,6 +277,25 @@ class SezzleTransaction extends ObjectModel
     }
 
     /**
+     * Get Checkout Session
+     *
+     * @param string $reference
+     * @return SezzleTransaction
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public static function getByReference($reference)
+    {
+        $sql = new DbQuery();
+        $sql->select(self::$definition['primary'])
+            ->from(self::$definition['table'])
+            ->where(sprintf('reference = "%s"', pSQL($reference)))
+            ->orderBy(self::$definition['primary'] . " DESC");
+        $idSezzleTransaction = Db::getInstance()->getValue($sql);
+        return new self($idSezzleTransaction);
+    }
+
+    /**
      * Store Authorize Amount
      *
      * @param float $amount

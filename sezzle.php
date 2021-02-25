@@ -23,8 +23,11 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Sezzle\HttpClient\RequestException;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -391,7 +394,23 @@ class Sezzle extends PaymentModule
 
     public function hookActionPaymentConfirmation()
     {
-        /* Place your code here. */
+//        PrestaShopLogger::addLog("Hello", 3, null, "Sezzle", 1);
+//        if (!isset($params['id_order']) || !$orderId = $params['id_order']) {
+//            throw new OrderException("Payment not found.");
+//        }
+//
+//        //$amount = $payment->amount;
+//        //$reference = $payment->order_reference;
+//        $order = new Order($orderId);
+////        if ($orders->count() !== 1) {
+////            throw new OrderException(sprintf("Multiple orders found for : %s", $reference));
+////        }
+//        //foreach ($orders as $order) {
+//            /** @var Order $order */
+//            $txn = SezzleTransaction::getByReference($order->reference);
+//            $captureHandler = new Capture($order);
+//            $captureHandler->execute($txn->getOrderUUID(), 0);
+//        //}
     }
 
     public function hookDisplayPayment()
@@ -402,5 +421,41 @@ class Sezzle extends PaymentModule
     public function hookDisplayPaymentReturn()
     {
         /* Place your code here. */
+    }
+
+    /**
+     * @param array|null $params
+     * @throws OrderException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws RequestException
+     */
+    public function hookActionPaymentCCAdd($params)
+    {
+//        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
+//            throw new OrderException("Payment not found.");
+//        }
+//
+//        $amount = $payment->amount;
+//        $reference = $payment->order_reference;
+//        $orders = Order::getByReference($reference);
+//        if ($orders->count() !== 1) {
+//            throw new OrderException(sprintf("Multiple orders found for : %s", $reference));
+//        }
+//        foreach ($orders as $order) {
+//            /** @var Order $order */
+//            $txn = SezzleTransaction::getByReference($reference);
+//            $captureHandler = new Capture($order);
+//            $captureHandler->execute($txn->getOrderUUID(), $amount);
+//        }
+    }
+
+    public function hookActionOrderStatusPostUpdate($params)
+    {
+//        PrestaShopLogger::addLog("Hi", 3, null, "Sezzle", 1, true);
+//        $orderId = $params['id_order'];
+//        $order = new Order($orderId);
+//        $order->current_state = 2;
+//        $order->save();
     }
 }

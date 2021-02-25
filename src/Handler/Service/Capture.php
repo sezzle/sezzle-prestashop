@@ -38,38 +38,25 @@ use Sezzle\HttpClient\GuzzleFactory;
  */
 class Capture
 {
-    /**
-     * @var OrderCore
-     */
-    private $order;
-
-    /**
-     * Capture constructor.
-     * @param OrderCore $order
-     */
-    public function __construct(OrderCore $order)
-    {
-        $this->order = $order;
-    }
 
     /**
      * Capture Payment
      *
      * @param string $orderUUID
+     * @param float $amount
+     * @param string $currencyCode
      * @param bool $isPartial
      * @return Sezzle\Model\Order\Capture
      * @throws Sezzle\HttpClient\RequestException
      */
-    public function capturePayment($orderUUID, $isPartial = false)
+    public static function capturePayment($orderUUID, $amount, $currencyCode, $isPartial = false)
     {
-        $currency = new Currency($this->order->id_currency);
-
         // capture payload building
         $captureModel = new Sezzle\Model\Order\Capture();
         $captureModel->setCaptureAmount(
             Util::getAmountObject(
-                Sezzle\Util::formatToCents($this->order->getTotalPaid()),
-                $currency->iso_code
+                Sezzle\Util::formatToCents($amount),
+                $currencyCode
             )
         )
             ->setPartialCapture($isPartial);

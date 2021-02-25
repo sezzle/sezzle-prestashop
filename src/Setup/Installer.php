@@ -187,6 +187,8 @@ class Installer
             'actionPaymentConfirmation',
             'displayPayment',
             'displayPaymentReturn',
+            'actionPaymentCCAdd',
+            'actionOrderStatusPostUpdate'
         ];
 
         return (bool)$this->module->registerHook($hooks);
