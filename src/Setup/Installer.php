@@ -153,6 +153,8 @@ class Installer
                 `capture_amount` decimal(20,6) NOT NULL,
                 `refund_amount` decimal(20,6) NOT NULL,
                 `release_amount` decimal(20,6) NOT NULL,
+                `auth_expiration` datetime NOT NULL,
+                `payment_action` varchar(255) NOT NULL,
                 PRIMARY KEY  (`id_sezzle_transaction`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
         ];

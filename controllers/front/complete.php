@@ -70,9 +70,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         // authorization handling
         if ($this->sezzleOrder && $this->sezzleOrder->getAuthorization()) {
             $authorizeHandler = new Authorization();
-            $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization()
-                ->getAuthorizationAmount()
-                ->getAmountInCents());
+            $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization());
         }
 
         $order = Order::getByCartId((int)$cart->id);

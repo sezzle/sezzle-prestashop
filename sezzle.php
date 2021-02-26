@@ -505,6 +505,7 @@ class Sezzle extends PaymentModule
         if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount()) {
             return;
         }
+
         $orders = Order::getByReference($reference);
         if ($orders->count() !== 1) {
             throw new PaymentException(sprintf("Multiple orders found for : %s", $reference));

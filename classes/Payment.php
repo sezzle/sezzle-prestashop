@@ -42,7 +42,12 @@ class Payment
             array(
                 'transaction_id' => pSQL($transactionId),
             ),
-            sprintf('order_reference = "%s"', pSQL($orderReference))
+            sprintf(
+                'order_reference = "%s" ORDER BY %s DESC',
+                pSQL($orderReference),
+                pSQL(OrderPayment::$definition['primary'])
+            ),
+            1
         );
     }
 

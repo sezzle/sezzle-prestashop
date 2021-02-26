@@ -27,6 +27,7 @@ namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
 use Configuration;
 use Currency;
+use DateTime;
 use Exception;
 use Payment;
 use OrderCore as CoreOrder;
@@ -64,6 +65,7 @@ class Capture extends Order
      * @throws RequestException
      * @throws PrestaShopException
      * @throws OrderException
+     * @throws Exception
      */
     public function execute($amount)
     {
@@ -72,10 +74,18 @@ class Capture extends Order
         } elseif ($amount > $this->order->total_paid) {
             throw new OrderException("Capture amount is greater than the order amount.");
         }
+
         $txn = SezzleTransaction::getByCartId($this->order->id_cart);
+        if ($authExpiration = $txn->getAuthExpiration()) {
+            $dateTimeNow = new DateTime();
+            $dateTimeExpire = new DateTime($authExpiration);
+            if ($dateTimeNow > $dateTimeExpire) {
+                throw new OrderException("Cannot process payment. Auth Expired.");
+            }
+        }
+
         $isPartial = $amount < $this->order->total_paid;
         $currency = new Currency($this->order->id_currency);
-
         // capture action
         $response = CaptureServiceHandler::capturePayment(
             $txn->getOrderUUID(),
@@ -84,8 +94,9 @@ class Capture extends Order
             $isPartial
         );
         if ($captureUuid = $response->getUuid()) {
+            $finalAmount = $amount + $txn->getCaptureAmount();
             Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($amount, $txn->getOrderUUID());
+            SezzleTransaction::storeCaptureAmount($finalAmount, $txn->getOrderUUID());
             if (!$isPartial) {
                 $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
             }

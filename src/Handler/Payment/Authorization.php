@@ -25,7 +25,9 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
+use Configuration;
 use PrestaShop\Module\Sezzle\Handler\Order;
+use Sezzle;
 use SezzleTransaction;
 
 /**
@@ -39,14 +41,16 @@ class Authorization extends Order
      * Authorization Action
      *
      * @param string $orderUUID
-     * @param int $amount
+     * @param \Sezzle\Model\Order\Authorization $authorization
      */
-    public function execute($orderUUID, $amount)
+    public function execute($orderUUID, $authorization)
     {
+        $amount = $authorization->getAuthorizationAmount()->getAmountInCents();
         if ($amount <= 0) {
             return;
         }
         $authorizedAmount = (float)$amount / 100;
         SezzleTransaction::storeAuthorizeAmount($authorizedAmount, $orderUUID);
+        SezzleTransaction::storeAuthExpiration($authorization->getExpiration(), $orderUUID);
     }
 }
