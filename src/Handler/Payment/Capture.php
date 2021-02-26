@@ -32,6 +32,7 @@ use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShopException;
 use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
@@ -59,25 +60,35 @@ class Capture extends Order
     /**
      * Capture Action
      *
-     * @param string $orderUUID
      * @param float $amount
      * @throws RequestException
      * @throws PrestaShopException
+     * @throws OrderException
      */
-    public function execute($orderUUID, $amount)
+    public function execute($amount)
     {
-        if (!$orderUUID) {
-            throw new PrestaShopException("Order UUID not found.");
+        if ($amount <= 0) {
+            throw new OrderException("Invalid capture amount.");
         } elseif ($amount > $this->order->total_paid) {
-            throw new PrestaShopException("Capture amount is greater than the order amount.");
+            throw new OrderException("Capture amount is greater than the order amount.");
         }
+        $txn = SezzleTransaction::getByCartId($this->order->id_cart);
         $isPartial = $amount < $this->order->total_paid;
         $currency = new Currency($this->order->id_currency);
-        $response = CaptureServiceHandler::capturePayment($orderUUID, $amount, $currency->iso_code, $isPartial);
+
+        // capture action
+        $response = CaptureServiceHandler::capturePayment(
+            $txn->getOrderUUID(),
+            $amount,
+            $currency->iso_code,
+            $isPartial
+        );
         if ($captureUuid = $response->getUuid()) {
             Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($amount, $orderUUID);
-            $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+            SezzleTransaction::storeCaptureAmount($amount, $txn->getOrderUUID());
+            if (!$isPartial) {
+                $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+            }
         }
     }
 }

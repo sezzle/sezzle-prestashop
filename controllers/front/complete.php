@@ -81,7 +81,7 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
             try {
                 $captureHandler = new Capture($order);
-                $captureHandler->execute($orderUUID, $order->total_paid);
+                $captureHandler->execute($order->total_paid);
             } catch (RequestException $e) {
                 $this->handleError($e->getMessage());
             }

@@ -77,19 +77,23 @@ class Refund extends Order
             return;
         }
         $txn = SezzleTransaction::getByReference($this->order->reference);
-        // bypass if payment is not still captured or in case full refund is done
-        if ($txn->getCaptureAmount() == 0 || $txn->getRefundAmount() === $txn->getCaptureAmount()) {
-            throw new InvalidRefundException("Invalid amount.");
-        }
 
         // full refund
         if (!$isPartial) {
+            if ($txn->getReleaseAmount() != 0 || $txn->getCaptureAmount() !== $txn->getAuthorizedAmount()) {
+                throw new InvalidRefundException("Invalid amount.");
+            }
             $amount = $this->order->total_paid;
         } else {
+            // bypass if payment is not still captured or in case full refund is done
+            if ($txn->getCaptureAmount() == 0 || $txn->getRefundAmount() === $txn->getCaptureAmount()) {
+                throw new InvalidRefundException("Invalid amount.");
+            }
             /** @var OrderSlip $orderSlip */
             $orderSlip = $this->order->getOrderSlipsCollection()->getLast();
             $amount = $orderSlip->amount + $orderSlip->shipping_cost_amount;
         }
+
         $currency = new Currency($this->order->id_currency);
         // refund action
         $response = RefundServiceHandler::refundPayment(

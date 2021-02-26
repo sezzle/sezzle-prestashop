@@ -30,6 +30,7 @@ use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Exception\PaymentException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Sezzle\HttpClient\RequestException;
 
@@ -483,6 +484,8 @@ class Sezzle extends PaymentModule
     }
 
     /**
+     * Manual Capture
+     *
      * @param array|null $params
      * @throws OrderException
      * @throws PrestaShopDatabaseException
@@ -491,22 +494,26 @@ class Sezzle extends PaymentModule
      */
     public function hookActionPaymentCCAdd($params)
     {
-//        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
-//            throw new OrderException("Payment not found.");
-//        }
-//
-//        $amount = $payment->amount;
-//        $reference = $payment->order_reference;
-//        $orders = Order::getByReference($reference);
-//        if ($orders->count() !== 1) {
-//            throw new OrderException(sprintf("Multiple orders found for : %s", $reference));
-//        }
-//        foreach ($orders as $order) {
-//            /** @var Order $order */
-//            $txn = SezzleTransaction::getByReference($reference);
-//            $captureHandler = new Capture($order);
-//            $captureHandler->execute($txn->getOrderUUID(), $amount);
-//        }
+        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
+            throw new PaymentException("Payment not found.");
+        }
+
+        $amount = $payment->amount;
+        $reference = $payment->order_reference;
+        $txn = SezzleTransaction::getByReference($reference);
+        // bypass for auth and capture action
+        if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount()) {
+            return;
+        }
+        $orders = Order::getByReference($reference);
+        if ($orders->count() !== 1) {
+            throw new PaymentException(sprintf("Multiple orders found for : %s", $reference));
+        }
+        foreach ($orders as $order) {
+            /** @var Order $order */
+            $captureHandler = new Capture($order);
+            $captureHandler->execute($amount);
+        }
     }
 
     public function hookActionOrderStatusPostUpdate($params)
@@ -517,30 +524,22 @@ class Sezzle extends PaymentModule
         }
 
         $order = new Order($params['id_order']);
-        $txn = SezzleTransaction::getByReference($order->reference);
         switch ($params['newOrderStatus']->id) {
             case _PS_OS_CANCELED_:
                 try {
-                    // full release only available
-                    if ($txn->getCaptureAmount() > 0 || $txn->getReleaseAmount() === $txn->getAuthorizedAmount()) {
-                        break;
-                    }
                     $releaseHandler = new Release($order);
-                    $releaseHandler->execute($txn->getOrderUUID());
+                    $releaseHandler->execute();
                 } catch (PrestaShopException $e) {
                 } catch (RequestException $e) {
                 }
                 break;
             case _PS_OS_REFUND_:
                 try {
-                    // full refund only
-                    if ($txn->getReleaseAmount() != 0 || $txn->getCaptureAmount() !== $txn->getAuthorizedAmount()) {
-                        break;
-                    }
                     $refundHandler = new Refund($order);
                     $refundHandler->execute();
                 } catch (PrestaShopException $e) {
                 } catch (RequestException $e) {
+                } catch (InvalidRefundException $e) {
                 }
                 break;
             default:

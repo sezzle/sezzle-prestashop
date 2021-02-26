@@ -30,6 +30,8 @@ use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Release as ReleaseServiceHandler;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
+use PrestaShop\PrestaShop\Core\Foundation\IoC\Exception;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -58,32 +60,36 @@ class Release extends Order
     /**
      * Release Action
      *
-     * @param string $orderUUID
      * @throws PrestaShopException
      * @throws RequestException
      */
-    public function execute($orderUUID)
+    public function execute()
     {
-        if (!$orderUUID) {
-            throw new PrestaShopException("Order UUID not found.");
-        }
         $payments = $this->order->getOrderPayments();
         if (count($payments) === 0) {
-            return;
+            throw new PrestaShopException("Order Payments not found.");
         }
         $payment = $payments[0]->payment_method;
         if ($payment !== Sezzle::DISPLAY_NAME) {
             return;
         }
+
+        $txn = SezzleTransaction::getByReference($this->order->reference);
+        if ($txn->getCaptureAmount() > 0 || $txn->getReleaseAmount() === $txn->getAuthorizedAmount()) {
+            throw new PrestaShopException("Invalid amount.");
+        }
+
         $currency = new Currency($this->order->id_currency);
-        $amount = $this->order->getTotalPaid();
+        $amount = $this->order->total_paid;
+
+        // release action
         $response = ReleaseServiceHandler::releasePayment(
-            $orderUUID,
+            $txn->getOrderUUID(),
             $amount,
             $currency->iso_code
         );
         if ($releaseUuid = $response->getUuid()) {
-            SezzleTransaction::storeReleaseAmount($amount, $orderUUID);
+            SezzleTransaction::storeReleaseAmount($amount, $txn->getOrderUUID());
         }
     }
 }
