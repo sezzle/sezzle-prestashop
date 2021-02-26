@@ -106,10 +106,10 @@ class Installer
         $orderState->name = array();
         $orderState->module_name = $this->module->name;
         $orderState->send_email = true;
-        $orderState->color = 'blue';
+        $orderState->color = '#34209E';
         $orderState->hidden = false;
         $orderState->delivery = false;
-        $orderState->logable = true;
+        $orderState->logable = false;
         $orderState->invoice = false;
         $orderState->paid = false;
         foreach (Language::getLanguages() as $language) {
@@ -152,6 +152,7 @@ class Installer
                 `authorized_amount` decimal(20,6) NOT NULL,
                 `capture_amount` decimal(20,6) NOT NULL,
                 `refund_amount` decimal(20,6) NOT NULL,
+                `release_amount` decimal(20,6) NOT NULL,
                 PRIMARY KEY  (`id_sezzle_transaction`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
         ];
@@ -188,7 +189,12 @@ class Installer
             'displayPayment',
             'displayPaymentReturn',
             'actionPaymentCCAdd',
-            'actionOrderStatusPostUpdate'
+            'actionOrderStatusPostUpdate',
+            'displayAdminOrder',
+            'displayAdminOrderLeft',
+            'displayAdminOrderRight',
+            'displayAdminOrderTabOrder',
+            'displayAdminOrderContentOrder'
         ];
 
         return (bool)$this->module->registerHook($hooks);

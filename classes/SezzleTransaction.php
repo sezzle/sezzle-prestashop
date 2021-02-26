@@ -57,6 +57,9 @@ class SezzleTransaction extends ObjectModel
     /** @var float Sezzle Transaction Refund Amount */
     public $refund_amount;
 
+    /** @var float Sezzle Transaction Release Amount */
+    public $release_amount;
+
     /**
      * @see ObjectModel::$definition
      */
@@ -73,6 +76,7 @@ class SezzleTransaction extends ObjectModel
             'authorized_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'capture_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'refund_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'release_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
         ),
         'collation' => 'utf8_general_ci'
     );
@@ -240,6 +244,24 @@ class SezzleTransaction extends ObjectModel
     }
 
     /**
+     * @return float
+     */
+    public function getReleaseAmount()
+    {
+        return $this->release_amount;
+    }
+
+    /**
+     * @param float $release_amount
+     * @return SezzleTransaction
+     */
+    public function setReleaseAmount(float $release_amount)
+    {
+        $this->release_amount = $release_amount;
+        return $this;
+    }
+
+    /**
      * Store Checkout Session
      *
      * @param Cart $cart
@@ -324,6 +346,40 @@ class SezzleTransaction extends ObjectModel
             self::$definition['table'],
             array(
                 'capture_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Release Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeReleaseAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'release_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Refund Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeRefundAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'refund_amount' => (float)$amount,
             ),
             sprintf('order_uuid = "%s"', pSQL($orderUUID))
         );

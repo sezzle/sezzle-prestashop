@@ -5,6 +5,7 @@ namespace Sezzle\Services;
 use Sezzle\Config;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\RequestException;
+use Sezzle\Model\Order\Release;
 use Sezzle\Model\Session\Order\Amount;
 
 /**
@@ -29,17 +30,18 @@ class ReleaseService
      *
      * @param string $token
      * @param string $orderUUID
-     * @return Amount
+     * @param array $payload
+     * @return Release
      * @throws RequestException
      */
-    public function releasePayment($token, $orderUUID)
+    public function releasePayment($token, $orderUUID, array $payload)
     {
         $response = $this->clientService->sendRequest(
             Config::POST,
             sprintf(Config::RELEASE_RESOURCE, $orderUUID),
-            null,
+            $payload,
             $token
         );
-        return Amount::fromArray($response);
+        return Release::fromArray($response);
     }
 }

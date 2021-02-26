@@ -24,6 +24,8 @@
  */
 
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
+use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
+use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
@@ -43,6 +45,7 @@ class Sezzle extends PaymentModule
     const MODE_SANDBOX = "sandbox";
     const MODE_PRODUCTION = "production";
     const MODULE_NAME = "sezzle";
+    const DISPLAY_NAME = "Sezzle";
 
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
@@ -79,7 +82,7 @@ class Sezzle extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->l('Sezzle');
+        $this->displayName = $this->l(self::DISPLAY_NAME);
         $this->description = $this->l(
             '
                 Sezzle is a public-benefit corporation on a mission to financially empower
@@ -335,6 +338,15 @@ class Sezzle extends PaymentModule
             $this->context->controller->addJS($this->_path . 'views/js/back.js');
             $this->context->controller->addCSS($this->_path . 'views/css/back.css');
         }
+
+//        echo "<pre>";
+//        print_r($_SERVER['REQUEST_URI']);
+//        die();
+
+        if (Tools::getIsset('vieworder')) {
+            echo 1234;
+            die();
+        }
     }
 
     /**
@@ -452,10 +464,80 @@ class Sezzle extends PaymentModule
 
     public function hookActionOrderStatusPostUpdate($params)
     {
-//        PrestaShopLogger::addLog("Hi", 3, null, "Sezzle", 1, true);
-//        $orderId = $params['id_order'];
-//        $order = new Order($orderId);
-//        $order->current_state = 2;
-//        $order->save();
+        if (!isset($params['newOrderStatus']) || !$params['newOrderStatus']
+            || !isset($params['id_order']) || !$params['id_order']) {
+            return;
+        }
+
+        $order = new Order($params['id_order']);
+        $txn = SezzleTransaction::getByReference($order->reference);
+        switch ($params['newOrderStatus']->id) {
+            case _PS_OS_CANCELED_:
+                try {
+                    // full release only available
+                    if ($txn->getCaptureAmount() > 0 || $txn->getReleaseAmount() === $txn->getAuthorizedAmount()) {
+                        break;
+                    }
+                    $releaseHandler = new Release($order);
+                    $releaseHandler->execute($txn->getOrderUUID());
+                } catch (PrestaShopException $e) {
+                } catch (RequestException $e) {
+                }
+                break;
+            case _PS_OS_REFUND_:
+                try {
+                    // full refund only
+                    if ($txn->getReleaseAmount() != 0 || $txn->getCaptureAmount() !== $txn->getAuthorizedAmount()) {
+                        break;
+                    }
+                    $refundHandler = new Refund($order);
+                    $refundHandler->execute($txn->getOrderUUID());
+                } catch (PrestaShopException $e) {
+                } catch (RequestException $e) {
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * @hook displayAdminOrderLeft
+     */
+    public function hookDisplayAdminOrderLeft($param)
+    {
+        return '<b>hookDisplayAdminOrderLeft</b>';
+    }
+
+    /**
+     * displayAdminOrderRight
+     */
+    public function hookDisplayAdminOrderRight($param)
+    {
+        return '<b>hookDisplayAdminOrderRight</b>';
+    }
+
+    /**
+     * @hook displayAdminOrder
+     */
+    public function hookDisplayAdminOrder($param)
+    {
+        return '<b>hookDisplayAdminOrder</b>';
+    }
+
+    /**
+     * displayAdminOrderContentOrder
+     */
+    public function hookDisplayAdminOrderContentOrder($param)
+    {
+        return '<b>hookDisplayAdminOrderContentOrder</b>';
+    }
+
+    /**
+     * displayAdminOrderTabOrder
+     */
+    public function hookDisplayAdminOrderTabOrder($param)
+    {
+        return '<b>hookDisplayAdminOrderTabOrder</b>';
     }
 }

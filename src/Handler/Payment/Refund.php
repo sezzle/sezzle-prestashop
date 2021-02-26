@@ -25,22 +25,21 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
-use Configuration;
 use Currency;
-use Exception;
 use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
-use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Refund as RefundServiceHandler;
 use PrestaShopException;
+use Sezzle;
 use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
 
 /**
- * Class Capture
+ * Class Refund
  * @package PrestaShop\Module\Sezzle\Handler\Payment
  */
-class Capture extends Order
+class Refund extends Order
 {
     /**
      * @var CoreOrder
@@ -57,27 +56,34 @@ class Capture extends Order
     }
 
     /**
-     * Capture Action
+     * Refund Action
      *
      * @param string $orderUUID
-     * @param float $amount
-     * @throws RequestException
      * @throws PrestaShopException
+     * @throws RequestException
      */
-    public function execute($orderUUID, $amount)
+    public function execute($orderUUID)
     {
         if (!$orderUUID) {
             throw new PrestaShopException("Order UUID not found.");
-        } elseif ($amount > $this->order->total_paid) {
-            throw new PrestaShopException("Capture amount is greater than the order amount.");
         }
-        $isPartial = $amount < $this->order->total_paid;
+        $payments = $this->order->getOrderPayments();
+        if (count($payments) === 0) {
+            return;
+        }
+        $payment = $payments[0]->payment_method;
+        if ($payment !== Sezzle::DISPLAY_NAME) {
+            return;
+        }
         $currency = new Currency($this->order->id_currency);
-        $response = CaptureServiceHandler::capturePayment($orderUUID, $amount, $currency->iso_code, $isPartial);
-        if ($captureUuid = $response->getUuid()) {
-            Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($amount, $orderUUID);
-            $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+        $amount = $this->order->getTotalPaid();
+        $response = RefundServiceHandler::refundPayment(
+            $orderUUID,
+            $amount,
+            $currency->iso_code
+        );
+        if ($refundUuid = $response->getUuid()) {
+            SezzleTransaction::storeRefundAmount($amount, $orderUUID);
         }
     }
 }
