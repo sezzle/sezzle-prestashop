@@ -52,10 +52,12 @@ class Sezzle extends PaymentModule
 
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
+        "merchant_id" => "SEZZLE_MERCHANT_ID",
         "public_key" => "SEZZLE_PUBLIC_KEY",
         "private_key" => "SEZZLE_PRIVATE_KEY",
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
-        "tokenize" => "SEZZLE_TOKENIZE"
+        "tokenize" => "SEZZLE_TOKENIZE",
+        "widget_enable" => "SEZZLE_WIDGET_ENABLE"
     ];
     /**
      * @var string
@@ -223,6 +225,14 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
+                        'name' => static::$formFields['merchant_id'],
+                        'desc' => $this->l('Enter a valid merchant id'),
+                        'label' => $this->l('Merchant Id'),
+                        'required' => true,
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
                         'name' => static::$formFields['public_key'],
                         'desc' => $this->l('Enter a valid public key'),
                         'label' => $this->l('Public Key'),
@@ -275,6 +285,25 @@ class Sezzle extends PaymentModule
                             )
                         ),
                     ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Enable Widget'),
+                        'name' => static::$formFields['widget_enable'],
+                        'is_bool' => true,
+                        'desc' => $this->l('Show Sezzle Widget in PDP and Cart Page'),
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        ),
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -290,10 +319,12 @@ class Sezzle extends PaymentModule
     {
         return array(
             static::$formFields['live_mode'] => Configuration::get(static::$formFields['live_mode']),
+            static::$formFields['merchant_id'] => Configuration::get(static::$formFields['merchant_id']),
             static::$formFields['public_key'] => Configuration::get(static::$formFields['public_key']),
             static::$formFields['private_key'] => Configuration::get(static::$formFields['private_key']),
             static::$formFields['payment_action'] => Configuration::get(static::$formFields['payment_action']),
             static::$formFields['tokenize'] => Configuration::get(static::$formFields['tokenize']),
+            static::$formFields['widget_enable'] => Configuration::get(static::$formFields['widget_enable']),
         );
     }
 
@@ -318,7 +349,8 @@ class Sezzle extends PaymentModule
         $formValues = $this->getConfigFormValues();
         foreach (array_keys($formValues) as $key) {
             if ($key === static::$formFields['live_mode']
-                || $key === static::$formFields['tokenize']) {
+                || $key === static::$formFields['tokenize']
+                || $key === static::$formFields['widget_enable']) {
                 continue;
             }
 
@@ -356,6 +388,19 @@ class Sezzle extends PaymentModule
     {
         $this->context->controller->addJS($this->_path . '/views/js/front.js');
         $this->context->controller->addCSS($this->_path . '/views/css/front.css');
+        $merchantId = Configuration::get(self::$formFields['merchant_id']);
+        $isWidgetEnabled = Configuration::get(self::$formFields['widget_enable']);
+        if (!$isWidgetEnabled || !$merchantId) {
+            return;
+        }
+        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
+        $this->context->controller->registerJavascript(
+            $this->name . '-sezzle-widget',
+            $widgetURL,
+            array(
+                'server' => 'remote'
+            )
+        );
     }
 
     /**
@@ -539,5 +584,51 @@ class Sezzle extends PaymentModule
     public function hookDisplayAdminOrderTabOrder($param)
     {
         return '<b>hookDisplayAdminOrderTabOrder</b>';
+    }
+
+    public function hookDisplayShoppingCartFooter($params)
+    {
+//        $merchantId = Configuration::get(self::$formFields['merchant_id']);
+//        if (!$merchantId) {
+//            return;
+//        }
+//        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
+//        $this->context->controller->addJS($widgetURL);
+
+//        $this->context->controller->registerJavascript(
+//            $this->name . '-sezzle-widget',
+//            'https://widget.sezzle.com/v1/javascript/price-widget?uuid=1',
+//            array(
+//                'server' => 'remote'
+//            )
+//        );
+    }
+
+    public function hookDisplayProductPriceBlock($params)
+    {
+//        $merchantId = Configuration::get(self::$formFields['merchant_id']);
+//        if (!$merchantId) {
+//            return;
+//        }
+//        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
+//        $this->context->controller->addJS("https://widget.sezzle.com/v1/javascript/price-widget");
+//        $this->context->controller->registerJavascript(
+//            $this->name . '-sezzle-widget',
+//            'https://widget.sezzle.com/v1/javascript/price-widget',
+//            array(
+//                'server' => 'remote'
+//            )
+//        );
+    }
+
+    public function hookDisplayProductAdditionalInfo($params)
+    {
+//        $current_controller = Tools::getValue('controller');
+//
+//        if ( $current_controller == "product" )
+//        {
+//            $this->context->controller->addJS("https://code.jquery.com/jquery-1.12.4.js");
+//            //return $this->context->smarty->fetch("module:afterpay/views/templates/front/product_modal.tpl");
+//        }
     }
 }

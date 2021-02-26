@@ -194,7 +194,10 @@ class Installer
             'displayAdminOrderLeft',
             'displayAdminOrderRight',
             'displayAdminOrderTabOrder',
-            'displayAdminOrderContentOrder'
+            'displayAdminOrderContentOrder',
+            'displayProductPriceBlock',
+            'displayShoppingCartFooter',
+            'displayProductAdditionalInfo'
         ];
 
         return (bool)$this->module->registerHook($hooks);
