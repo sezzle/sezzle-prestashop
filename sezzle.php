@@ -27,6 +27,8 @@ use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
+use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Sezzle\HttpClient\RequestException;
@@ -536,7 +538,7 @@ class Sezzle extends PaymentModule
                         break;
                     }
                     $refundHandler = new Refund($order);
-                    $refundHandler->execute($txn->getOrderUUID());
+                    $refundHandler->execute();
                 } catch (PrestaShopException $e) {
                 } catch (RequestException $e) {
                 }
@@ -630,5 +632,25 @@ class Sezzle extends PaymentModule
 //            $this->context->controller->addJS("https://code.jquery.com/jquery-1.12.4.js");
 //            //return $this->context->smarty->fetch("module:afterpay/views/templates/front/product_modal.tpl");
 //        }
+    }
+
+    /**
+     * Partial Refund
+     *
+     * @param array $params
+     * @throws CreditSlipException
+     * @throws PrestaShopException
+     * @throws InvalidRefundException|RequestException
+     */
+    public function hookActionOrderSlipAdd($params)
+    {
+        // ignore if order is present in params
+        if (!isset($params['order']) || !$params['order']) {
+            throw new CreditSlipException("Order not found.");
+        }
+
+        $order = $params['order'];
+        $refundHandler = new Refund($order);
+        $refundHandler->execute(true);
     }
 }

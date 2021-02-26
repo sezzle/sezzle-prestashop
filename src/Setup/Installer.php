@@ -197,7 +197,8 @@ class Installer
             'displayAdminOrderContentOrder',
             'displayProductPriceBlock',
             'displayShoppingCartFooter',
-            'displayProductAdditionalInfo'
+            'displayProductAdditionalInfo',
+            'actionOrderSlipAdd'
         ];
 
         return (bool)$this->module->registerHook($hooks);

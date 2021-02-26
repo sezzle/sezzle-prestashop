@@ -26,10 +26,12 @@
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
 use Currency;
-use Payment;
+use OrderSlip;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Refund as RefundServiceHandler;
+use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -58,32 +60,46 @@ class Refund extends Order
     /**
      * Refund Action
      *
-     * @param string $orderUUID
+     * @param bool $isPartial
      * @throws PrestaShopException
      * @throws RequestException
+     * @throws InvalidRefundException
      */
-    public function execute($orderUUID)
+    public function execute($isPartial = false)
     {
-        if (!$orderUUID) {
-            throw new PrestaShopException("Order UUID not found.");
-        }
         $payments = $this->order->getOrderPayments();
         if (count($payments) === 0) {
-            return;
+            throw new InvalidRefundException("Order Payments not found.");
         }
+        // ignore if order payment method is not sezzle
         $payment = $payments[0]->payment_method;
         if ($payment !== Sezzle::DISPLAY_NAME) {
             return;
         }
+        $txn = SezzleTransaction::getByReference($this->order->reference);
+        // bypass if payment is not still captured or in case full refund is done
+        if ($txn->getCaptureAmount() == 0 || $txn->getRefundAmount() === $txn->getCaptureAmount()) {
+            throw new InvalidRefundException("Invalid amount.");
+        }
+
+        // full refund
+        if (!$isPartial) {
+            $amount = $this->order->total_paid;
+        } else {
+            /** @var OrderSlip $orderSlip */
+            $orderSlip = $this->order->getOrderSlipsCollection()->getLast();
+            $amount = $orderSlip->amount + $orderSlip->shipping_cost_amount;
+        }
         $currency = new Currency($this->order->id_currency);
-        $amount = $this->order->getTotalPaid();
+        // refund action
         $response = RefundServiceHandler::refundPayment(
-            $orderUUID,
+            $txn->getOrderUUID(),
             $amount,
             $currency->iso_code
         );
         if ($refundUuid = $response->getUuid()) {
-            SezzleTransaction::storeRefundAmount($amount, $orderUUID);
+            $finalAmount = $txn->getRefundAmount() + $amount;
+            SezzleTransaction::storeRefundAmount($finalAmount, $txn->getOrderUUID());
         }
     }
 }
