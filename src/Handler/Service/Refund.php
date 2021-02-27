@@ -43,19 +43,12 @@ class Refund
      * Refund Payment
      *
      * @param string $orderUUID
-     * @param float $amount
-     * @param string $currencyCode
+     * @param Sezzle\Model\Session\Order\Amount $payload
      * @return Sezzle\Model\Order\Refund
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function refundPayment($orderUUID, $amount, $currencyCode)
+    public static function refundPayment($orderUUID, Sezzle\Model\Session\Order\Amount $payload)
     {
-        // refund payload building
-        $refundModel = Util::getAmountObject(
-            Sezzle\Util::formatToCents($amount),
-            $currencyCode
-        );
-
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
@@ -70,7 +63,7 @@ class Refund
         return $refundService->refundPayment(
             Authentication::getToken(),
             $orderUUID,
-            $refundModel->toArray()
+            $payload->toArray()
         );
     }
 }

@@ -30,6 +30,7 @@ use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Release as ReleaseServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Util;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShop\PrestaShop\Core\Foundation\IoC\Exception;
 use PrestaShopException;
@@ -66,12 +67,10 @@ class Release extends Order
     public function execute()
     {
         $payments = $this->order->getOrderPayments();
-        if (count($payments) === 0) {
-            throw new PrestaShopException("Order Payments not found.");
-        }
-        $payment = $payments[0]->payment_method;
-        if ($payment !== Sezzle::DISPLAY_NAME) {
+        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
             return;
+        } elseif (count($payments) > 0) {
+            throw new PrestaShopException("Cannot release. Payment already processed.");
         }
 
         $txn = SezzleTransaction::getByReference($this->order->reference);
@@ -79,17 +78,28 @@ class Release extends Order
             throw new PrestaShopException("Invalid amount.");
         }
 
-        $currency = new Currency($this->order->id_currency);
-        $amount = $this->order->total_paid;
-
+        $releasePayload = $this->buildReleasePayload();
         // release action
         $response = ReleaseServiceHandler::releasePayment(
             $txn->getOrderUUID(),
-            $amount,
+            $releasePayload
+        );
+        if ($response->getUuid()) {
+            SezzleTransaction::storeReleaseAmount($this->order->total_paid, $txn->getOrderUUID());
+        }
+    }
+
+    /**
+     * Build Release Payload
+     *
+     * @return Sezzle\Model\Session\Order\Amount
+     */
+    public function buildReleasePayload()
+    {
+        $currency = new Currency($this->order->id_currency);
+        return Util::getAmountObject(
+            Sezzle\Util::formatToCents($this->order->total_paid),
             $currency->iso_code
         );
-        if ($releaseUuid = $response->getUuid()) {
-            SezzleTransaction::storeReleaseAmount($amount, $txn->getOrderUUID());
-        }
     }
 }

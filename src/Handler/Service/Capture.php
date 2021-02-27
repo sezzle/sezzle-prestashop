@@ -43,24 +43,12 @@ class Capture
      * Capture Payment
      *
      * @param string $orderUUID
-     * @param float $amount
-     * @param string $currencyCode
-     * @param bool $isPartial
+     * @param Sezzle\Model\Order\Capture $payload
      * @return Sezzle\Model\Order\Capture
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function capturePayment($orderUUID, $amount, $currencyCode, $isPartial = false)
+    public static function capturePayment($orderUUID, Sezzle\Model\Order\Capture $payload)
     {
-        // capture payload building
-        $captureModel = new Sezzle\Model\Order\Capture();
-        $captureModel->setCaptureAmount(
-            Util::getAmountObject(
-                Sezzle\Util::formatToCents($amount),
-                $currencyCode
-            )
-        )
-            ->setPartialCapture($isPartial);
-
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
@@ -75,7 +63,7 @@ class Capture
         return $captureService->capturePayment(
             Authentication::getToken(),
             $orderUUID,
-            $captureModel->toArray()
+            $payload->toArray()
         );
     }
 }

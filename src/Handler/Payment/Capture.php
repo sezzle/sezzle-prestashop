@@ -33,8 +33,10 @@ use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Util;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShopException;
+use Sezzle;
 use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
 
@@ -69,29 +71,30 @@ class Capture extends Order
      */
     public function execute($amount)
     {
-        if ($amount <= 0) {
+        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
+            return;
+        } elseif ($amount <= 0) {
             throw new OrderException("Invalid capture amount.");
         } elseif ($amount > $this->order->total_paid) {
             throw new OrderException("Capture amount is greater than the order amount.");
         }
 
         $txn = SezzleTransaction::getByCartId($this->order->id_cart);
-        if ($authExpiration = $txn->getAuthExpiration()) {
+        if ($txn->getPaymentAction() === Sezzle::ACTION_AUTHORIZE
+            && $txn->getAuthExpiration() != 0) {
             $dateTimeNow = new DateTime();
-            $dateTimeExpire = new DateTime($authExpiration);
+            $dateTimeExpire = new DateTime($txn->getAuthExpiration());
             if ($dateTimeNow > $dateTimeExpire) {
                 throw new OrderException("Cannot process payment. Auth Expired.");
             }
         }
 
         $isPartial = $amount < $this->order->total_paid;
-        $currency = new Currency($this->order->id_currency);
+        $payload = $this->buildCapturePayload($amount, $isPartial);
         // capture action
         $response = CaptureServiceHandler::capturePayment(
             $txn->getOrderUUID(),
-            $amount,
-            $currency->iso_code,
-            $isPartial
+            $payload
         );
         if ($captureUuid = $response->getUuid()) {
             $finalAmount = $amount + $txn->getCaptureAmount();
@@ -101,5 +104,25 @@ class Capture extends Order
                 $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
             }
         }
+    }
+
+    /**
+     * Build Capture Payload
+     *
+     * @param float $amount
+     * @param bool $isPartial
+     * @return Sezzle\Model\Order\Capture
+     */
+    public function buildCapturePayload($amount, $isPartial)
+    {
+        $currency = new Currency($this->order->id_currency);
+        $captureModel = new Sezzle\Model\Order\Capture();
+        return $captureModel->setCaptureAmount(
+            Util::getAmountObject(
+                Sezzle\Util::formatToCents($amount),
+                $currency->iso_code
+            )
+        )
+            ->setPartialCapture($isPartial);
     }
 }

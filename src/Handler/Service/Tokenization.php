@@ -26,43 +26,66 @@
 namespace PrestaShop\Module\Sezzle\Handler\Service;
 
 use Configuration;
-use Currency;
-use OrderCore;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Release
+ * Class Tokenization
  * @package PrestaShop\Module\Sezzle\Handler\Service
  */
-class Release
+class Tokenization
 {
 
     /**
-     * Release Payment
+     * Get Tokenization Details
      *
-     * @param string $orderUUID
-     * @param Sezzle\Model\Session\Order\Amount $payload
-     * @return Sezzle\Model\Order\Release
+     * @param string $tokenizeToken
+     * @return Sezzle\Model\Tokenize
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function releasePayment($orderUUID, Sezzle\Model\Session\Order\Amount $payload)
+    public static function getTokenizationDetails($tokenizeToken)
     {
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
 
-        // instantiate release service
-        $releaseService = new Sezzle\Services\ReleaseService(new ClientService(
+        // instantiate tokenization service
+        $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
             new GuzzleFactory(),
             $apiMode
         ));
 
-        // get release response
-        return $releaseService->releasePayment(
+        // get tokenization response
+        return $tokenizationService->getTokenDetails(
             Authentication::getToken(),
-            $orderUUID,
+            $tokenizeToken
+        );
+    }
+
+    /**
+     * Create Order by Customer UUID
+     *
+     * @param string $customerUUID
+     * @param Sezzle\Model\CustomerOrder $payload
+     * @return Sezzle\Model\CustomerOrder
+     * @throws Sezzle\HttpClient\RequestException
+     */
+    public static function createOrder($customerUUID, Sezzle\Model\CustomerOrder $payload)
+    {
+        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+
+        // instantiate tokenization service
+        $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
+            new GuzzleFactory(),
+            $apiMode
+        ));
+        // get order response
+        return $tokenizationService->createOrder(
+            Authentication::getToken(),
+            $customerUUID,
             $payload->toArray()
         );
     }

@@ -30,6 +30,7 @@ use OrderSlip;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Refund as RefundServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Util;
 use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShopException;
@@ -68,13 +69,10 @@ class Refund extends Order
     public function execute($isPartial = false)
     {
         $payments = $this->order->getOrderPayments();
-        if (count($payments) === 0) {
-            throw new InvalidRefundException("Order Payments not found.");
-        }
-        // ignore if order payment method is not sezzle
-        $payment = $payments[0]->payment_method;
-        if ($payment !== Sezzle::DISPLAY_NAME) {
+        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
             return;
+        } elseif (count($payments) === 0) {
+            throw new InvalidRefundException("Order Payments not found.");
         }
         $txn = SezzleTransaction::getByReference($this->order->reference);
 
@@ -94,16 +92,30 @@ class Refund extends Order
             $amount = $orderSlip->amount + $orderSlip->shipping_cost_amount;
         }
 
-        $currency = new Currency($this->order->id_currency);
+        $refundPayload = $this->buildRefundPayload($amount);
         // refund action
         $response = RefundServiceHandler::refundPayment(
             $txn->getOrderUUID(),
-            $amount,
-            $currency->iso_code
+            $refundPayload
         );
         if ($refundUuid = $response->getUuid()) {
             $finalAmount = $txn->getRefundAmount() + $amount;
             SezzleTransaction::storeRefundAmount($finalAmount, $txn->getOrderUUID());
         }
+    }
+
+    /**
+     * Build Refund Payload
+     *
+     * @param float $amount
+     * @return Sezzle\Model\Session\Order\Amount
+     */
+    public function buildRefundPayload($amount)
+    {
+        $currency = new Currency($this->order->id_currency);
+        return Util::getAmountObject(
+            Sezzle\Util::formatToCents($amount),
+            $currency->iso_code
+        );
     }
 }

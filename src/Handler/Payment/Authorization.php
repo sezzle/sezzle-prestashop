@@ -41,7 +41,7 @@ class Authorization extends Order
      * Authorization Action
      *
      * @param string $orderUUID
-     * @param \Sezzle\Model\Order\Authorization $authorization
+     * @param Sezzle\Model\Order\Authorization $authorization
      */
     public function execute($orderUUID, $authorization)
     {
@@ -51,6 +51,8 @@ class Authorization extends Order
         }
         $authorizedAmount = (float)$amount / 100;
         SezzleTransaction::storeAuthorizeAmount($authorizedAmount, $orderUUID);
-        SezzleTransaction::storeAuthExpiration($authorization->getExpiration(), $orderUUID);
+        if (Configuration::get(Sezzle::$formFields['payment_action'] === Sezzle::ACTION_AUTHORIZE)) {
+            SezzleTransaction::storeAuthExpiration($authorization->getExpiration(), $orderUUID);
+        }
     }
 }

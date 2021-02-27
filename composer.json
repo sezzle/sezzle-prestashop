@@ -17,6 +17,7 @@
     "classmap": [
       "sezzle.php",
       "classes/SezzleTransaction.php",
+      "classes/SezzleTokenization.php",
       "classes/Payment.php",
       "controllers/front/abstract.php"
     ]

@@ -40,10 +40,12 @@ class CustomerOrder
 
     /**
      * @param string $intent
+     * @return CustomerOrder
      */
     public function setIntent($intent)
     {
         $this->intent = $intent;
+        return $this;
     }
 
     /**
@@ -56,10 +58,12 @@ class CustomerOrder
 
     /**
      * @param string $referenceId
+     * @return CustomerOrder
      */
     public function setReferenceId($referenceId)
     {
         $this->referenceId = $referenceId;
+        return $this;
     }
 
     /**
@@ -72,10 +76,12 @@ class CustomerOrder
 
     /**
      * @param Amount $orderAmount
+     * @return CustomerOrder
      */
     public function setOrderAmount(Amount $orderAmount)
     {
         $this->orderAmount = $orderAmount;
+        return $this;
     }
 
     /**
@@ -88,10 +94,12 @@ class CustomerOrder
 
     /**
      * @param string $uuid
+     * @return CustomerOrder
      */
     public function setUuid($uuid)
     {
         $this->uuid = $uuid;
+        return $this;
     }
 
     /**
@@ -104,15 +112,13 @@ class CustomerOrder
 
     /**
      * @param Authorization $authorization
+     * @return CustomerOrder
      */
     public function setAuthorization(Authorization $authorization)
     {
         $this->authorization = $authorization;
+        return $this;
     }
-
-
-
-
 
 
     /**
@@ -124,16 +130,16 @@ class CustomerOrder
         $result = new self();
 
         $result->setUuid($data['uuid']);
+        $result->setIntent($data['intent']);
+        $result->setReferenceId($data['reference_id']);
+
         if (array_key_exists('authorization', $data)) {
             $result->setAuthorization(Authorization::fromArray($data['authorization']));
         }
-        $result->setIntent($data['customer']);
+
         if (array_key_exists('order_amount', $data)) {
             $result->setOrderAmount(Amount::fromArray($data['order_amount']));
         }
-        $result->setReferenceId($data['customer']);
-
-
         return $result;
     }
 

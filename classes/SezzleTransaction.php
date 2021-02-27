@@ -23,7 +23,9 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use Sezzle\Model\CustomerOrder;
 use Sezzle\Model\Session;
+use Sezzle\Model\Tokenize;
 
 /**
  * Class SezzleTransaction.
@@ -35,6 +37,9 @@ class SezzleTransaction extends ObjectModel
 
     /** @var string Prestashop Order Reference */
     public $reference;
+
+    /** @var int Customer ID */
+    public $id_customer;
 
     /** @var int Cart ID */
     public $id_cart;
@@ -75,6 +80,7 @@ class SezzleTransaction extends ObjectModel
         'multilang' => false,
         'fields' => array(
             'reference' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'id_customer' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'order_uuid' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'checkout_url' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
@@ -122,6 +128,24 @@ class SezzleTransaction extends ObjectModel
     public function setReference(string $reference)
     {
         $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIdCustomer()
+    {
+        return $this->id_customer;
+    }
+
+    /**
+     * @param int $id_customer
+     * @return SezzleTransaction
+     */
+    public function setIdCustomer(int $id_customer)
+    {
+        $this->id_customer = $id_customer;
         return $this;
     }
 
@@ -316,10 +340,28 @@ class SezzleTransaction extends ObjectModel
      */
     public function storeCheckoutSession(Cart $cart, Sezzle\Model\Session $session)
     {
-        $this->setIdCart($cart->id)
+        $this->setIdCustomer($cart->id_customer)
+            ->setIdCart($cart->id)
             ->setCheckoutAmount($cart->getOrderTotal())
             ->setOrderUUID($session->getOrder()->getUuid())
             ->setCheckoutUrl($session->getOrder()->getCheckoutUrl())
+            ->setPaymentAction(Configuration::get(Sezzle::$formFields['payment_action']))
+            ->save();
+    }
+
+    /**
+     * Store Tokenized Order
+     *
+     * @param Cart $cart
+     * @param CustomerOrder $order
+     * @throws PrestaShopException
+     */
+    public function storeTokenizedOrder(Cart $cart, CustomerOrder $order)
+    {
+        $this->setIdCustomer($cart->id_customer)
+            ->setIdCart($cart->id)
+            ->setCheckoutAmount($cart->getOrderTotal())
+            ->setOrderUUID($order->getUuid())
             ->setPaymentAction(Configuration::get(Sezzle::$formFields['payment_action']))
             ->save();
     }
@@ -464,20 +506,4 @@ class SezzleTransaction extends ObjectModel
         );
     }
 
-    /**
-     * Store Prestashop Payment Action
-     *
-     * @param string $action
-     * @param string $orderUUID
-     */
-    public static function storePaymentAction($action, $orderUUID)
-    {
-        Db::getInstance()->update(
-            self::$definition['table'],
-            array(
-                'payment_action' => pSQL($action),
-            ),
-            sprintf('order_uuid = "%s"', pSQL($orderUUID))
-        );
-    }
 }

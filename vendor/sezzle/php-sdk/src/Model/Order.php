@@ -188,9 +188,13 @@ class Order
         if (array_key_exists('order_amount', $data)) {
             $result->setOrderAmount(Amount::fromArray($data['order_amount']));
         }
-        $result->setReferenceId($data['reference_id']);
-        $result->setDescription($data['description']);
+        $result->setUuid($data['uuid']);
         $result->setIntent($data['intent']);
+        $result->setReferenceId($data['reference_id']);
+
+        if (array_key_exists('description', $data)) {
+            $result->setDescription($data['description']);
+        }
         if (array_key_exists('authorization', $data)) {
             $result->setAuthorization(Authorization::fromArray($data['authorization']));
         }
@@ -203,7 +207,7 @@ class Order
             $links[] = Links::fromArray($link);
         }
         $result->setLinks($links);
-        $result->setUuid($data['uuid']);
+
 
         return $result;
     }

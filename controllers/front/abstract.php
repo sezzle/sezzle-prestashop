@@ -25,6 +25,8 @@
 
 use Sezzle\HttpClient\RequestException;
 use PrestaShop\Module\Sezzle\Handler\Service\Order as OrderService;
+use Sezzle\Model\CustomerOrder;
+use Sezzle\Model\Session;
 
 /**
  * Class SezzleAbstractModuleFrontController
@@ -108,7 +110,6 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
 
     public function setAuthorizedAmount()
     {
-
     }
 
     /**
@@ -122,5 +123,33 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
             $this->errors[] = $this->module->l($msg);
         }
         $this->redirectWithNotifications('index.php?controller=order&step=1');
+    }
+
+    /**
+     * Post Checkout Session Creation
+     *
+     * @param Session $session
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function postCheckoutSessionCreation(Session $session)
+    {
+        $cart = $this->context->cart;
+        $txn = new SezzleTransaction();
+        $txn->storeCheckoutSession($cart, $session);
+        $this->context->cookie->token = $session->getTokenize()->getToken();
+    }
+
+    /**
+     * Post Tokenized Order Creation
+     *
+     * @param CustomerOrder $order
+     * @throws PrestaShopException
+     */
+    public function postTokenizedOrderCreation(CustomerOrder $order)
+    {
+        $cart = $this->context->cart;
+        $txn = new SezzleTransaction();
+        $txn->storeTokenizedOrder($cart, $order);
     }
 }

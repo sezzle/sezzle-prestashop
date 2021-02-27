@@ -500,21 +500,25 @@ class Sezzle extends PaymentModule
 
         $amount = $payment->amount;
         $reference = $payment->order_reference;
-        $txn = SezzleTransaction::getByReference($reference);
-        // bypass for auth and capture action
-        if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount()) {
-            return;
-        }
-
         $orders = Order::getByReference($reference);
         if ($orders->count() !== 1) {
             throw new PaymentException(sprintf("Multiple orders found for : %s", $reference));
         }
-        foreach ($orders as $order) {
-            /** @var Order $order */
-            $captureHandler = new Capture($order);
-            $captureHandler->execute($amount);
+        /** @var Order $order */
+        $order = $orders[0];
+        if ($order->payment !== $this->displayName ||
+            in_array($order->current_state, [_PS_OS_PAYMENT_, _PS_OS_DELIVERED_])) {
+            return;
         }
+
+        $txn = SezzleTransaction::getByReference($reference);
+        // bypass for auth and capture action
+        if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
+            $txn->getReleaseAmount() > 0) {
+            return;
+        }
+        $captureHandler = new Capture($order);
+        $captureHandler->execute($amount);
     }
 
     public function hookActionOrderStatusPostUpdate($params)
@@ -525,6 +529,9 @@ class Sezzle extends PaymentModule
         }
 
         $order = new Order($params['id_order']);
+        if ($order->payment !== $this->displayName) {
+            return;
+        }
         switch ($params['newOrderStatus']->id) {
             case _PS_OS_CANCELED_:
                 try {
@@ -650,6 +657,9 @@ class Sezzle extends PaymentModule
         }
 
         $order = $params['order'];
+        if ($order->payment !== $this->displayName) {
+            return;
+        }
         $refundHandler = new Refund($order);
         $refundHandler->execute(true);
     }
