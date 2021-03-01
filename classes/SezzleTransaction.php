@@ -25,7 +25,6 @@
 
 use Sezzle\Model\CustomerOrder;
 use Sezzle\Model\Session;
-use Sezzle\Model\Tokenize;
 
 /**
  * Class SezzleTransaction.
@@ -505,5 +504,4 @@ class SezzleTransaction extends ObjectModel
             sprintf('order_uuid = "%s"', pSQL($orderUUID))
         );
     }
-
 }

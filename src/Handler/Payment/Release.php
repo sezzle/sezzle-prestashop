@@ -26,13 +26,10 @@
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
 use Currency;
-use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Release as ReleaseServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Util;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
-use PrestaShop\PrestaShop\Core\Foundation\IoC\Exception;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -67,15 +64,13 @@ class Release extends Order
     public function execute()
     {
         $payments = $this->order->getOrderPayments();
-        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
-            return;
-        } elseif (count($payments) > 0) {
+        if (count($payments) > 0) {
             throw new PrestaShopException("Cannot release. Payment already processed.");
         }
 
         $txn = SezzleTransaction::getByReference($this->order->reference);
         if ($txn->getCaptureAmount() > 0 || $txn->getReleaseAmount() === $txn->getAuthorizedAmount()) {
-            throw new PrestaShopException("Invalid amount.");
+            throw new PrestaShopException("Invalid release request.");
         }
 
         $releasePayload = $this->buildReleasePayload();
@@ -85,6 +80,7 @@ class Release extends Order
             $releasePayload
         );
         if ($response->getUuid()) {
+            // post release handling
             SezzleTransaction::storeReleaseAmount($this->order->total_paid, $txn->getOrderUUID());
         }
     }

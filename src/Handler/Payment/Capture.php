@@ -71,14 +71,13 @@ class Capture extends Order
      */
     public function execute($amount)
     {
-        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
-            return;
-        } elseif ($amount <= 0) {
+        if ($amount <= 0) {
             throw new OrderException("Invalid capture amount.");
         } elseif ($amount > $this->order->total_paid) {
             throw new OrderException("Capture amount is greater than the order amount.");
         }
 
+        // auth expiry check
         $txn = SezzleTransaction::getByCartId($this->order->id_cart);
         if ($txn->getPaymentAction() === Sezzle::ACTION_AUTHORIZE
             && $txn->getAuthExpiration() != 0) {
@@ -97,6 +96,7 @@ class Capture extends Order
             $payload
         );
         if ($captureUuid = $response->getUuid()) {
+            // post capture handling
             $finalAmount = $amount + $txn->getCaptureAmount();
             Payment::setTransactionId($this->order->reference, $captureUuid);
             SezzleTransaction::storeCaptureAmount($finalAmount, $txn->getOrderUUID());
@@ -124,5 +124,15 @@ class Capture extends Order
             )
         )
             ->setPartialCapture($isPartial);
+    }
+
+    /**
+     * Remove Capture Transaction
+     *
+     * @param string $orderReference
+     */
+    public static function removeCaptureTransaction($orderReference)
+    {
+        Payment::deletePayment($orderReference);
     }
 }

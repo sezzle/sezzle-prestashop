@@ -48,7 +48,6 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $this->handleError('Unable to validate the Checkout.');
         }
 
-
         $customer = new Customer((int)$cart->id_customer);
 
         // handle tokenization storing

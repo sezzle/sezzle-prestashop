@@ -26,8 +26,6 @@
 namespace PrestaShop\Module\Sezzle\Handler\Service;
 
 use Configuration;
-use Currency;
-use OrderCore;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;

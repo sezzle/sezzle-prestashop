@@ -1,5 +1,6 @@
-{*
- * 2007-2019 PrestaShop
+<?php
+/**
+ * 2007-2021 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -17,14 +18,16 @@
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author    202-ecommerce <tech@202-ecommerce.com>
- * @copyright Copyright (c) Stripe
- * @license   Commercial license
-*}
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
+ */
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-<li class="nav-item">
-    <a href="#SezzlePayment" class="nav-link" data-toggle="tab" role="tab" aria-controls="SezzlePayment">
-        <i class="icon-money"></i>
-        {l s='Sezzle' mod='sezzle'}
-    </a>
-</li>
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../');
+exit;

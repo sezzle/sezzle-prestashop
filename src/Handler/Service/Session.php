@@ -25,22 +25,13 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Service;
 
-use Address;
 use Cart;
 use Configuration;
-use Context;
-use Country;
-use Currency;
-use Customer;
-use Exception;
-use PrestaShopDatabaseException;
-use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 use Sezzle\HttpClient\RequestException;
 use Sezzle\Services\SessionService;
-use State;
 
 /**
  * Class Session
@@ -48,8 +39,6 @@ use State;
  */
 class Session
 {
-    const REDIRECT_COMPLETE = "complete";
-    const REDIRECT_CANCEL = "cancel";
     /**
      * @var Cart
      */
@@ -77,6 +66,7 @@ class Session
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
 
+        // instantiate session service
         $sessionService = new SessionService(new ClientService(
             new GuzzleFactory(),
             $apiMode

@@ -108,10 +108,6 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
         return true;
     }
 
-    public function setAuthorizedAmount()
-    {
-    }
-
     /**
      * Handle Error
      *

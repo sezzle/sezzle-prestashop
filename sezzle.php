@@ -29,11 +29,9 @@ use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Exception\PaymentException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Sezzle\HttpClient\RequestException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -106,8 +104,9 @@ class Sezzle extends PaymentModule
     }
 
     /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * Install Action
+     *
+     * @return bool|string
      */
     public function install()
     {
@@ -136,6 +135,11 @@ class Sezzle extends PaymentModule
         return $installer->install();
     }
 
+    /**
+     * Uninstall Action
+     *
+     * @return bool
+     */
     public function uninstall()
     {
         $installer = InstallerFactory::create($this);
@@ -373,8 +377,6 @@ class Sezzle extends PaymentModule
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path . '/views/js/front.js');
-        $this->context->controller->addCSS($this->_path . '/views/css/front.css');
         $merchantId = Configuration::get(self::$formFields['merchant_id']);
         $isWidgetEnabled = Configuration::get(self::$formFields['widget_enable']);
         if (!$isWidgetEnabled || !$merchantId) {
@@ -394,7 +396,6 @@ class Sezzle extends PaymentModule
      * Return payment options available for PS 1.7+
      *
      * @param array Hook parameters
-     *
      * @return PaymentOption[]|void
      */
     public function hookPaymentOptions($params)
@@ -422,6 +423,12 @@ class Sezzle extends PaymentModule
         ];
     }
 
+    /**
+     * Check Currency
+     *
+     * @param Cart $cart
+     * @return bool
+     */
     public function checkCurrency($cart)
     {
         $currencyOrder = new Currency($cart->id_currency);
@@ -440,22 +447,19 @@ class Sezzle extends PaymentModule
      * Manual Capture
      *
      * @param array|null $params
-     * @throws OrderException
-     * @throws PrestaShopDatabaseException
-     * @throws PrestaShopException
-     * @throws RequestException
+     * @throws PaymentException
      */
     public function hookActionPaymentCCAdd($params)
     {
         if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
-            throw new PaymentException("Payment not found.");
+            return;
         }
 
         $amount = $payment->amount;
         $reference = $payment->order_reference;
         $orders = Order::getByReference($reference);
         if ($orders->count() !== 1) {
-            throw new PaymentException(sprintf("Multiple orders found for : %s", $reference));
+            return;
         }
         /** @var Order $order */
         $order = $orders[0];
@@ -464,16 +468,31 @@ class Sezzle extends PaymentModule
             return;
         }
 
-        $txn = SezzleTransaction::getByReference($reference);
-        // bypass for auth and capture action
-        if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
-            $txn->getReleaseAmount() > 0) {
-            return;
+        try {
+            $txn = SezzleTransaction::getByReference($reference);
+            // bypass for auth and capture action
+            if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
+                $txn->getReleaseAmount() > 0) {
+                throw new PaymentException("Payment has been already processed.");
+            }
+            $captureHandler = new Capture($order);
+            $captureHandler->execute($amount);
+        } catch (Exception $e) {
+            if ($order instanceof Order && $order) {
+                Capture::removeCaptureTransaction($order->reference);
+            }
+            throw new PaymentException("Error while capturing payment.");
         }
-        $captureHandler = new Capture($order);
-        $captureHandler->execute($amount);
     }
 
+    /**
+     * Release Payment
+     *
+     * @param array $params
+     * @throws OrderException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     public function hookActionOrderStatusPostUpdate($params)
     {
         if (!isset($params['newOrderStatus']) || !$params['newOrderStatus']
@@ -485,26 +504,13 @@ class Sezzle extends PaymentModule
         if ($order->payment !== $this->displayName) {
             return;
         }
-        switch ($params['newOrderStatus']->id) {
-            case _PS_OS_CANCELED_:
-                try {
-                    $releaseHandler = new Release($order);
-                    $releaseHandler->execute();
-                } catch (PrestaShopException $e) {
-                } catch (RequestException $e) {
-                }
-                break;
-            case _PS_OS_REFUND_:
-                try {
-                    $refundHandler = new Refund($order);
-                    $refundHandler->execute();
-                } catch (PrestaShopException $e) {
-                } catch (RequestException $e) {
-                } catch (InvalidRefundException $e) {
-                }
-                break;
-            default:
-                break;
+        if ($params['newOrderStatus']->id === _PS_OS_CANCELED_) {
+            try {
+                $releaseHandler = new Release($order);
+                $releaseHandler->execute();
+            } catch (Exception $e) {
+                throw new OrderException("Error while releasing payment.");
+            }
         }
     }
 
@@ -513,35 +519,63 @@ class Sezzle extends PaymentModule
      *
      * @param array $params
      * @throws CreditSlipException
-     * @throws PrestaShopException
-     * @throws InvalidRefundException|RequestException
      */
     public function hookActionOrderSlipAdd($params)
     {
-        // ignore if order is present in params
-        if (!isset($params['order']) || !$params['order']) {
-            throw new CreditSlipException("Order not found.");
-        }
+        try {
+            $order = null;
+            // ignore if order is present in params
+            if (!isset($params['order']) || !$params['order']) {
+                return;
+            }
 
-        $order = $params['order'];
-        if ($order->payment !== $this->displayName) {
-            return;
+            /** @var Order $order */
+            $order = $params['order'];
+            if ($order->payment !== $this->displayName) {
+                return;
+            }
+            $refundHandler = new Refund($order);
+            $refundHandler->execute(true);
+        } catch (Exception $e) {
+            if ($order instanceof Order && $order) {
+                Refund::removeRefundTransaction($order->id);
+            }
+            throw new CreditSlipException("Error while refunding amount.");
         }
-        $refundHandler = new Refund($order);
-        $refundHandler->execute(true);
     }
 
+    /**
+     * Add Sezzle tab in Order Admin
+     *
+     * @param array $params
+     * @return bool|string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
     public function hookDisplayAdminOrderTabOrder($params)
     {
-        return $this->display(__FILE__, 'views/templates/hook/admin_tab_order.tpl');
+        return $this->render(Util::getModuleTemplatePath() . 'admin_tab_order.html.twig', [
+            'sezzle' => [
+                "tab_name" => $this->displayName
+            ]
+        ]);
     }
 
+    /**
+     * Add Sezzle tab in Order Admin
+     *
+     * @param array $params
+     * @return bool|string
+     */
     public function hookDisplayAdminOrderTabLink($params)
     {
         return $this->hookDisplayAdminOrderTabOrder($params);
     }
 
     /**
+     * Display Sezzle Elements in Order Admin
+     *
      * @param array $params
      * @return string|void
      * @throws PrestaShopDatabaseException
@@ -581,13 +615,22 @@ class Sezzle extends PaymentModule
         ]);
     }
 
+    /**
+     * Display Sezzle Elements in Order Admin
+     *
+     * @param array $params
+     * @return string|void
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
     public function hookDisplayAdminOrderTabContent($params)
     {
         return $this->hookDisplayAdminOrderContentOrder($params);
     }
 
     /**
-     * Render a twig template.
+     * Render a twig template
+     *
      * @param string $template
      * @param array $params
      * @return string

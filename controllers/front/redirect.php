@@ -1,6 +1,6 @@
 <?php
 
-use PrestaShop\Module\Sezzle\Handler\Service\Session;
+use PrestaShop\Module\Sezzle\Handler\Session;
 use PrestaShop\Module\Sezzle\Handler\Tokenization;
 
 /**
@@ -30,6 +30,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
 {
     /**
      * Checkout building before redirection to Sezzle Checkout
+     *
      * @throws Exception
      */
     public function postProcess()
@@ -74,7 +75,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
 
         // session build and redirect
         try {
-            $session = new \PrestaShop\Module\Sezzle\Handler\Session($cart);
+            $session = new Session($cart);
             $checkoutSession = $session->createSession();
             if (!$checkoutSession->getOrder()) {
                 throw new Exception("Error creating session");

@@ -62,6 +62,11 @@ class Util
         return sprintf("%s" . $amount, $currencySynbol);
     }
 
+    /**
+     * Get Sezzle Template Path
+     *
+     * @return string
+     */
     public static function getModuleTemplatePath()
     {
         return sprintf('@Modules/%s/views/templates/hook/', Sezzle::MODULE_NAME);

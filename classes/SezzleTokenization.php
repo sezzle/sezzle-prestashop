@@ -23,7 +23,6 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-use Sezzle\Model\Session;
 use Sezzle\Model\Tokenize;
 
 /**

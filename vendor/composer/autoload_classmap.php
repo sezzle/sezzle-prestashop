@@ -100,7 +100,11 @@ return array(
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Refund' => $baseDir . '/src/Handler/Service/Refund.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Release' => $baseDir . '/src/Handler/Service/Release.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Session' => $baseDir . '/src/Handler/Service/Session.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Tokenization' => $baseDir . '/src/Handler/Service/Tokenization.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Util' => $baseDir . '/src/Handler/Service/Util.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\Session' => $baseDir . '/src/Handler/Session.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\Tokenization' => $baseDir . '/src/Handler/Tokenization.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\Util' => $baseDir . '/src/Handler/Util.php',
     'PrestaShop\\Module\\Sezzle\\Setup\\Installer' => $baseDir . '/src/Setup/Installer.php',
     'PrestaShop\\Module\\Sezzle\\Setup\\InstallerFactory' => $baseDir . '/src/Setup/InstallerFactory.php',
     'Psr\\Http\\Client\\ClientExceptionInterface' => $vendorDir . '/psr/http-client/src/ClientExceptionInterface.php',
@@ -155,5 +159,6 @@ return array(
     'Sezzle\\Services\\RefundService' => $vendorDir . '/sezzle/php-sdk/src/Services/RefundService.php',
     'Sezzle\\Services\\ReleaseService' => $vendorDir . '/sezzle/php-sdk/src/Services/ReleaseService.php',
     'Sezzle\\Services\\SessionService' => $vendorDir . '/sezzle/php-sdk/src/Services/SessionService.php',
+    'Sezzle\\Services\\TokenizationService' => $vendorDir . '/sezzle/php-sdk/src/Services/TokenizationService.php',
     'Sezzle\\Util' => $vendorDir . '/sezzle/php-sdk/src/Util.php',
 );

@@ -28,11 +28,11 @@ namespace PrestaShop\Module\Sezzle\Handler\Payment;
 use Currency;
 use OrderSlip;
 use OrderCore as CoreOrder;
+use Payment;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Refund as RefundServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Util;
-use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\InvalidRefundException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -64,28 +64,26 @@ class Refund extends Order
      * @param bool $isPartial
      * @throws PrestaShopException
      * @throws RequestException
-     * @throws InvalidRefundException
+     * @throws OrderException
      */
     public function execute($isPartial = false)
     {
         $payments = $this->order->getOrderPayments();
-        if ($this->order->payment !== Sezzle::DISPLAY_NAME) {
-            return;
-        } elseif (count($payments) === 0) {
-            throw new InvalidRefundException("Order Payments not found.");
+        if (count($payments) === 0) {
+            throw new OrderException("Order Payments not found.");
         }
         $txn = SezzleTransaction::getByReference($this->order->reference);
 
         // full refund
         if (!$isPartial) {
             if ($txn->getReleaseAmount() != 0 || $txn->getCaptureAmount() !== $txn->getAuthorizedAmount()) {
-                throw new InvalidRefundException("Invalid amount.");
+                throw new OrderException("Invalid refund request.");
             }
             $amount = $this->order->total_paid;
         } else {
             // bypass if payment is not still captured or in case full refund is done
             if ($txn->getCaptureAmount() == 0 || $txn->getRefundAmount() === $txn->getCaptureAmount()) {
-                throw new InvalidRefundException("Invalid amount.");
+                throw new OrderException("Invalid refund request.");
             }
             /** @var OrderSlip $orderSlip */
             $orderSlip = $this->order->getOrderSlipsCollection()->getLast();
@@ -99,6 +97,7 @@ class Refund extends Order
             $refundPayload
         );
         if ($refundUuid = $response->getUuid()) {
+            // post refund handling
             $finalAmount = $txn->getRefundAmount() + $amount;
             SezzleTransaction::storeRefundAmount($finalAmount, $txn->getOrderUUID());
         }
@@ -117,5 +116,15 @@ class Refund extends Order
             Sezzle\Util::formatToCents($amount),
             $currency->iso_code
         );
+    }
+
+    /**
+     * Remove Refund Transaction
+     *
+     * @param int $orderId
+     */
+    public static function removeRefundTransaction($orderId)
+    {
+        Payment::deleteRefund($orderId);
     }
 }

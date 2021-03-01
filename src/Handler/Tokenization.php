@@ -35,7 +35,6 @@ use PrestaShopException;
 use Sezzle\HttpClient\RequestException;
 use Sezzle\Model\CustomerOrder;
 use SezzleTokenization;
-use SezzleTransaction;
 
 /**
  * Class Tokenization
@@ -77,7 +76,6 @@ class Tokenization
         }
         return $tokenizeTxn->getCustomerUuid();
     }
-
 
 
     /**

@@ -158,7 +158,11 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Refund' => __DIR__ . '/../..' . '/src/Handler/Service/Refund.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Release' => __DIR__ . '/../..' . '/src/Handler/Service/Release.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Session' => __DIR__ . '/../..' . '/src/Handler/Service/Session.php',
+        'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Tokenization' => __DIR__ . '/../..' . '/src/Handler/Service/Tokenization.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Service\\Util' => __DIR__ . '/../..' . '/src/Handler/Service/Util.php',
+        'PrestaShop\\Module\\Sezzle\\Handler\\Session' => __DIR__ . '/../..' . '/src/Handler/Session.php',
+        'PrestaShop\\Module\\Sezzle\\Handler\\Tokenization' => __DIR__ . '/../..' . '/src/Handler/Tokenization.php',
+        'PrestaShop\\Module\\Sezzle\\Handler\\Util' => __DIR__ . '/../..' . '/src/Handler/Util.php',
         'PrestaShop\\Module\\Sezzle\\Setup\\Installer' => __DIR__ . '/../..' . '/src/Setup/Installer.php',
         'PrestaShop\\Module\\Sezzle\\Setup\\InstallerFactory' => __DIR__ . '/../..' . '/src/Setup/InstallerFactory.php',
         'Psr\\Http\\Client\\ClientExceptionInterface' => __DIR__ . '/..' . '/psr/http-client/src/ClientExceptionInterface.php',
@@ -213,6 +217,7 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'Sezzle\\Services\\RefundService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/RefundService.php',
         'Sezzle\\Services\\ReleaseService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/ReleaseService.php',
         'Sezzle\\Services\\SessionService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/SessionService.php',
+        'Sezzle\\Services\\TokenizationService' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Services/TokenizationService.php',
         'Sezzle\\Util' => __DIR__ . '/..' . '/sezzle/php-sdk/src/Util.php',
     );
 
