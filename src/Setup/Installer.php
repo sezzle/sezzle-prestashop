@@ -196,22 +196,14 @@ class Installer
     {
         $hooks = [
             'header',
-            'backOfficeHeader',
             'paymentOptions',
-            'actionPaymentConfirmation',
-            'displayPayment',
-            'displayPaymentReturn',
             'actionPaymentCCAdd',
             'actionOrderStatusPostUpdate',
-            'displayAdminOrder',
-            'displayAdminOrderLeft',
-            'displayAdminOrderRight',
+            'actionOrderSlipAdd',
             'displayAdminOrderTabOrder',
+            'displayAdminOrderTabLink',
             'displayAdminOrderContentOrder',
-            'displayProductPriceBlock',
-            'displayShoppingCartFooter',
-            'displayProductAdditionalInfo',
-            'actionOrderSlipAdd'
+            'displayAdminOrderTabContent'
         ];
 
         return (bool)$this->module->registerHook($hooks);

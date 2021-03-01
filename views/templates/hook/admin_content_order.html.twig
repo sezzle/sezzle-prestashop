@@ -1,0 +1,71 @@
+{#**
+ * 2007-2021 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
+ *#}
+
+<div class="card mt-2" id="view_order_sezzle_block">
+
+    <div class="card-body">
+        {% if sezzle.auth_expiration is defined %}
+            {% include '@Modules/sezzle/views/templates/hook/auth_expiration_alert.html.twig' with {
+                'is_expired': sezzle.is_auth_expired,
+            } %}
+        {% endif %}
+        <table class="table" style="text-align: center">
+            <thead>
+            <tr>
+                <th class="table-head-authorized-amount">{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+                <th class="table-head-captured-amount">{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+                <th class="table-head-refunded-amount">{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+                <th class="table-head-released-amount">{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+                <th class="table-head-auth-expiration">{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+                <th class="table-head-auth-customer-uuid">{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ sezzle.authorized_amount }}</td>
+                <td>{{ sezzle.captured_amount }}</td>
+                <td>{{ sezzle.refunded_amount }}</td>
+                <td>{{ sezzle.released_amount }}</td>
+                <td>{% if sezzle.auth_expiration is defined %}
+                        {% if sezzle.is_auth_expired %}
+                            <span style="color: #FF0000">{{ sezzle.auth_expiration }}</span>
+                        {% else %}
+                            <span style="color: #008000">{{ sezzle.auth_expiration }}</span>
+                        {% endif %}
+                    {% else %}
+                        {{ "-" }}
+                    {% endif %}
+                </td>
+                <td>{% if sezzle.customer_uuid is defined %}
+                        {{ sezzle.customer_uuid }}
+                    {% else %}
+                        {{ "-" }}
+                    {% endif %}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+</div>

@@ -23,36 +23,47 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\Handler\Payment;
+namespace PrestaShop\Module\Sezzle\Handler;
 
-use Configuration;
-use PrestaShop\Module\Sezzle\Handler\Order;
+use Context;
 use Sezzle;
-use SezzleTransaction;
+use Tools;
 
 /**
- * Class Authorization
- * @package PrestaShop\Module\Sezzle\Handler\Payment
+ * Class Util
+ * @package PrestaShop\Module\Sezzle\Handler
  */
-class Authorization extends Order
+class Util
 {
+    /**
+     * Round Amount
+     *
+     * @param float $amount
+     * @return float
+     */
+    public static function round($amount)
+    {
+        return number_format(
+            Tools::ps_round($amount, Context::getContext()->getComputingPrecision()),
+            2
+        );
+    }
 
     /**
-     * Authorization Action
+     * Get Formatted Amount
      *
-     * @param string $orderUUID
-     * @param Sezzle\Model\Order\Authorization $authorization
+     * @param float $amount
+     * @param string $currencySynbol
+     * @return string
      */
-    public function execute($orderUUID, $authorization)
+    public static function getFormattedAmount($amount, $currencySynbol)
     {
-        $amount = $authorization->getAuthorizationAmount()->getAmountInCents();
-        if ($amount <= 0) {
-            return;
-        }
-        $authorizedAmount = (float)$amount / 100;
-        SezzleTransaction::storeAuthorizeAmount($authorizedAmount, $orderUUID);
-        if (Configuration::get(Sezzle::$formFields['payment_action']) === Sezzle::ACTION_AUTHORIZE) {
-            SezzleTransaction::storeAuthExpiration($authorization->getExpiration(), $orderUUID);
-        }
+        $amount = self::round($amount);
+        return sprintf("%s" . $amount, $currencySynbol);
+    }
+
+    public static function getModuleTemplatePath()
+    {
+        return sprintf('@Modules/%s/views/templates/hook/', Sezzle::MODULE_NAME);
     }
 }
