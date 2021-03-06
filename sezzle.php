@@ -18,26 +18,34 @@
  * versions in the future. If you wish to customize PrestaShop for your
  * needs please refer to http://www.prestashop.com for more information.
  *
- * @author    PrestaShop SA <contact@prestashop.com>
- * @copyright 2007-2021 PrestaShop SA
- * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
- *  International Registered Trademark & Property of PrestaShop SA
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+require_once __DIR__ . '/vendor/autoload.php';
+
 class Sezzle extends PaymentModule
 {
-    protected $config_form = false;
-    protected $_postErrors = array();
-    protected $_html = "";
+    protected $postErrors = array();
+    protected $html = "";
 
-    protected $_formFields = [
-        "api_mode" => "SEZZLE_LIVE_MODE",
+    const MODE_SANDBOX = "sandbox";
+    const MODE_PRODUCTION = "production";
+    const MODULE_NAME = "sezzle";
+
+    const ACTION_AUTHORIZE = "authorize";
+    const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
+
+    public static $formFields = [
+        "live_mode" => "SEZZLE_LIVE_MODE",
         "public_key" => "SEZZLE_PUBLIC_KEY",
         "private_key" => "SEZZLE_PRIVATE_KEY",
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
@@ -48,32 +56,37 @@ class Sezzle extends PaymentModule
      */
     private $logo_url;
 
+    /**
+     * Sezzle constructor.
+     */
     public function __construct()
     {
-        $this->name = 'sezzle';
+        $this->name = self::MODULE_NAME;
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
         $this->need_instance = 1;
-        $this->controllers = array('validation');
+        $this->controllers = array('complete', 'redirect');
         $this->logo_url = 'https://d34uoa9py2cgca.cloudfront.net/branding/sezzle-logos/png/sezzle-logo-sm-100w.png';
 
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
-        /**
-         * Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
-         */
+        // Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
         $this->bootstrap = true;
 
         parent::__construct();
 
         $this->displayName = $this->l('Sezzle');
-        $this->description = $this->l('Sezzle is a public-benefit corporation on a mission to financially empower the next generation. Sezzle’s Buy Now, Pay Later product gives eCommerce shoppers more buying power by allowing them to split their payment in four, and pay over the course of six weeks. You get paid right away, in full, and Sezzle assumes all risk of fraud, chargeback and repayment.');
-
+        $this->description = $this->l(
+            '
+                Sezzle is a public-benefit corporation on a mission to financially empower
+                the next generation. Sezzle’s Buy Now, Pay Later product gives eCommerce
+                shoppers more buying power by allowing them to split their payment in four,
+                and pay over the course of six weeks. You get paid right away, in full,
+                and Sezzle assumes all risk of fraud, chargeback and repayment.'
+        );
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
-
         $this->limited_countries = array('US', 'CA');
-
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
     }
 
@@ -88,37 +101,36 @@ class Sezzle extends PaymentModule
             return false;
         }
 
-        $iso_code = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
-
-        if (in_array($iso_code, $this->limited_countries) == false) {
+        // checking merchant country
+        $isoCode = Country::getIsoById(Configuration::get('PS_COUNTRY_DEFAULT'));
+        if (in_array($isoCode, $this->limited_countries) == false) {
             $this->_errors[] = $this->l('This module is not available in your country');
             return false;
         }
 
-        foreach ($this->_formFields as $field) {
+        if (!parent::install()) {
+            return false;
+        }
+
+        foreach (static::$formFields as $field) {
             Configuration::updateValue($field, false);
         }
 
-        //include(dirname(__FILE__) . '/sql/install.php');
-
-        return parent::install() &&
-            $this->registerHook('header') &&
-            $this->registerHook('backOfficeHeader') &&
-            $this->registerHook('paymentOptions') &&
-            $this->registerHook('actionPaymentConfirmation') &&
-            $this->registerHook('displayPayment') &&
-            $this->registerHook('displayPaymentReturn');
+        // install essentials
+        $installer = InstallerFactory::create($this);
+        return $installer->install();
     }
 
     public function uninstall()
     {
-        foreach ($this->_formFields as $field) {
+        $installer = InstallerFactory::create($this);
+        $result = parent::uninstall() && $installer->uninstall();
+
+        foreach (static::$formFields as $field) {
             Configuration::deleteByName($field);
         }
 
-        //include(dirname(__FILE__) . '/sql/uninstall.php');
-
-        return parent::uninstall();
+        return $result;
     }
 
     /**
@@ -126,23 +138,21 @@ class Sezzle extends PaymentModule
      */
     public function getContent()
     {
-        /**
-         * If values have been submitted in the form, process.
-         */
+        // If values have been submitted in the form, process.
         if (((bool)Tools::isSubmit('submitSezzleModule'))) {
             $this->validateConfigForm();
-            if (!count($this->_postErrors)) {
+            if (!count($this->postErrors)) {
                 $this->postProcess();
             } else {
-                foreach ($this->_postErrors as $err) {
-                    $this->_html .= $this->displayError($err);
+                foreach ($this->postErrors as $err) {
+                    $this->html .= $this->displayError($err);
                 }
             }
         } else {
-            $this->_html .= '<br />';
+            $this->html .= '<br />';
         }
 
-        return $this->_html . $this->renderForm();
+        return $this->html . $this->renderForm();
     }
 
     /**
@@ -187,8 +197,8 @@ class Sezzle extends PaymentModule
                 'input' => array(
                     array(
                         'type' => 'switch',
-                        'label' => $this->l('Live mode'),
-                        'name' => $this->_formFields['api_mode'],
+                        'label' => $this->l('Live Mode'),
+                        'name' => static::$formFields['live_mode'],
                         'is_bool' => true,
                         'desc' => $this->l('Use Sezzle in live mode'),
                         'values' => array(
@@ -207,7 +217,7 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'name' => $this->_formFields['public_key'],
+                        'name' => static::$formFields['public_key'],
                         'desc' => $this->l('Enter a valid public key'),
                         'label' => $this->l('Public Key'),
                         'required' => true,
@@ -215,7 +225,7 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'name' => $this->_formFields['private_key'],
+                        'name' => static::$formFields['private_key'],
                         'desc' => $this->l('Enter a valid private key'),
                         'label' => $this->l('Private Key'),
                         'required' => true,
@@ -224,15 +234,15 @@ class Sezzle extends PaymentModule
                         'type' => 'select',
                         'label' => $this->l('Payment Action'),
                         'desc' => $this->l('Select a payment action'),
-                        'name' => $this->_formFields['payment_action'],
+                        'name' => static::$formFields['payment_action'],
                         'options' => array(
                             'query' => array(
                                 array(
-                                    'payment_action' => 'authorize',
+                                    'payment_action' => self::ACTION_AUTHORIZE,
                                     'payment_action_label' => 'Authorize Only'
                                 ),
                                 array(
-                                    'payment_action' => 'authorize_capture',
+                                    'payment_action' => self::ACTION_AUTHORIZE_CAPTURE,
                                     'payment_action_label' => 'Authorize and Capture'
                                 )
                             ),
@@ -243,7 +253,7 @@ class Sezzle extends PaymentModule
                     array(
                         'type' => 'switch',
                         'label' => $this->l('Allow Customer Tokenization'),
-                        'name' => $this->_formFields['tokenize'],
+                        'name' => static::$formFields['tokenize'],
                         'is_bool' => true,
                         'desc' => $this->l('Enable tokenization option during checkout'),
                         'values' => array(
@@ -273,11 +283,11 @@ class Sezzle extends PaymentModule
     protected function getConfigFormValues()
     {
         return array(
-            $this->_formFields['api_mode'] => Configuration::get($this->_formFields['api_mode']),
-            $this->_formFields['public_key'] => Configuration::get($this->_formFields['public_key']),
-            $this->_formFields['private_key'] => Configuration::get($this->_formFields['private_key']),
-            $this->_formFields['payment_action'] => Configuration::get($this->_formFields['payment_action']),
-            $this->_formFields['tokenize'] => Configuration::get($this->_formFields['tokenize']),
+            static::$formFields['live_mode'] => Configuration::get(static::$formFields['live_mode']),
+            static::$formFields['public_key'] => Configuration::get(static::$formFields['public_key']),
+            static::$formFields['private_key'] => Configuration::get(static::$formFields['private_key']),
+            static::$formFields['payment_action'] => Configuration::get(static::$formFields['payment_action']),
+            static::$formFields['tokenize'] => Configuration::get(static::$formFields['tokenize']),
         );
     }
 
@@ -286,12 +296,12 @@ class Sezzle extends PaymentModule
      */
     protected function postProcess()
     {
-        $form_values = $this->getConfigFormValues();
+        $formValues = $this->getConfigFormValues();
 
-        foreach (array_keys($form_values) as $key) {
+        foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
-        $this->_html .= $this->displayConfirmation($this->l('Settings updated'));
+        $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
     /**
@@ -299,16 +309,16 @@ class Sezzle extends PaymentModule
      */
     private function validateConfigForm()
     {
-        $form_values = $this->getConfigFormValues();
-        foreach (array_keys($form_values) as $key) {
-            if ($key === $this->_formFields['api_mode']
-                || $key === $this->_formFields['tokenize']) {
+        $formValues = $this->getConfigFormValues();
+        foreach (array_keys($formValues) as $key) {
+            if ($key === static::$formFields['live_mode']
+                || $key === static::$formFields['tokenize']) {
                 continue;
             }
 
             if (!Tools::getValue($key)) {
                 $readableKey = ucwords(str_replace("sezzle ", "", str_replace("_", " ", strtolower($key))));
-                $this->_postErrors[] = sprintf("Invalid %s", $readableKey);
+                $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
     }
@@ -346,8 +356,9 @@ class Sezzle extends PaymentModule
             return;
         }
 
-        $publicKey = Configuration::get($this->_formFields['public_key']);
-        $privateKey = Configuration::get($this->_formFields['private_key']);
+        $publicKey = Configuration::get(static::$formFields['public_key']);
+        $privateKey = Configuration::get(static::$formFields['private_key']);
+        // hide sezzle if either of public and private key are missing
         if (!$publicKey || !$privateKey) {
             return;
         }
@@ -356,7 +367,7 @@ class Sezzle extends PaymentModule
             return;
         }
         $option = new PaymentOption();
-        $option->setAction($this->context->link->getModuleLink($this->name, 'validation', array(), true))
+        $option->setAction($this->context->link->getModuleLink($this->name, 'redirect', array(), true))
             ->setLogo($this->logo_url);
 
         return [
@@ -366,11 +377,11 @@ class Sezzle extends PaymentModule
 
     public function checkCurrency($cart)
     {
-        $currency_order = new Currency($cart->id_currency);
-        $currencies_module = $this->getCurrency($cart->id_currency);
-        if (is_array($currencies_module)) {
-            foreach ($currencies_module as $currency_module) {
-                if ($currency_order->id == $currency_module['id_currency']) {
+        $currencyOrder = new Currency($cart->id_currency);
+        $currenciesModule = $this->getCurrency($cart->id_currency);
+        if (is_array($currenciesModule)) {
+            foreach ($currenciesModule as $currencyModule) {
+                if ($currencyOrder->id == $currencyModule['id_currency']) {
                     return true;
                 }
             }
@@ -393,4 +404,3 @@ class Sezzle extends PaymentModule
         /* Place your code here. */
     }
 }
-

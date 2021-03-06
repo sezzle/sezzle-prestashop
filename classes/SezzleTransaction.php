@@ -1,0 +1,329 @@
+<?php
+/**
+ * 2007-2021 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
+ */
+
+use Sezzle\Model\Session;
+
+/**
+ * Class SezzleTransaction.
+ */
+class SezzleTransaction extends ObjectModel
+{
+    /** @var int Sezzle Transaction Table ID */
+    public $id_sezzle_transaction;
+
+    /** @var string Prestashop Order Reference */
+    public $reference;
+
+    /** @var int Cart ID */
+    public $id_cart;
+
+    /** @var string Sezzle Transaction Order UUID */
+    public $order_uuid;
+
+    /** @var string Sezzle Checkout URL */
+    public $checkout_url;
+
+    /** @var float Sezzle Transaction Amount */
+    public $checkout_amount;
+
+    /** @var float Sezzle Transaction Auth Amount */
+    public $authorized_amount;
+
+    /** @var float Sezzle Transaction Capture Amount */
+    public $capture_amount;
+
+    /** @var float Sezzle Transaction Refund Amount */
+    public $refund_amount;
+
+    /**
+     * @see ObjectModel::$definition
+     */
+    public static $definition = array(
+        'table' => 'sezzle_transaction',
+        'primary' => 'id_sezzle_transaction',
+        'multilang' => false,
+        'fields' => array(
+            'reference' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
+            'order_uuid' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'checkout_url' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'checkout_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'authorized_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'capture_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'refund_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+        ),
+        'collation' => 'utf8_general_ci'
+    );
+
+    /**
+     * @return int
+     */
+    public function getIdSezzleTransaction()
+    {
+        return $this->id_sezzle_transaction;
+    }
+
+    /**
+     * @param int $id_sezzle_transaction
+     * @return SezzleTransaction
+     */
+    public function setIdSezzleTransaction(int $id_sezzle_transaction)
+    {
+        $this->id_sezzle_transaction = $id_sezzle_transaction;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReference()
+    {
+        return $this->reference;
+    }
+
+    /**
+     * @param string $reference
+     * @return SezzleTransaction
+     */
+    public function setReference(string $reference)
+    {
+        $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIdCart()
+    {
+        return $this->id_cart;
+    }
+
+    /**
+     * @param int $id_cart
+     * @return SezzleTransaction
+     */
+    public function setIdCart(int $id_cart)
+    {
+        $this->id_cart = $id_cart;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrderUUID()
+    {
+        return $this->order_uuid;
+    }
+
+    /**
+     * @param string $order_uuid
+     * @return SezzleTransaction
+     */
+    public function setOrderUUID(string $order_uuid)
+    {
+        $this->order_uuid = $order_uuid;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCheckoutUrl()
+    {
+        return $this->checkout_url;
+    }
+
+    /**
+     * @param string $checkout_url
+     * @return SezzleTransaction
+     */
+    public function setCheckoutUrl(string $checkout_url)
+    {
+        $this->checkout_url = $checkout_url;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getCheckoutAmount()
+    {
+        return $this->checkout_amount;
+    }
+
+    /**
+     * @param float $checkout_amount
+     * @return SezzleTransaction
+     */
+    public function setCheckoutAmount(float $checkout_amount)
+    {
+        $this->checkout_amount = $checkout_amount;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getAuthorizedAmount()
+    {
+        return $this->authorized_amount;
+    }
+
+    /**
+     * @param float $authorized_amount
+     * @return SezzleTransaction
+     */
+    public function setAuthorizedAmount(float $authorized_amount)
+    {
+        $this->authorized_amount = $authorized_amount;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getCaptureAmount()
+    {
+        return $this->capture_amount;
+    }
+
+    /**
+     * @param float $capture_amount
+     * @return SezzleTransaction
+     */
+    public function setCaptureAmount(float $capture_amount)
+    {
+        $this->capture_amount = $capture_amount;
+        return $this;
+    }
+
+    /**
+     * @return float
+     */
+    public function getRefundAmount()
+    {
+        return $this->refund_amount;
+    }
+
+    /**
+     * @param float $refund_amount
+     * @return SezzleTransaction
+     */
+    public function setRefundAmount(float $refund_amount)
+    {
+        $this->refund_amount = $refund_amount;
+        return $this;
+    }
+
+    /**
+     * Store Checkout Session
+     *
+     * @param Cart $cart
+     * @param Session $session
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     * @throws Exception
+     */
+    public function storeCheckoutSession(Cart $cart, Sezzle\Model\Session $session)
+    {
+        $this->setIdCart($cart->id)
+            ->setCheckoutAmount($cart->getOrderTotal())
+            ->setOrderUUID($session->getOrder()->getUuid())
+            ->setCheckoutUrl($session->getOrder()->getCheckoutUrl())
+            ->save();
+    }
+
+    /**
+     * Get Checkout Session
+     *
+     * @param int $cartId
+     * @return SezzleTransaction
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public static function getByCartId($cartId)
+    {
+        $sql = new DbQuery();
+        $sql->select(self::$definition['primary'])
+            ->from(self::$definition['table'])
+            ->where('id_cart = ' . (int)$cartId)
+            ->orderBy(self::$definition['primary'] . " DESC");
+        $idSezzleTransaction = Db::getInstance()->getValue($sql);
+        return new self($idSezzleTransaction);
+    }
+
+    /**
+     * Store Authorize Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeAuthorizeAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'authorized_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Capture Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeCaptureAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'capture_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Prestashop Order Reference
+     *
+     * @param string $reference
+     * @param string $orderUUID
+     */
+    public static function storeOrderReference($reference, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'reference' => pSQL($reference),
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+}

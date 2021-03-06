@@ -1,64 +1,78 @@
 <?php
+
+use PrestaShop\Module\Sezzle\Handler\Service\Session;
+
 /**
-* 2007-2021 PrestaShop
-*
-* NOTICE OF LICENSE
-*
-* This source file is subject to the Academic Free License (AFL 3.0)
-* that is bundled with this package in the file LICENSE.txt.
-* It is also available through the world-wide-web at this URL:
-* http://opensource.org/licenses/afl-3.0.php
-* If you did not receive a copy of the license and are unable to
-* obtain it through the world-wide-web, please send an email
-* to license@prestashop.com so we can send you a copy immediately.
-*
-* DISCLAIMER
-*
-* Do not edit or add to this file if you wish to upgrade PrestaShop to newer
-* versions in the future. If you wish to customize PrestaShop for your
-* needs please refer to http://www.prestashop.com for more information.
-*
-*  @author    PrestaShop SA <contact@prestashop.com>
-*  @copyright 2007-2021 PrestaShop SA
-*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
-*  International Registered Trademark & Property of PrestaShop SA
-*/
-class SezzleRedirectModuleFrontController extends ModuleFrontController
+ * 2007-2021 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
+ */
+class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
-     * Do whatever you have to before redirecting the customer on the website of your payment processor.
+     * Checkout building before redirection to Sezzle Checkout
+     * @throws Exception
      */
     public function postProcess()
     {
-        /*
-         * Oops, an error occured.
-         */
-        if (Tools::getValue('action') == 'error') {
-            return $this->displayError('An error occurred while trying to redirect the customer');
-        } else {
-            $this->context->smarty->assign(array(
-                'cart_id' => Context::getContext()->cart->id,
-                'secure_key' => Context::getContext()->customer->secure_key,
-            ));
-
-            return $this->setTemplate('redirect.tpl');
+        $cart = $this->context->cart;
+        // If the below condition does not satisfy, no need to process anything.
+        if (!$this->isCheckoutValid()) {
+            $this->handleError('Checkout Validation failed.');
         }
-    }
 
-    protected function displayError($message, $description = false)
-    {
-        /*
-         * Create the breadcrumb for your ModuleFrontController.
-         */
-        $this->context->smarty->assign('path', '
-			<a href="' . $this->context->link->getPageLink('order', null, null, 'step=3') . '">' . $this->module->l('Payment') . '</a>
-			<span class="navigation-pipe">&gt;</span>' . $this->module->l('Error'));
+        // Check that this payment option is still available in case
+        // the customer changed his address just before the end of the checkout process
+        $isAvailable = false;
+        foreach (Module::getPaymentModules() as $module) {
+            if ($module['name'] === $this->module->name) {
+                $isAvailable = true;
+                break;
+            }
+        }
 
-        /*
-         * Set error message and description for the template.
-         */
-        array_push($this->errors, $this->module->l($message), $description);
+        if (!$isAvailable) {
+            $this->handleError('This payment method is not available.
+                           Please contact website administrator.');
+        }
 
-        return $this->setTemplate('error.tpl');
+        // use uncompleted checkout session if any
+        $txn = SezzleTransaction::getByCartId($this->context->cart->id);
+        if (!$txn->getReference() && $txn->getAuthorizedAmount() == 0 && $checkoutUrl = $txn->getCheckoutUrl()) {
+            Tools::redirectLink($checkoutUrl);
+        }
+
+        // session build and redirect
+        try {
+            $session = new Session($cart);
+            $checkoutSession = $session->createSession();
+            if (!$checkoutSession->getOrder()) {
+                throw new Exception("Error creating session");
+            }
+            $txn = new SezzleTransaction();
+            $txn->storeCheckoutSession($cart, $checkoutSession);
+            Tools::redirectLink($checkoutSession->getOrder()->getCheckoutUrl());
+        } catch (Exception $e) {
+            PrestaShopLogger::addLog($e->getMessage(), 3, null, "Sezzle", 1);
+            $this->handleError('Error while creating checkout. Please try again.');
+        }
     }
 }

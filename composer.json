@@ -1,0 +1,30 @@
+{
+  "name": "sezzle/prestashop",
+  "authors": [
+    {
+      "name": "Sezzle",
+      "email": "dev@sezzle.com"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "PrestaShop\\Module\\Sezzle\\": "src/",
+      "Sezzle\\": "vendor/sezzle/php-sdk/src/"
+    },
+    "classmap": [
+      "sezzle.php",
+      "classes/SezzleTransaction.php",
+      "classes/Payment.php",
+      "controllers/front/abstract.php"
+    ]
+  },
+  "config": {
+    "preferred-install": "dist",
+    "optimize-autoloader": true,
+    "prepend-autoloader": false
+  },
+  "type": "prestashop-module"
+}
