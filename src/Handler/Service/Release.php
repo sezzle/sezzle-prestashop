@@ -23,36 +23,45 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
-namespace PrestaShop\Module\Sezzle\Handler\Payment;
+namespace PrestaShop\Module\Sezzle\Handler\Service;
 
 use Configuration;
-use PrestaShop\Module\Sezzle\Handler\Order;
 use Sezzle;
-use SezzleTransaction;
+use Sezzle\HttpClient\ClientService;
+use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Authorization
- * @package PrestaShop\Module\Sezzle\Handler\Payment
+ * Class Release
+ * @package PrestaShop\Module\Sezzle\Handler\Service
  */
-class Authorization extends Order
+class Release
 {
 
     /**
-     * Authorization Action
+     * Release Payment
      *
      * @param string $orderUUID
-     * @param Sezzle\Model\Order\Authorization $authorization
+     * @param Sezzle\Model\Session\Order\Amount $payload
+     * @return Sezzle\Model\Order\Release
+     * @throws Sezzle\HttpClient\RequestException
      */
-    public function execute($orderUUID, $authorization)
+    public static function releasePayment($orderUUID, Sezzle\Model\Session\Order\Amount $payload)
     {
-        $amount = $authorization->getAuthorizationAmount()->getAmountInCents();
-        if ($amount <= 0) {
-            return;
-        }
-        $authorizedAmount = (float)$amount / 100;
-        SezzleTransaction::storeAuthorizeAmount($authorizedAmount, $orderUUID);
-        if (Configuration::get(Sezzle::$formFields['payment_action']) === Sezzle::ACTION_AUTHORIZE) {
-            SezzleTransaction::storeAuthExpiration($authorization->getExpiration(), $orderUUID);
-        }
+        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+
+        // instantiate release service
+        $releaseService = new Sezzle\Services\ReleaseService(new ClientService(
+            new GuzzleFactory(),
+            $apiMode
+        ));
+
+        // get release response
+        return $releaseService->releasePayment(
+            Authentication::getToken(),
+            $orderUUID,
+            $payload->toArray()
+        );
     }
 }

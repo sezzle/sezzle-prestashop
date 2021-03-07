@@ -26,11 +26,17 @@
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
 use Configuration;
+use Currency;
+use DateTime;
 use Exception;
 use Payment;
 use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Util;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
+use PrestaShopException;
+use Sezzle;
 use Sezzle\HttpClient\RequestException;
 use SezzleTransaction;
 
@@ -57,19 +63,76 @@ class Capture extends Order
     /**
      * Capture Action
      *
-     * @param string $orderUUID
-     * @param bool $isPartial
+     * @param float $amount
      * @throws RequestException
+     * @throws PrestaShopException
+     * @throws OrderException
      * @throws Exception
      */
-    public function execute($orderUUID, $isPartial = false)
+    public function execute($amount)
     {
-        $captureService = new CaptureServiceHandler($this->order);
-        $response = $captureService->capturePayment($orderUUID, $isPartial);
-        if ($captureUuid = $response->getUuid()) {
-            Payment::setTransactionId($this->order->reference, $captureUuid);
-            SezzleTransaction::storeCaptureAmount($this->order->getTotalPaid(), $orderUUID);
-            $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+        if ($amount <= 0) {
+            throw new OrderException("Invalid capture amount.");
+        } elseif ($amount > $this->order->total_paid) {
+            throw new OrderException("Capture amount is greater than the order amount.");
         }
+
+        // auth expiry check
+        $txn = SezzleTransaction::getByCartId($this->order->id_cart);
+        if ($txn->getPaymentAction() === Sezzle::ACTION_AUTHORIZE
+            && $txn->getAuthExpiration() != 0) {
+            $dateTimeNow = new DateTime();
+            $dateTimeExpire = new DateTime($txn->getAuthExpiration());
+            if ($dateTimeNow > $dateTimeExpire) {
+                throw new OrderException("Cannot process payment. Auth Expired.");
+            }
+        }
+
+        $isPartial = $amount < $this->order->total_paid;
+        $payload = $this->buildCapturePayload($amount, $isPartial);
+        // capture action
+        $response = CaptureServiceHandler::capturePayment(
+            $txn->getOrderUUID(),
+            $payload
+        );
+        if ($captureUuid = $response->getUuid()) {
+            // post capture handling
+            $finalAmount = $amount + $txn->getCaptureAmount();
+            Payment::setTransactionId($this->order->reference, $captureUuid);
+            SezzleTransaction::storeCaptureAmount($finalAmount, $txn->getOrderUUID());
+            if (!$isPartial) {
+                $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
+            }
+        }
+    }
+
+    /**
+     * Build Capture Payload
+     *
+     * @param float $amount
+     * @param bool $isPartial
+     * @return Sezzle\Model\Order\Capture
+     */
+    public function buildCapturePayload($amount, $isPartial)
+    {
+        $currency = new Currency($this->order->id_currency);
+        $captureModel = new Sezzle\Model\Order\Capture();
+        return $captureModel->setCaptureAmount(
+            Util::getAmountObject(
+                Sezzle\Util::formatToCents($amount),
+                $currency->iso_code
+            )
+        )
+            ->setPartialCapture($isPartial);
+    }
+
+    /**
+     * Remove Capture Transaction
+     *
+     * @param string $orderReference
+     */
+    public static function removeCaptureTransaction($orderReference)
+    {
+        Payment::deletePayment($orderReference);
     }
 }

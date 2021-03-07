@@ -1,6 +1,7 @@
 <?php
 
-use PrestaShop\Module\Sezzle\Handler\Service\Session;
+use PrestaShop\Module\Sezzle\Handler\Session;
+use PrestaShop\Module\Sezzle\Handler\Tokenization;
 
 /**
  * 2007-2021 PrestaShop
@@ -29,6 +30,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
 {
     /**
      * Checkout building before redirection to Sezzle Checkout
+     *
      * @throws Exception
      */
     public function postProcess()
@@ -54,6 +56,17 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                            Please contact website administrator.');
         }
 
+        // tokenized order handling
+        if ($customerUUID = Tokenization::getCustomerUUID($cart->id_customer)) {
+            $tokenizeHandler = new Tokenization();
+            $order = $tokenizeHandler->createOrder($customerUUID, $cart);
+            $this->postTokenizedOrderCreation($order);
+            Tools::redirectLink($this->context->link->getModuleLink(
+                Sezzle::MODULE_NAME,
+                'complete'
+            ));
+        }
+
         // use uncompleted checkout session if any
         $txn = SezzleTransaction::getByCartId($this->context->cart->id);
         if (!$txn->getReference() && $txn->getAuthorizedAmount() == 0 && $checkoutUrl = $txn->getCheckoutUrl()) {
@@ -67,8 +80,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
             if (!$checkoutSession->getOrder()) {
                 throw new Exception("Error creating session");
             }
-            $txn = new SezzleTransaction();
-            $txn->storeCheckoutSession($cart, $checkoutSession);
+            $this->postCheckoutSessionCreation($checkoutSession);
             Tools::redirectLink($checkoutSession->getOrder()->getCheckoutUrl());
         } catch (Exception $e) {
             PrestaShopLogger::addLog($e->getMessage(), 3, null, "Sezzle", 1);

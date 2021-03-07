@@ -23,6 +23,7 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use Sezzle\Model\CustomerOrder;
 use Sezzle\Model\Session;
 
 /**
@@ -35,6 +36,9 @@ class SezzleTransaction extends ObjectModel
 
     /** @var string Prestashop Order Reference */
     public $reference;
+
+    /** @var int Customer ID */
+    public $id_customer;
 
     /** @var int Cart ID */
     public $id_cart;
@@ -57,6 +61,15 @@ class SezzleTransaction extends ObjectModel
     /** @var float Sezzle Transaction Refund Amount */
     public $refund_amount;
 
+    /** @var float Sezzle Transaction Release Amount */
+    public $release_amount;
+
+    /** @var string Sezzle Transaction Auth Expiration */
+    public $auth_expiration;
+
+    /** @var string Sezzle Transaction Payment Action */
+    public $payment_action;
+
     /**
      * @see ObjectModel::$definition
      */
@@ -66,6 +79,7 @@ class SezzleTransaction extends ObjectModel
         'multilang' => false,
         'fields' => array(
             'reference' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
+            'id_customer' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'id_cart' => array('type' => self::TYPE_INT, 'validate' => 'isInt'),
             'order_uuid' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
             'checkout_url' => array('type' => self::TYPE_STRING, 'validate' => 'isString'),
@@ -73,6 +87,9 @@ class SezzleTransaction extends ObjectModel
             'authorized_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'capture_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
             'refund_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'release_amount' => array('type' => self::TYPE_FLOAT, 'validate' => 'isPrice'),
+            'auth_expiration' => array('type' => self::TYPE_DATE, 'validate' => 'isDateFormat'),
+            'payment_action' => array('type' => self::TYPE_STRING, 'validate' => 'isString')
         ),
         'collation' => 'utf8_general_ci'
     );
@@ -110,6 +127,24 @@ class SezzleTransaction extends ObjectModel
     public function setReference(string $reference)
     {
         $this->reference = $reference;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getIdCustomer()
+    {
+        return $this->id_customer;
+    }
+
+    /**
+     * @param int $id_customer
+     * @return SezzleTransaction
+     */
+    public function setIdCustomer(int $id_customer)
+    {
+        $this->id_customer = $id_customer;
         return $this;
     }
 
@@ -240,6 +275,60 @@ class SezzleTransaction extends ObjectModel
     }
 
     /**
+     * @return float
+     */
+    public function getReleaseAmount()
+    {
+        return $this->release_amount;
+    }
+
+    /**
+     * @param float $release_amount
+     * @return SezzleTransaction
+     */
+    public function setReleaseAmount(float $release_amount)
+    {
+        $this->release_amount = $release_amount;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAuthExpiration()
+    {
+        return $this->auth_expiration;
+    }
+
+    /**
+     * @param string $auth_expiration
+     * @return SezzleTransaction
+     */
+    public function setAuthExpiration(string $auth_expiration)
+    {
+        $this->auth_expiration = $auth_expiration;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPaymentAction()
+    {
+        return $this->payment_action;
+    }
+
+    /**
+     * @param string $payment_action
+     * @return SezzleTransaction
+     */
+    public function setPaymentAction(string $payment_action)
+    {
+        $this->payment_action = $payment_action;
+        return $this;
+    }
+
+    /**
      * Store Checkout Session
      *
      * @param Cart $cart
@@ -250,10 +339,29 @@ class SezzleTransaction extends ObjectModel
      */
     public function storeCheckoutSession(Cart $cart, Sezzle\Model\Session $session)
     {
-        $this->setIdCart($cart->id)
+        $this->setIdCustomer($cart->id_customer)
+            ->setIdCart($cart->id)
             ->setCheckoutAmount($cart->getOrderTotal())
             ->setOrderUUID($session->getOrder()->getUuid())
             ->setCheckoutUrl($session->getOrder()->getCheckoutUrl())
+            ->setPaymentAction(Configuration::get(Sezzle::$formFields['payment_action']))
+            ->save();
+    }
+
+    /**
+     * Store Tokenized Order
+     *
+     * @param Cart $cart
+     * @param CustomerOrder $order
+     * @throws PrestaShopException
+     */
+    public function storeTokenizedOrder(Cart $cart, CustomerOrder $order)
+    {
+        $this->setIdCustomer($cart->id_customer)
+            ->setIdCart($cart->id)
+            ->setCheckoutAmount($cart->getOrderTotal())
+            ->setOrderUUID($order->getUuid())
+            ->setPaymentAction(Configuration::get(Sezzle::$formFields['payment_action']))
             ->save();
     }
 
@@ -271,6 +379,25 @@ class SezzleTransaction extends ObjectModel
         $sql->select(self::$definition['primary'])
             ->from(self::$definition['table'])
             ->where('id_cart = ' . (int)$cartId)
+            ->orderBy(self::$definition['primary'] . " DESC");
+        $idSezzleTransaction = Db::getInstance()->getValue($sql);
+        return new self($idSezzleTransaction);
+    }
+
+    /**
+     * Get Checkout Session
+     *
+     * @param string $reference
+     * @return SezzleTransaction
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public static function getByReference($reference)
+    {
+        $sql = new DbQuery();
+        $sql->select(self::$definition['primary'])
+            ->from(self::$definition['table'])
+            ->where(sprintf('reference = "%s"', pSQL($reference)))
             ->orderBy(self::$definition['primary'] . " DESC");
         $idSezzleTransaction = Db::getInstance()->getValue($sql);
         return new self($idSezzleTransaction);
@@ -311,6 +438,40 @@ class SezzleTransaction extends ObjectModel
     }
 
     /**
+     * Store Release Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeReleaseAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'release_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Refund Amount
+     *
+     * @param float $amount
+     * @param string $orderUUID
+     */
+    public static function storeRefundAmount($amount, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'refund_amount' => (float)$amount,
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
      * Store Prestashop Order Reference
      *
      * @param string $reference
@@ -322,6 +483,23 @@ class SezzleTransaction extends ObjectModel
             self::$definition['table'],
             array(
                 'reference' => pSQL($reference),
+            ),
+            sprintf('order_uuid = "%s"', pSQL($orderUUID))
+        );
+    }
+
+    /**
+     * Store Prestashop Auth Expiration
+     *
+     * @param string $expiration
+     * @param string $orderUUID
+     */
+    public static function storeAuthExpiration($expiration, $orderUUID)
+    {
+        Db::getInstance()->update(
+            self::$definition['table'],
+            array(
+                'auth_expiration' => pSQL($expiration),
             ),
             sprintf('order_uuid = "%s"', pSQL($orderUUID))
         );

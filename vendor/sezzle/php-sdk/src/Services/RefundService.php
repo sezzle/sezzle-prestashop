@@ -5,6 +5,7 @@ namespace Sezzle\Services;
 use Sezzle\Config;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\RequestException;
+use Sezzle\Model\Order\Refund;
 use Sezzle\Model\Session\Order\Amount;
 
 /**
@@ -30,7 +31,7 @@ class RefundService
      * @param string $token
      * @param string $orderUUID
      * @param array $payload
-     * @return Amount
+     * @return Refund
      * @throws RequestException
      */
     public function refundPayment($token, $orderUUID, array $payload)
@@ -41,6 +42,6 @@ class RefundService
             $payload,
             $token
         );
-        return Amount::fromArray($response);
+        return Refund::fromArray($response);
     }
 }

@@ -3,6 +3,7 @@
 use PrestaShop\Module\Sezzle\Handler\Payment\Authorization;
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Service\Order as SezzleOrder;
+use PrestaShop\Module\Sezzle\Handler\Tokenization;
 use Sezzle\HttpClient\RequestException;
 
 /**
@@ -47,8 +48,13 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $this->handleError('Unable to validate the Checkout.');
         }
 
-        $orderUUID = $txn->getOrderUUID();
         $customer = new Customer((int)$cart->id_customer);
+
+        // handle tokenization storing
+        if (Tools::getValue('customer-uuid') && $token = $this->context->cookie->token) {
+            Tokenization::storeTokenizationRecords($customer->id, $token);
+            unset($this->context->cookie->token);
+        }
 
         // order create in store
         $isOrderValid = $this->module->validateOrder(
@@ -66,13 +72,12 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         if (!$isOrderValid) {
             $this->handleError("Failed to create the order.");
         }
+        $orderUUID = $txn->getOrderUUID();
 
         // authorization handling
         if ($this->sezzleOrder && $this->sezzleOrder->getAuthorization()) {
             $authorizeHandler = new Authorization();
-            $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization()
-                ->getAuthorizationAmount()
-                ->getAmountInCents());
+            $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization());
         }
 
         $order = Order::getByCartId((int)$cart->id);
@@ -81,9 +86,9 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {
             try {
                 $captureHandler = new Capture($order);
-                $captureHandler->execute($orderUUID, false);
+                $captureHandler->execute($order->total_paid);
             } catch (RequestException $e) {
-                $this->handleError("Failed to process the payment");
+                $this->handleError($e->getMessage());
             }
         }
 

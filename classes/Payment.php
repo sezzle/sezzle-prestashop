@@ -42,7 +42,46 @@ class Payment
             array(
                 'transaction_id' => pSQL($transactionId),
             ),
-            sprintf('order_reference = "%s"', pSQL($orderReference))
+            sprintf(
+                'order_reference = "%s" ORDER BY %s DESC',
+                pSQL($orderReference),
+                pSQL(OrderPayment::$definition['primary'])
+            ),
+            1
+        );
+    }
+
+    /**
+     * Set Transaction Id in Order Payment
+     *
+     * @param string $orderReference
+     */
+    public static function deletePayment($orderReference)
+    {
+        Db::getInstance()->delete(
+            OrderPayment::$definition['table'],
+            sprintf(
+                'order_reference = "%s" ORDER BY %s DESC',
+                pSQL($orderReference),
+                OrderPayment::$definition['primary']
+            )
+        );
+    }
+
+    /**
+     * Delete Refund Transaction
+     *
+     * @param int $orderId
+     */
+    public static function deleteRefund($orderId)
+    {
+        Db::getInstance()->delete(
+            OrderSlip::$definition['table'],
+            sprintf(
+                'id_order = %s ORDER BY %s DESC',
+                (int)$orderId,
+                OrderSlip::$definition['primary']
+            )
         );
     }
 }

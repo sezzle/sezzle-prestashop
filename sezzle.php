@@ -23,8 +23,18 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
+use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
+use PrestaShop\Module\Sezzle\Handler\Payment\Release;
+use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
+use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
+use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Exception\PaymentException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -40,16 +50,19 @@ class Sezzle extends PaymentModule
     const MODE_SANDBOX = "sandbox";
     const MODE_PRODUCTION = "production";
     const MODULE_NAME = "sezzle";
+    const DISPLAY_NAME = "Sezzle";
 
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
 
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
+        "merchant_id" => "SEZZLE_MERCHANT_ID",
         "public_key" => "SEZZLE_PUBLIC_KEY",
         "private_key" => "SEZZLE_PRIVATE_KEY",
         "payment_action" => "SEZZLE_PAYMENT_ACTION",
-        "tokenize" => "SEZZLE_TOKENIZE"
+        "tokenize" => "SEZZLE_TOKENIZE",
+        "widget_enable" => "SEZZLE_WIDGET_ENABLE"
     ];
     /**
      * @var string
@@ -76,7 +89,7 @@ class Sezzle extends PaymentModule
 
         parent::__construct();
 
-        $this->displayName = $this->l('Sezzle');
+        $this->displayName = $this->l(self::DISPLAY_NAME);
         $this->description = $this->l(
             '
                 Sezzle is a public-benefit corporation on a mission to financially empower
@@ -91,8 +104,9 @@ class Sezzle extends PaymentModule
     }
 
     /**
-     * Don't forget to create update methods if needed:
-     * http://doc.prestashop.com/display/PS16/Enabling+the+Auto-Update
+     * Install Action
+     *
+     * @return bool|string
      */
     public function install()
     {
@@ -121,6 +135,11 @@ class Sezzle extends PaymentModule
         return $installer->install();
     }
 
+    /**
+     * Uninstall Action
+     *
+     * @return bool
+     */
     public function uninstall()
     {
         $installer = InstallerFactory::create($this);
@@ -217,6 +236,14 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
+                        'name' => static::$formFields['merchant_id'],
+                        'desc' => $this->l('Enter a valid merchant id'),
+                        'label' => $this->l('Merchant Id'),
+                        'required' => true,
+                    ),
+                    array(
+                        'col' => 3,
+                        'type' => 'text',
                         'name' => static::$formFields['public_key'],
                         'desc' => $this->l('Enter a valid public key'),
                         'label' => $this->l('Public Key'),
@@ -269,6 +296,25 @@ class Sezzle extends PaymentModule
                             )
                         ),
                     ),
+                    array(
+                        'type' => 'switch',
+                        'label' => $this->l('Enable Widget'),
+                        'name' => static::$formFields['widget_enable'],
+                        'is_bool' => true,
+                        'desc' => $this->l('Show Sezzle Widget in PDP and Cart Page'),
+                        'values' => array(
+                            array(
+                                'id' => 'active_on',
+                                'value' => true,
+                                'label' => $this->l('Enabled')
+                            ),
+                            array(
+                                'id' => 'active_off',
+                                'value' => false,
+                                'label' => $this->l('Disabled')
+                            )
+                        ),
+                    ),
                 ),
                 'submit' => array(
                     'title' => $this->l('Save'),
@@ -284,10 +330,12 @@ class Sezzle extends PaymentModule
     {
         return array(
             static::$formFields['live_mode'] => Configuration::get(static::$formFields['live_mode']),
+            static::$formFields['merchant_id'] => Configuration::get(static::$formFields['merchant_id']),
             static::$formFields['public_key'] => Configuration::get(static::$formFields['public_key']),
             static::$formFields['private_key'] => Configuration::get(static::$formFields['private_key']),
             static::$formFields['payment_action'] => Configuration::get(static::$formFields['payment_action']),
             static::$formFields['tokenize'] => Configuration::get(static::$formFields['tokenize']),
+            static::$formFields['widget_enable'] => Configuration::get(static::$formFields['widget_enable']),
         );
     }
 
@@ -312,7 +360,8 @@ class Sezzle extends PaymentModule
         $formValues = $this->getConfigFormValues();
         foreach (array_keys($formValues) as $key) {
             if ($key === static::$formFields['live_mode']
-                || $key === static::$formFields['tokenize']) {
+                || $key === static::$formFields['tokenize']
+                || $key === static::$formFields['widget_enable']) {
                 continue;
             }
 
@@ -324,30 +373,29 @@ class Sezzle extends PaymentModule
     }
 
     /**
-     * Add the CSS & JavaScript files you want to be loaded in the BO.
-     */
-    public function hookBackOfficeHeader()
-    {
-        if (Tools::getValue('module_name') == $this->name) {
-            $this->context->controller->addJS($this->_path . 'views/js/back.js');
-            $this->context->controller->addCSS($this->_path . 'views/css/back.css');
-        }
-    }
-
-    /**
      * Add the CSS & JavaScript files you want to be added on the FO.
      */
     public function hookHeader()
     {
-        $this->context->controller->addJS($this->_path . '/views/js/front.js');
-        $this->context->controller->addCSS($this->_path . '/views/css/front.css');
+        $merchantId = Configuration::get(self::$formFields['merchant_id']);
+        $isWidgetEnabled = Configuration::get(self::$formFields['widget_enable']);
+        if (!$isWidgetEnabled || !$merchantId) {
+            return;
+        }
+        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
+        $this->context->controller->registerJavascript(
+            $this->name . '-sezzle-widget',
+            $widgetURL,
+            array(
+                'server' => 'remote'
+            )
+        );
     }
 
     /**
      * Return payment options available for PS 1.7+
      *
      * @param array Hook parameters
-     *
      * @return PaymentOption[]|void
      */
     public function hookPaymentOptions($params)
@@ -375,6 +423,12 @@ class Sezzle extends PaymentModule
         ];
     }
 
+    /**
+     * Check Currency
+     *
+     * @param Cart $cart
+     * @return bool
+     */
     public function checkCurrency($cart)
     {
         $currencyOrder = new Currency($cart->id_currency);
@@ -389,18 +443,205 @@ class Sezzle extends PaymentModule
         return false;
     }
 
-    public function hookActionPaymentConfirmation()
+    /**
+     * Manual Capture
+     *
+     * @param array|null $params
+     * @throws PaymentException
+     */
+    public function hookActionPaymentCCAdd($params)
     {
-        /* Place your code here. */
+        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
+            return;
+        }
+
+        $amount = $payment->amount;
+        $reference = $payment->order_reference;
+        $orders = Order::getByReference($reference);
+        if ($orders->count() !== 1) {
+            return;
+        }
+        /** @var Order $order */
+        $order = $orders[0];
+        if ($order->payment !== $this->displayName ||
+            in_array($order->current_state, [_PS_OS_PAYMENT_, _PS_OS_DELIVERED_])) {
+            return;
+        }
+
+        try {
+            $txn = SezzleTransaction::getByReference($reference);
+            // bypass for auth and capture action
+            if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
+                $txn->getReleaseAmount() > 0) {
+                throw new PaymentException("Payment has been already processed.");
+            }
+            $captureHandler = new Capture($order);
+            $captureHandler->execute($amount);
+        } catch (Exception $e) {
+            if ($order instanceof Order && $order) {
+                Capture::removeCaptureTransaction($order->reference);
+            }
+            throw new PaymentException("Error while capturing payment.");
+        }
     }
 
-    public function hookDisplayPayment()
+    /**
+     * Release Payment
+     *
+     * @param array $params
+     * @throws OrderException
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookActionOrderStatusPostUpdate($params)
     {
-        /* Place your code here. */
+        if (!isset($params['newOrderStatus']) || !$params['newOrderStatus']
+            || !isset($params['id_order']) || !$params['id_order']) {
+            return;
+        }
+
+        $order = new Order($params['id_order']);
+        if ($order->payment !== $this->displayName) {
+            return;
+        }
+        if ($params['newOrderStatus']->id === _PS_OS_CANCELED_) {
+            try {
+                $releaseHandler = new Release($order);
+                $releaseHandler->execute();
+            } catch (Exception $e) {
+                throw new OrderException("Error while releasing payment.");
+            }
+        }
     }
 
-    public function hookDisplayPaymentReturn()
+    /**
+     * Partial Refund
+     *
+     * @param array $params
+     * @throws CreditSlipException
+     */
+    public function hookActionOrderSlipAdd($params)
     {
-        /* Place your code here. */
+        try {
+            $order = null;
+            // ignore if order is present in params
+            if (!isset($params['order']) || !$params['order']) {
+                return;
+            }
+
+            /** @var Order $order */
+            $order = $params['order'];
+            if ($order->payment !== $this->displayName) {
+                return;
+            }
+            $refundHandler = new Refund($order);
+            $refundHandler->execute(true);
+        } catch (Exception $e) {
+            if ($order instanceof Order && $order) {
+                Refund::removeRefundTransaction($order->id);
+            }
+            throw new CreditSlipException("Error while refunding amount.");
+        }
+    }
+
+    /**
+     * Add Sezzle tab in Order Admin
+     *
+     * @param array $params
+     * @return bool|string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    public function hookDisplayAdminOrderTabOrder($params)
+    {
+        return $this->render(Util::getModuleTemplatePath() . 'admin_tab_order.html.twig', [
+            'sezzle' => [
+                "tab_name" => $this->displayName
+            ]
+        ]);
+    }
+
+    /**
+     * Add Sezzle tab in Order Admin
+     *
+     * @param array $params
+     * @return bool|string
+     */
+    public function hookDisplayAdminOrderTabLink($params)
+    {
+        return $this->hookDisplayAdminOrderTabOrder($params);
+    }
+
+    /**
+     * Display Sezzle Elements in Order Admin
+     *
+     * @param array $params
+     * @return string|void
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookDisplayAdminOrderContentOrder($params)
+    {
+        if (!isset($params['id_order']) || !$params['id_order']) {
+            return;
+        }
+        $order = new Order($params['id_order']);
+        if ($order->payment !== $this->displayName) {
+            return;
+        }
+        $currency = new Currency($order->id_currency);
+        $txn = SezzleTransaction::getByReference($order->reference);
+        $templateParams = [
+            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currency->symbol),
+            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currency->symbol),
+            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currency->symbol),
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currency->symbol)
+        ];
+        if ($txn->getAuthExpiration() > 0) {
+            $dateTimeNow = new DateTime();
+            $dateTimeExpire = new DateTime($txn->getAuthExpiration());
+            $templateParams = array_merge($templateParams, [
+                'auth_expiration' => $txn->getAuthExpiration(),
+                'is_auth_expired' => $dateTimeNow > $dateTimeExpire
+            ]);
+        }
+        $tokenizeTxn = SezzleTokenization::getByCustomerId($order->id_customer);
+        if ($customerUUID = $tokenizeTxn->getCustomerUuid()) {
+            $templateParams = array_merge($templateParams, ['customer_uuid' => $customerUUID]);
+        }
+        return $this->render(Util::getModuleTemplatePath() . 'admin_content_order.html.twig', [
+            'sezzle' => $templateParams
+        ]);
+    }
+
+    /**
+     * Display Sezzle Elements in Order Admin
+     *
+     * @param array $params
+     * @return string|void
+     * @throws PrestaShopDatabaseException
+     * @throws PrestaShopException
+     */
+    public function hookDisplayAdminOrderTabContent($params)
+    {
+        return $this->hookDisplayAdminOrderContentOrder($params);
+    }
+
+    /**
+     * Render a twig template
+     *
+     * @param string $template
+     * @param array $params
+     * @return string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
+     */
+    private function render($template, array $params = [])
+    {
+        /** @var Twig_Environment $twig */
+        $twig = $this->get('twig');
+        return $twig->render($template, $params);
     }
 }

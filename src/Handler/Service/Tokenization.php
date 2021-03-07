@@ -31,36 +31,61 @@ use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Capture
+ * Class Tokenization
  * @package PrestaShop\Module\Sezzle\Handler\Service
  */
-class Capture
+class Tokenization
 {
 
     /**
-     * Capture Payment
+     * Get Tokenization Details
      *
-     * @param string $orderUUID
-     * @param Sezzle\Model\Order\Capture $payload
-     * @return Sezzle\Model\Order\Capture
+     * @param string $tokenizeToken
+     * @return Sezzle\Model\Tokenize
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function capturePayment($orderUUID, Sezzle\Model\Order\Capture $payload)
+    public static function getTokenizationDetails($tokenizeToken)
     {
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
 
-        // instantiate capture service
-        $captureService = new Sezzle\Services\CaptureService(new ClientService(
+        // instantiate tokenization service
+        $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
             new GuzzleFactory(),
             $apiMode
         ));
 
-        // get capture response
-        return $captureService->capturePayment(
+        // get tokenization response
+        return $tokenizationService->getTokenDetails(
             Authentication::getToken(),
-            $orderUUID,
+            $tokenizeToken
+        );
+    }
+
+    /**
+     * Create Order by Customer UUID
+     *
+     * @param string $customerUUID
+     * @param Sezzle\Model\CustomerOrder $payload
+     * @return Sezzle\Model\CustomerOrder
+     * @throws Sezzle\HttpClient\RequestException
+     */
+    public static function createOrder($customerUUID, Sezzle\Model\CustomerOrder $payload)
+    {
+        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+
+        // instantiate tokenization service
+        $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
+            new GuzzleFactory(),
+            $apiMode
+        ));
+        // get order response
+        return $tokenizationService->createOrder(
+            Authentication::getToken(),
+            $customerUUID,
             $payload->toArray()
         );
     }

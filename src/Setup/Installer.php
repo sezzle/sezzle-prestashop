@@ -106,10 +106,10 @@ class Installer
         $orderState->name = array();
         $orderState->module_name = $this->module->name;
         $orderState->send_email = true;
-        $orderState->color = 'blue';
+        $orderState->color = '#34209E';
         $orderState->hidden = false;
         $orderState->delivery = false;
-        $orderState->logable = true;
+        $orderState->logable = false;
         $orderState->invoice = false;
         $orderState->paid = false;
         foreach (Language::getLanguages() as $language) {
@@ -145,6 +145,7 @@ class Installer
             'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'sezzle_transaction` (
                 `id_sezzle_transaction` int(11) NOT NULL AUTO_INCREMENT,
                 `reference` varchar(255) NOT NULL,
+                `id_customer` int(11) NOT NULL,
                 `id_cart` int(11) NOT NULL,
                 `order_uuid` varchar(255) NOT NULL,
                 `checkout_url` varchar(255) NOT NULL,
@@ -152,7 +153,19 @@ class Installer
                 `authorized_amount` decimal(20,6) NOT NULL,
                 `capture_amount` decimal(20,6) NOT NULL,
                 `refund_amount` decimal(20,6) NOT NULL,
+                `release_amount` decimal(20,6) NOT NULL,
+                `auth_expiration` datetime NOT NULL,
+                `payment_action` varchar(255) NOT NULL,
                 PRIMARY KEY  (`id_sezzle_transaction`)
+            ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;',
+            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'sezzle_tokenization` (
+                `id_sezzle_tokenization` int(11) NOT NULL AUTO_INCREMENT,
+                `id_customer` int(11) NOT NULL,
+                `token` varchar(255) NOT NULL,
+                `customer_uuid` varchar(255) NOT NULL,
+                `customer_uuid_expiration` datetime NOT NULL,
+                `approved` tinyint(1) UNSIGNED NOT NULL,
+                PRIMARY KEY  (`id_sezzle_tokenization`)
             ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8;'
         ];
 
@@ -168,6 +181,7 @@ class Installer
     {
         $queries = [
             'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'sezzle_transaction`',
+            'DROP TABLE IF EXISTS `' . _DB_PREFIX_ . 'sezzle_tokenization`'
         ];
 
         return $this->executeQueries($queries);
@@ -182,11 +196,14 @@ class Installer
     {
         $hooks = [
             'header',
-            'backOfficeHeader',
             'paymentOptions',
-            'actionPaymentConfirmation',
-            'displayPayment',
-            'displayPaymentReturn',
+            'actionPaymentCCAdd',
+            'actionOrderStatusPostUpdate',
+            'actionOrderSlipAdd',
+            'displayAdminOrderTabOrder',
+            'displayAdminOrderTabLink',
+            'displayAdminOrderContentOrder',
+            'displayAdminOrderTabContent'
         ];
 
         return (bool)$this->module->registerHook($hooks);
