@@ -23,6 +23,7 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
@@ -55,6 +56,8 @@ class Sezzle extends PaymentModule
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
 
+    const SUPPORTED_REGIONS = ['US/CA', 'EU'];
+
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
         "merchant_id" => "SEZZLE_MERCHANT_ID",
@@ -68,6 +71,10 @@ class Sezzle extends PaymentModule
      * @var string
      */
     private $logo_url;
+    /**
+     * @var string
+     */
+    private $gatewayRegion;
 
     /**
      * Sezzle constructor.
@@ -158,7 +165,7 @@ class Sezzle extends PaymentModule
     public function getContent()
     {
         // If values have been submitted in the form, process.
-        if (((bool)Tools::isSubmit('submitSezzleModule'))) {
+        if ((bool)Tools::isSubmit('submitSezzleModule')) {
             $this->validateConfigForm();
             if (!count($this->postErrors)) {
                 $this->postProcess();
@@ -349,6 +356,7 @@ class Sezzle extends PaymentModule
         foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+        Configuration::updateValue('SEZZLE_GATEWAY_REGION', $this->gatewayRegion);
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
@@ -370,6 +378,12 @@ class Sezzle extends PaymentModule
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
+        $gatewayRegion = new GatewayRegion();
+        if (!$gatewayRegion = $gatewayRegion->get()) {
+            $this->postErrors[] = sprintf("Invalid API Keys.");
+            return;
+        }
+        $this->gatewayRegion = $gatewayRegion;
     }
 
     /**

@@ -29,4 +29,7 @@ class Config
     const CUSTOMER_ORDER_RESOURCE = 'customer/%s/order';
     const TOKENIZE_RESOURCE = 'token/%s/session';
     const ORDER_RESOURCE = 'order/%s';
+
+    const GATEWAY_URL = "https://%sgateway.%s/%s";
+    const SEZZLE_DOMAIN = "%ssezzle.com";
 }

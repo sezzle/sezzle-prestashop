@@ -22,37 +22,71 @@ class ClientService
      * @var GuzzleClient
      */
     private $client;
-
-    /**
-     * @var int
-     */
-    private $shopId;
     /**
      * @var string
      */
     private $apiMode;
 
     /**
+     * @var string
+     */
+    private $gatewayRegion;
+    private $supportedRegions;
+
+    /**
      * ClientService constructor.
      * @param GuzzleFactory $factory
      * @param string $apiMode
+     * @param string $gatewayRegion
      */
     public function __construct(
         GuzzleFactory $factory,
-        string $apiMode
+        string $apiMode,
+        string $gatewayRegion = ""
     ) {
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
+        $this->gatewayRegion = $gatewayRegion;
+        $this->supportedRegions = ['US/CA', 'EU'];
+//        $this->apiMode === Config::SANDBOX
+//            ? $this->baseUrl = Config::SANDBOX_GATEWAY
+//            : $this->baseUrl = Config::PRODUCTION_GATEWAY;
 
-        //Backend does not have any active shop. In order to authenticate there, please use
-        //the "configure()"-function instead.
-//        if (!$this->settingsService->hasSettings() || !$this->settingsService->get('active')) {
-//            return;
-//        }
-//
-        $this->apiMode === Config::SANDBOX
-            ? $this->baseUrl = Config::SANDBOX_GATEWAY
-            : $this->baseUrl = Config::PRODUCTION_GATEWAY;
+        $this->baseUrl = $this->getGatewayUrl($this->apiMode, 'v2', $this->gatewayRegion);
+    }
+
+    /**
+     * Get Sezzle Domain
+     *
+     * @param string $gatewayRegion
+     * @return string
+     */
+    public function getSezzleDomain($gatewayRegion = '')
+    {
+        switch ($gatewayRegion) {
+            case $this->supportedRegions[1]:
+                return sprintf(Config::SEZZLE_DOMAIN, 'eu.');
+            case $this->supportedRegions[0]:
+            default:
+                return sprintf(Config::SEZZLE_DOMAIN, '');
+        }
+    }
+
+    /**
+     * Get Gateway URL
+     *
+     * @param string $apiMode
+     * @param string $apiVersion
+     * @param string $gatewayRegion
+     * @return string
+     */
+    private function getGatewayUrl($apiMode, $apiVersion, $gatewayRegion = '')
+    {
+        $sezzleDomain = $this->getSezzleDomain($gatewayRegion);
+        if ($apiMode === Config::SANDBOX) {
+            return sprintf(Config::GATEWAY_URL, 'staging.', $sezzleDomain, $apiVersion);
+        }
+        return sprintf(Config::GATEWAY_URL, "", $sezzleDomain, $apiVersion);
     }
 
     /**
@@ -72,7 +106,7 @@ class ClientService
             $this->setHeader('Authorization', 'Bearer ' . $token);
         }
 
-        $resourceUri = $this->baseUrl . $resourceUri;
+        $resourceUri = $this->baseUrl . '/' . $resourceUri;
 
         if (!empty($data)) {
             $data = json_encode($data);
