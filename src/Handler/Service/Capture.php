@@ -50,11 +50,13 @@ class Capture
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate capture service
         $captureService = new Sezzle\Services\CaptureService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // get capture response

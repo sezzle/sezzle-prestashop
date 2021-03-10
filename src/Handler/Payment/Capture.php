@@ -98,11 +98,11 @@ class Capture extends Order
         if ($captureUuid = $response->getUuid()) {
             // post capture handling
             $finalAmount = $amount + $txn->getCaptureAmount();
-            Payment::setTransactionId($this->order->reference, $captureUuid);
             SezzleTransaction::storeCaptureAmount($finalAmount, $txn->getOrderUUID());
             if (!$isPartial) {
                 $this->changeOrderState($this->order, Configuration::get('PS_OS_PAYMENT'));
             }
+            Payment::setTransactionId($this->order->reference, $captureUuid);
         }
     }
 

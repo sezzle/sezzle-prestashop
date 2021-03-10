@@ -49,11 +49,13 @@ class Tokenization
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate tokenization service
         $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // get tokenization response
@@ -76,11 +78,13 @@ class Tokenization
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate tokenization service
         $tokenizationService = new Sezzle\Services\TokenizationService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
         // get order response
         return $tokenizationService->createOrder(

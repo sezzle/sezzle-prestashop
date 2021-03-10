@@ -50,11 +50,13 @@ class Release
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate release service
         $releaseService = new Sezzle\Services\ReleaseService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // get release response

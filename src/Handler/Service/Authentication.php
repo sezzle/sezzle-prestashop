@@ -53,6 +53,7 @@ class Authentication
             : Sezzle::MODE_SANDBOX;
         $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
         $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // auth credentials set
         $authModel = new AuthCredentials();
@@ -61,7 +62,8 @@ class Authentication
         // instantiate authentication service
         $tokenService = new AuthenticationService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // get token

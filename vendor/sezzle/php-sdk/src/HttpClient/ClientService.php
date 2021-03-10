@@ -16,7 +16,7 @@ class ClientService
     /**
      * @var string
      */
-    private $baseUrl;
+    private $gatewayUrl;
 
     /**
      * @var GuzzleClient
@@ -31,7 +31,6 @@ class ClientService
      * @var string
      */
     private $gatewayRegion;
-    private $supportedRegions;
 
     /**
      * ClientService constructor.
@@ -47,46 +46,7 @@ class ClientService
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
         $this->gatewayRegion = $gatewayRegion;
-        $this->supportedRegions = ['US/CA', 'EU'];
-//        $this->apiMode === Config::SANDBOX
-//            ? $this->baseUrl = Config::SANDBOX_GATEWAY
-//            : $this->baseUrl = Config::PRODUCTION_GATEWAY;
-
-        $this->baseUrl = $this->getGatewayUrl($this->apiMode, 'v2', $this->gatewayRegion);
-    }
-
-    /**
-     * Get Sezzle Domain
-     *
-     * @param string $gatewayRegion
-     * @return string
-     */
-    public function getSezzleDomain($gatewayRegion = '')
-    {
-        switch ($gatewayRegion) {
-            case $this->supportedRegions[1]:
-                return sprintf(Config::SEZZLE_DOMAIN, 'eu.');
-            case $this->supportedRegions[0]:
-            default:
-                return sprintf(Config::SEZZLE_DOMAIN, '');
-        }
-    }
-
-    /**
-     * Get Gateway URL
-     *
-     * @param string $apiMode
-     * @param string $apiVersion
-     * @param string $gatewayRegion
-     * @return string
-     */
-    private function getGatewayUrl($apiMode, $apiVersion, $gatewayRegion = '')
-    {
-        $sezzleDomain = $this->getSezzleDomain($gatewayRegion);
-        if ($apiMode === Config::SANDBOX) {
-            return sprintf(Config::GATEWAY_URL, 'staging.', $sezzleDomain, $apiVersion);
-        }
-        return sprintf(Config::GATEWAY_URL, "", $sezzleDomain, $apiVersion);
+        $this->gatewayUrl = Config::getGatewayUrl($this->apiMode, Config::API_V2, $this->gatewayRegion);
     }
 
     /**
@@ -106,7 +66,7 @@ class ClientService
             $this->setHeader('Authorization', 'Bearer ' . $token);
         }
 
-        $resourceUri = $this->baseUrl . '/' . $resourceUri;
+        $resourceUri = $this->gatewayUrl . '/' . $resourceUri;
 
         if (!empty($data)) {
             $data = json_encode($data);

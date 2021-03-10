@@ -43,26 +43,8 @@ class GatewayRegion
      */
     public function get()
     {
-        // stored data
-        $storedApiMode = Configuration::get(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $storedPublicKey = Configuration::get(Sezzle::$formFields["public_key"]);
-        $storedPrivateKey = Configuration::get(Sezzle::$formFields["private_key"]);
-        $storedGatewayRegion = Configuration::get('SEZZLE_GATEWAY_REGION');
-
-        // input data
-        $apiMode = Tools::getValue(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $publicKey = Tools::getValue(Sezzle::$formFields["public_key"]);
-        $privateKey = Tools::getValue(Sezzle::$formFields["private_key"]);
-
-        // return stored region if the key elements match
-        if ($storedPublicKey === $publicKey
-            && $storedPrivateKey === $privateKey
-            && $storedApiMode === $apiMode
-            && $storedGatewayRegion) {
+        $storedGatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
+        if (!$this->hasKeysConfigurationChanged() && $storedGatewayRegion) {
             return $storedGatewayRegion;
         }
 
@@ -76,6 +58,36 @@ class GatewayRegion
             }
         }
         return "";
+    }
+
+    /**
+     * Checking API Keys Configuration has changed or not
+     *
+     * @return bool
+     */
+    private function hasKeysConfigurationChanged()
+    {
+        // stored data
+        $storedApiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+        $storedPublicKey = Configuration::get(Sezzle::$formFields["public_key"]);
+        $storedPrivateKey = Configuration::get(Sezzle::$formFields["private_key"]);
+
+        // input data
+        $apiMode = Tools::getValue(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+        $publicKey = Tools::getValue(Sezzle::$formFields["public_key"]);
+        $privateKey = Tools::getValue(Sezzle::$formFields["private_key"]);
+
+        // return stored region if the key elements match
+        if ($storedPublicKey === $publicKey
+            && $storedPrivateKey === $privateKey
+            && $storedApiMode === $apiMode) {
+            return false;
+        }
+        return true;
     }
 
     /**
