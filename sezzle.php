@@ -23,6 +23,7 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
@@ -32,6 +33,7 @@ use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Exception\PaymentException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
+use Sezzle\Config;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -55,6 +57,9 @@ class Sezzle extends PaymentModule
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
 
+    const SUPPORTED_REGIONS = ['US/CA', 'EU'];
+    const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
+
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
         "merchant_id" => "SEZZLE_MERCHANT_ID",
@@ -68,6 +73,10 @@ class Sezzle extends PaymentModule
      * @var string
      */
     private $logo_url;
+    /**
+     * @var string
+     */
+    private $gatewayRegion;
 
     /**
      * Sezzle constructor.
@@ -148,6 +157,7 @@ class Sezzle extends PaymentModule
         foreach (static::$formFields as $field) {
             Configuration::deleteByName($field);
         }
+        Configuration::deleteByName(self::SEZZLE_GATEWAY_REGION_KEY);
 
         return $result;
     }
@@ -158,7 +168,7 @@ class Sezzle extends PaymentModule
     public function getContent()
     {
         // If values have been submitted in the form, process.
-        if (((bool)Tools::isSubmit('submitSezzleModule'))) {
+        if ((bool)Tools::isSubmit('submitSezzleModule')) {
             $this->validateConfigForm();
             if (!count($this->postErrors)) {
                 $this->postProcess();
@@ -349,6 +359,7 @@ class Sezzle extends PaymentModule
         foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
+        Configuration::updateValue(self::SEZZLE_GATEWAY_REGION_KEY, $this->gatewayRegion);
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
@@ -370,6 +381,32 @@ class Sezzle extends PaymentModule
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
+        $gatewayRegion = new GatewayRegion();
+        if (!$gatewayRegion = $gatewayRegion->get()) {
+            $this->postErrors[] = sprintf("Invalid API Keys.");
+            return;
+        }
+        $this->gatewayRegion = $gatewayRegion;
+    }
+
+    /**
+     * Check Currency
+     *
+     * @param Cart $cart
+     * @return bool
+     */
+    public function checkCurrency($cart)
+    {
+        $currencyOrder = new Currency($cart->id_currency);
+        $currenciesModule = $this->getCurrency($cart->id_currency);
+        if (is_array($currenciesModule)) {
+            foreach ($currenciesModule as $currencyModule) {
+                if ($currencyOrder->id == $currencyModule['id_currency']) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -382,7 +419,13 @@ class Sezzle extends PaymentModule
         if (!$isWidgetEnabled || !$merchantId) {
             return;
         }
-        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
+        $gatewayRegion = Configuration::get(self::SEZZLE_GATEWAY_REGION_KEY);
+        $sezzleDomain = Config::getSezzleDomain($gatewayRegion);
+        $widgetURL = sprintf(
+            "https://widget.%s/v1/javascript/price-widget?uuid=%s",
+            $sezzleDomain,
+            $merchantId
+        );
         $this->context->controller->registerJavascript(
             $this->name . '-sezzle-widget',
             $widgetURL,
@@ -421,26 +464,6 @@ class Sezzle extends PaymentModule
         return [
             $option
         ];
-    }
-
-    /**
-     * Check Currency
-     *
-     * @param Cart $cart
-     * @return bool
-     */
-    public function checkCurrency($cart)
-    {
-        $currencyOrder = new Currency($cart->id_currency);
-        $currenciesModule = $this->getCurrency($cart->id_currency);
-        if (is_array($currenciesModule)) {
-            foreach ($currenciesModule as $currencyModule) {
-                if ($currencyOrder->id == $currencyModule['id_currency']) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -504,7 +527,7 @@ class Sezzle extends PaymentModule
         if ($order->payment !== $this->displayName) {
             return;
         }
-        if ($params['newOrderStatus']->id === _PS_OS_CANCELED_) {
+        if ($params['newOrderStatus']->id === (int)_PS_OS_CANCELED_) {
             try {
                 $releaseHandler = new Release($order);
                 $releaseHandler->execute();

@@ -16,43 +16,37 @@ class ClientService
     /**
      * @var string
      */
-    private $baseUrl;
+    private $gatewayUrl;
 
     /**
      * @var GuzzleClient
      */
     private $client;
-
-    /**
-     * @var int
-     */
-    private $shopId;
     /**
      * @var string
      */
     private $apiMode;
 
     /**
+     * @var string
+     */
+    private $gatewayRegion;
+
+    /**
      * ClientService constructor.
      * @param GuzzleFactory $factory
      * @param string $apiMode
+     * @param string $gatewayRegion
      */
     public function __construct(
         GuzzleFactory $factory,
-        string $apiMode
+        string $apiMode,
+        string $gatewayRegion = ""
     ) {
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
-
-        //Backend does not have any active shop. In order to authenticate there, please use
-        //the "configure()"-function instead.
-//        if (!$this->settingsService->hasSettings() || !$this->settingsService->get('active')) {
-//            return;
-//        }
-//
-        $this->apiMode === Config::SANDBOX
-            ? $this->baseUrl = Config::SANDBOX_GATEWAY
-            : $this->baseUrl = Config::PRODUCTION_GATEWAY;
+        $this->gatewayRegion = $gatewayRegion;
+        $this->gatewayUrl = Config::getGatewayUrl($this->apiMode, Config::API_V2, $this->gatewayRegion);
     }
 
     /**
@@ -72,7 +66,7 @@ class ClientService
             $this->setHeader('Authorization', 'Bearer ' . $token);
         }
 
-        $resourceUri = $this->baseUrl . $resourceUri;
+        $resourceUri = $this->gatewayUrl . '/' . $resourceUri;
 
         if (!empty($data)) {
             $data = json_encode($data);

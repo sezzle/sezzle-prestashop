@@ -133,7 +133,9 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
         $cart = $this->context->cart;
         $txn = new SezzleTransaction();
         $txn->storeCheckoutSession($cart, $session);
-        $this->context->cookie->token = $session->getTokenize()->getToken();
+        if ($session->getTokenize()) {
+            $this->context->cookie->token = $session->getTokenize()->getToken();
+        }
     }
 
     /**

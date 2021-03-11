@@ -49,11 +49,13 @@ class Order
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate order service
         $orderService = new Sezzle\Services\OrderService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // order response
@@ -76,11 +78,13 @@ class Order
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate order service
         $orderService = new Sezzle\Services\OrderService(new ClientService(
             new GuzzleFactory(),
-            $apiMode
+            $apiMode,
+            $gatewayRegion
         ));
 
         // get response status
