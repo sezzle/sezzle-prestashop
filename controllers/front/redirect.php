@@ -1,8 +1,4 @@
 <?php
-
-use PrestaShop\Module\Sezzle\Handler\Session;
-use PrestaShop\Module\Sezzle\Handler\Tokenization;
-
 /**
  * 2007-2021 PrestaShop
  *
@@ -26,6 +22,10 @@ use PrestaShop\Module\Sezzle\Handler\Tokenization;
  * @copyright Copyright (c) Sezzle
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
+
+use PrestaShop\Module\Sezzle\Handler\Session;
+use PrestaShop\Module\Sezzle\Handler\Tokenization;
+
 class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**

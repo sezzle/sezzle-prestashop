@@ -131,7 +131,7 @@ class Session
         $order = new Sezzle\Model\Session\Order();
         return $order->setIntent("AUTH")
             ->setDescription("Prestashop Order")
-            ->setReferenceId(strval($this->cart->id))
+            ->setReferenceId((string)$this->cart->id)
             ->setRequiresShippingInfo(false)
             ->setOrderAmount($this->getOrderAmountObject())
             ->setTaxAmount($this->getTaxAmountObject())

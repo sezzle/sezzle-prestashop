@@ -106,7 +106,7 @@ class Tokenization
         $amountInCents = \Sezzle\Util::formatToCents($cart->getOrderTotal());
         $orderAmount = Util::getAmountObject($amountInCents, $currency->iso_code);
         return $payload->setIntent('AUTH')
-            ->setReferenceId(strval($cart->id))
+            ->setReferenceId((string)$cart->id)
             ->setOrderAmount($orderAmount);
     }
 }

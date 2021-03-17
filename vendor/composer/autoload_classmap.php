@@ -89,6 +89,7 @@ return array(
     'GuzzleHttp\\TransferStats' => $vendorDir . '/guzzlehttp/guzzle/src/TransferStats.php',
     'GuzzleHttp\\Utils' => $vendorDir . '/guzzlehttp/guzzle/src/Utils.php',
     'Payment' => $baseDir . '/classes/Payment.php',
+    'PrestaShop\\Module\\Sezzle\\Handler\\GatewayRegion' => $baseDir . '/src/Handler/GatewayRegion.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Order' => $baseDir . '/src/Handler/Order.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Authorization' => $baseDir . '/src/Handler/Payment/Authorization.php',
     'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Capture' => $baseDir . '/src/Handler/Payment/Capture.php',

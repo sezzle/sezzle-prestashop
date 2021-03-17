@@ -42,7 +42,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once dirname(__FILE__) . '/vendor/autoload.php';
 
 class Sezzle extends PaymentModule
 {
@@ -93,12 +93,11 @@ class Sezzle extends PaymentModule
 
         $this->currencies = true;
         $this->currencies_mode = 'checkbox';
-        // Set $this->bootstrap to true if your module is compliant with bootstrap (PrestaShop 1.6)
         $this->bootstrap = true;
 
         parent::__construct();
 
-        $this->displayName = $this->l(self::DISPLAY_NAME);
+        $this->displayName = $this->l('Sezzle');
         $this->description = $this->l(
             '
                 Sezzle is a public-benefit corporation on a mission to financially empower
@@ -377,7 +376,11 @@ class Sezzle extends PaymentModule
             }
 
             if (!Tools::getValue($key)) {
-                $readableKey = ucwords(str_replace("sezzle ", "", str_replace("_", " ", strtolower($key))));
+                $readableKey = Tools::ucwords(Tools::strReplaceFirst(
+                    "_",
+                    " ",
+                    Tools::strReplaceFirst("sezzle_", " ", Tools::strtolower($key))
+                ));
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
