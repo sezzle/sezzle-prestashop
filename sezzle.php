@@ -42,7 +42,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-require_once dirname(__FILE__) . '/vendor/autoload.php';
+require_once _PS_MODULE_DIR_ . 'sezzle/vendor/autoload.php';
 
 class Sezzle extends PaymentModule
 {
@@ -52,7 +52,6 @@ class Sezzle extends PaymentModule
     const MODE_SANDBOX = "sandbox";
     const MODE_PRODUCTION = "production";
     const MODULE_NAME = "sezzle";
-    const DISPLAY_NAME = "Sezzle";
 
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
