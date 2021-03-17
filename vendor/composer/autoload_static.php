@@ -147,6 +147,7 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'GuzzleHttp\\TransferStats' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/TransferStats.php',
         'GuzzleHttp\\Utils' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Utils.php',
         'Payment' => __DIR__ . '/../..' . '/classes/Payment.php',
+        'PrestaShop\\Module\\Sezzle\\Handler\\GatewayRegion' => __DIR__ . '/../..' . '/src/Handler/GatewayRegion.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Order' => __DIR__ . '/../..' . '/src/Handler/Order.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Authorization' => __DIR__ . '/../..' . '/src/Handler/Payment/Authorization.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Capture' => __DIR__ . '/../..' . '/src/Handler/Payment/Capture.php',

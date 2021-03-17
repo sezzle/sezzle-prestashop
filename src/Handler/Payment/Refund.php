@@ -96,7 +96,7 @@ class Refund extends Order
             $txn->getOrderUUID(),
             $refundPayload
         );
-        if ($refundUuid = $response->getUuid()) {
+        if ($response->getUuid()) {
             // post refund handling
             $finalAmount = $txn->getRefundAmount() + $amount;
             SezzleTransaction::storeRefundAmount($finalAmount, $txn->getOrderUUID());

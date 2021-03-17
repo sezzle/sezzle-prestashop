@@ -1,11 +1,4 @@
 <?php
-
-use PrestaShop\Module\Sezzle\Handler\Payment\Authorization;
-use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
-use PrestaShop\Module\Sezzle\Handler\Service\Order as SezzleOrder;
-use PrestaShop\Module\Sezzle\Handler\Tokenization;
-use Sezzle\HttpClient\RequestException;
-
 /**
  * 2007-2021 PrestaShop
  *
@@ -29,6 +22,13 @@ use Sezzle\HttpClient\RequestException;
  * @copyright Copyright (c) Sezzle
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
+
+use PrestaShop\Module\Sezzle\Handler\Payment\Authorization;
+use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
+use PrestaShop\Module\Sezzle\Handler\Service\Order as SezzleOrder;
+use PrestaShop\Module\Sezzle\Handler\Tokenization;
+use Sezzle\HttpClient\RequestException;
+
 class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontController
 {
     /**
