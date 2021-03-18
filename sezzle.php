@@ -82,7 +82,7 @@ class Sezzle extends PaymentModule
      */
     public function __construct()
     {
-        $this->name = self::MODULE_NAME;
+        $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
