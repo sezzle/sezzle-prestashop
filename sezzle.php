@@ -86,6 +86,7 @@ class Sezzle extends PaymentModule
         $this->tab = 'payments_gateways';
         $this->version = '1.0.0';
         $this->author = 'Sezzle';
+        $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
         $this->controllers = array('complete', 'redirect');
         $this->logo_url = 'https://d34uoa9py2cgca.cloudfront.net/branding/sezzle-logos/png/sezzle-logo-sm-100w.png';
