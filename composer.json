@@ -1,5 +1,8 @@
 {
   "name": "sezzle/prestashop",
+  "version": "1.0.1",
+  "type": "prestashop-module",
+  "description": "Sezzle module for PrestaShop",
   "authors": [
     {
       "name": "Sezzle",
@@ -26,6 +29,5 @@
     "preferred-install": "dist",
     "optimize-autoloader": true,
     "prepend-autoloader": false
-  },
-  "type": "prestashop-module"
+  }
 }
