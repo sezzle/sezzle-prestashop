@@ -25,6 +25,10 @@
 
 namespace PrestaShop\Module\Sezzle\Handler;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Configuration;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;

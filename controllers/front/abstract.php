@@ -23,6 +23,10 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Sezzle\HttpClient\RequestException;
 use PrestaShop\Module\Sezzle\Handler\Service\Order as OrderService;
 use Sezzle\Model\CustomerOrder;

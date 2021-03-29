@@ -23,6 +23,10 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Sezzle\Model\Tokenize;
 
 /**

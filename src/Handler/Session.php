@@ -25,6 +25,10 @@
 
 namespace PrestaShop\Module\Sezzle\Handler;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Cart;
 use Currency;
 use Exception;

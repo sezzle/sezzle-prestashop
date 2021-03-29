@@ -25,6 +25,10 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Service;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Cart;
 use Configuration;
 use Sezzle;

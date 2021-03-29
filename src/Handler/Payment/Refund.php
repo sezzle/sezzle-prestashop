@@ -25,6 +25,10 @@
 
 namespace PrestaShop\Module\Sezzle\Handler\Payment;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Currency;
 use OrderSlip;
 use OrderCore as CoreOrder;

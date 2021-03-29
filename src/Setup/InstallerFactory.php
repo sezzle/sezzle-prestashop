@@ -27,6 +27,10 @@ declare(strict_types=1);
 
 namespace PrestaShop\Module\Sezzle\Setup;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use Module;
 
 /**
