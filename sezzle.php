@@ -23,6 +23,10 @@
  * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
  */
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
 use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
@@ -37,10 +41,6 @@ use Sezzle\Config;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
-
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
 
 require_once _PS_MODULE_DIR_ . 'sezzle/vendor/autoload.php';
 
