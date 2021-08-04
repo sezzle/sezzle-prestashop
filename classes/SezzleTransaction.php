@@ -343,6 +343,19 @@ class SezzleTransaction extends ObjectModel
      */
     public function storeCheckoutSession(Cart $cart, Sezzle\Model\Session $session)
     {
+        $txn = self::getByCartId($cart->id);
+        if ($txn->getIdSezzleTransaction()) {
+            Db::getInstance()->update(
+                self::$definition['table'],
+                array(
+                    'checkout_url' => pSQL($session->getOrder()->getCheckoutUrl()),
+                    'order_uuid' => pSQL($session->getOrder()->getUuid()),
+                    'checkout_amount' => (float)$cart->getOrderTotal(),
+                ),
+                sprintf('id_cart = "%s"', (int)$cart->id)
+            );
+            return;
+        }
         $this->setIdCustomer($cart->id_customer)
             ->setIdCart($cart->id)
             ->setCheckoutAmount($cart->getOrderTotal())

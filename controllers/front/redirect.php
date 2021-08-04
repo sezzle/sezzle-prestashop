@@ -73,7 +73,10 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
 
         // use uncompleted checkout session if any
         $txn = SezzleTransaction::getByCartId($this->context->cart->id);
-        if (!$txn->getReference() && $txn->getAuthorizedAmount() == 0 && $checkoutUrl = $txn->getCheckoutUrl()) {
+        if (!$txn->getReference()
+            && (float)$txn->getCheckoutAmount() === $cart->getOrderTotal()
+            && $txn->getAuthorizedAmount() == 0
+            && $checkoutUrl = $txn->getCheckoutUrl()) {
             Tools::redirectLink($checkoutUrl);
         }
 
