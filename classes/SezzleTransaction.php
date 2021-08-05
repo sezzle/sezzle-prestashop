@@ -350,7 +350,7 @@ class SezzleTransaction extends ObjectModel
                 array(
                     'checkout_url' => pSQL($session->getOrder()->getCheckoutUrl()),
                     'order_uuid' => pSQL($session->getOrder()->getUuid()),
-                    'checkout_amount' => (float)$cart->getOrderTotal(),
+                    'checkout_amount' => $cart->getOrderTotal(),
                 ),
                 sprintf('id_cart = "%s"', (int)$cart->id)
             );
