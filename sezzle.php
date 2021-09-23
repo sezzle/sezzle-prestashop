@@ -84,7 +84,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.2';
+        $this->version = '1.0.3';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -107,8 +107,8 @@ class Sezzle extends PaymentModule
                 and Sezzle assumes all risk of fraud, chargeback and repayment.'
         );
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
-        $this->limited_countries = array('US', 'CA');
-        $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
+        $this->limited_countries = array('US', 'CA', 'DE', 'FR', 'ES', 'IT');
+        $this->ps_versions_compliancy = array('min' => '1.7.7.0', 'max' => _PS_VERSION_);
     }
 
     /**
