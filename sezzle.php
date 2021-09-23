@@ -107,7 +107,7 @@ class Sezzle extends PaymentModule
                 and Sezzle assumes all risk of fraud, chargeback and repayment.'
         );
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
-        $this->limited_countries = array('US', 'CA');
+        $this->limited_countries = array('US', 'CA', 'DE', 'FR', 'ES', 'IT');
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
     }
 
