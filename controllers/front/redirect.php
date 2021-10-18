@@ -71,17 +71,6 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
             ));
         }
 
-        // use uncompleted checkout session if any
-        $txn = SezzleTransaction::getByCartId($this->context->cart->id);
-        $computePrecision = Context::getContext()->getComputingPrecision();
-        $checkoutAmount = Tools::ps_round($txn->getCheckoutAmount(), $computePrecision);
-        if (!$txn->getReference()
-            && $checkoutAmount === $cart->getOrderTotal()
-            && $txn->getAuthorizedAmount() == 0
-            && $checkoutUrl = $txn->getCheckoutUrl()) {
-            Tools::redirectLink($checkoutUrl);
-        }
-
         // session build and redirect
         try {
             $session = new Session($cart);
