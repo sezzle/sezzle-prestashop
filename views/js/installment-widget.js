@@ -1,9 +1,9 @@
 
 
 var sezzleCheckoutRender = function(){
-    var merchantLocale = "DE" // "['US', 'CA', 'IN', 'GU', 'PR', 'VI', 'AS', 'MP']" serves bi-weekly product, else serves monthly
+    var merchantLocale = (document.sezzleMerchantRegion || 'EU') === 'EU'?'DE':'US'; // "['US', 'CA', 'IN', 'GU', 'PR', 'VI', 'AS', 'MP']" serves bi-weekly product, else serves monthly
     var currencySymbol = ""; // if not provided, it will attempt to detect the currency symbol from the price text. If site uses charset="ISO-8859-1", use String.fromCharCode() - param is HTML hex char code integer
-    var checkoutTotal = document.querySelector('.js-cart-summary-totals .value'); // Shopify
+    var checkoutTotal = document.querySelector('.cart-total .value'); // Shopify
     if(!checkoutTotal){
         return false;
     }
