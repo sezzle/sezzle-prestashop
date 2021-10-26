@@ -84,7 +84,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.4';
+        $this->version = '1.0.5';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -462,7 +462,7 @@ class Sezzle extends PaymentModule
         }
         $option = new PaymentOption();
         $option->setAction($this->context->link->getModuleLink($this->name, 'redirect', array(), true))
-            ->setAdditionalInformation('<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div><script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/checkout-sezzle.js" type="text/javascript"></script>')
+            ->setAdditionalInformation('<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div><script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript"></script>')
             ->setLogo($this->logo_url);
 
         return [
