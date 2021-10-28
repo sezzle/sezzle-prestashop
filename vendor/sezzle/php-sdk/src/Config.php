@@ -35,7 +35,7 @@ class Config
 
     const GATEWAY_URL = "https://%sgateway.%s/%s";
     const SEZZLE_DOMAIN = "%ssezzle.com";
-    public static $supportedRegions = ['US/CA', 'EU'];
+    public static $supportedRegions = ['US', 'EU'];
 
     /**
      * Get Sezzle Domain

@@ -56,7 +56,7 @@ class Sezzle extends PaymentModule
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
 
-    const SUPPORTED_REGIONS = ['US/CA', 'EU'];
+    const SUPPORTED_REGIONS = ['US', 'EU'];
     const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
 
     public static $formFields = [
@@ -460,9 +460,13 @@ class Sezzle extends PaymentModule
         if (!$this->checkCurrency($params['cart'])) {
             return;
         }
+
+        $gatewayRegion = Configuration::get(self::SEZZLE_GATEWAY_REGION_KEY);
+        $gatewayRegion = $gatewayRegion === 'US/CA' ? 'US' : $gatewayRegion;
+
         $option = new PaymentOption();
         $option->setAction($this->context->link->getModuleLink($this->name, 'redirect', array(), true))
-            ->setAdditionalInformation('<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div><script>document.sezzleMerchantRegion = '.json_encode(Configuration::get(self::SEZZLE_GATEWAY_REGION_KEY)).';</script><script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript"></script>')
+            ->setAdditionalInformation('<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div><script>document.sezzleMerchantRegion = '.json_encode($gatewayRegion).';</script><script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript"></script>')
             ->setLogo($this->logo_url);
 
         return [
