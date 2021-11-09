@@ -466,11 +466,13 @@ class Sezzle extends PaymentModule
 
         $option = new PaymentOption();
         $option->setAction($this->context->link->getModuleLink($this->name, 'redirect', array(), true))
-            ->setAdditionalInformation('<div id="sezzle-checkout-widget">
-                                                            <div id="sezzle-installment-widget-box"></div>
-                                                         </div>
-                                                         <script>document.sezzleMerchantRegion = '.json_encode($gatewayRegion).';</script>
-                                                         <script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript"></script>')
+            ->setAdditionalInformation(
+'<div id="sezzle-checkout-widget">
+                    <div id="sezzle-installment-widget-box"></div>
+                  </div>
+                  <script>document.sezzleMerchantRegion = '.json_encode($gatewayRegion).';</script>
+                  <script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" 
+                  type="text/javascript"></script>')
             ->setLogo($this->logo_url);
 
         return [
