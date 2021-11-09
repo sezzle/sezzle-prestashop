@@ -1,15 +1,12 @@
 
 
 var sezzleCheckoutRender = function(){
-    var merchantLocale = "DE" // "['US', 'CA', 'IN', 'GU', 'PR', 'VI', 'AS', 'MP']" serves bi-weekly product, else serves monthly
+    var merchantLocale = (document.sezzleMerchantRegion || 'US');
     var currencySymbol = ""; // if not provided, it will attempt to detect the currency symbol from the price text. If site uses charset="ISO-8859-1", use String.fromCharCode() - param is HTML hex char code integer
-    var checkoutTotal = document.querySelector('.js-cart-summary-totals .value'); // Shopify
+    var checkoutTotal = document.querySelector('.cart-total .value'); // Shopify
     if(!checkoutTotal){
         return false;
     }
-    // var checkoutTotal = document.querySelector('.order-total').querySelector('.woocommerce-Price-amount'); // WooCommerce
-    // var checkoutTotal = document.querySelector('.total').getElementsByTagName('SPAN')[1]; // CommentSold
-    // var checkoutTotal = document.querySelector('.total_total') // 3DCart
 
     renderInstallmentWidget(checkoutTotal, merchantLocale, currencySymbol);
 
@@ -24,9 +21,7 @@ var sezzleCheckoutRender = function(){
 
     // pass in the target node, as well as the observer options
     observer.observe(checkoutTotal, config);
-    if(!checkoutTotal){
-        return true;
-    }
+    return true;
 };
 
 var sezzleRenderInterval = setInterval(function(){
@@ -35,13 +30,11 @@ var sezzleRenderInterval = setInterval(function(){
     }
 }, 500);
 
-function renderInstallmentWidget(checkoutTotal, serviceRegion, currencySymbol){
+function renderInstallmentWidget(checkoutTotal, merchantLocale, currencySymbol){
     var language = document.querySelector('html').lang.substring(0,2).toLowerCase() || navigator.language.substring(0,2) || 'en';
-    var merchantLocale = serviceRegion || document.querySelector('html').lang.split('-')[1] || "US";
 
     // sets payment plan based on given param
-    var biWeeklyLocales = ['US', 'CA', 'IN', 'GU', 'PR', 'VI', 'AS', 'MP'];
-    var interval = biWeeklyLocales.indexOf(merchantLocale) > -1 ? 14 : 30;
+    var interval = merchantLocale === 'EU' ? 30 : 14;
 
     // handles translations
     var translation = {
@@ -633,3 +626,4 @@ function renderInstallmentWidget(checkoutTotal, serviceRegion, currencySymbol){
         }
     }
 }
+
