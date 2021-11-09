@@ -85,7 +85,14 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
      */
     public function isAmountMatched($prevAmount, $newAmount)
     {
-        $authorizedAmount = Tools::ps_round($prevAmount, Context::getContext()->getComputingPrecision());
+        $context = Context::getContext();
+        if(method_exists($context, 'getComputingPrecision')){
+            $precision = $context->getComputingPrecision();
+        }else{
+            $precision = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+        }
+
+        $authorizedAmount = Tools::ps_round($prevAmount, $precision);
         if ($authorizedAmount !== $newAmount) {
             return false;
         }

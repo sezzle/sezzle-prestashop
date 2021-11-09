@@ -84,7 +84,13 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization());
         }
 
-        $order = Order::getByCartId((int)$cart->id);
+        if(method_exists(Order::class, 'getByCartId')){
+            $order = Order::getByCartId((int)$cart->id);
+        }else{
+            $orderId = (int)Order::getOrderByCartId((int)$cart->id);
+            $order = ($orderId > 0) ? new Order($orderId) : null;
+        }
+
         // capture handling
         $paymentAction = Configuration::get(Sezzle::$formFields['payment_action']);
         if ($paymentAction === Sezzle::ACTION_AUTHORIZE_CAPTURE) {

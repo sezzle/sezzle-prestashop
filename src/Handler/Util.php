@@ -29,6 +29,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Configuration;
 use Context;
 use Sezzle;
 use Tools;
@@ -47,8 +48,15 @@ class Util
      */
     public static function round($amount)
     {
+        $context = Context::getContext();
+        if(method_exists($context, 'getComputingPrecision')){
+            $precision = $context->getComputingPrecision();
+        }else{
+            $precision = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+        }
+
         return number_format(
-            Tools::ps_round($amount, Context::getContext()->getComputingPrecision()),
+            Tools::ps_round($amount, $precision),
             2
         );
     }
