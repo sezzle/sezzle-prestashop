@@ -84,9 +84,9 @@ class SezzleCompleteModuleFrontController extends SezzleAbstractModuleFrontContr
             $authorizeHandler->execute($orderUUID, $this->sezzleOrder->getAuthorization());
         }
 
-        if(method_exists(Order::class, 'getByCartId')){
+        if (method_exists(Order::class, 'getByCartId')) {
             $order = Order::getByCartId((int)$cart->id);
-        }else{
+        } else {
             $orderId = (int)Order::getOrderByCartId((int)$cart->id);
             $order = ($orderId > 0) ? new Order($orderId) : null;
         }

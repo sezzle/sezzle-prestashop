@@ -84,7 +84,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.5';
+        $this->version = '1.0.6';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -619,13 +619,18 @@ class Sezzle extends PaymentModule
      */
     public function hookDisplayAdminOrderContentOrder($params)
     {
-        if (!isset($params['id_order']) || !$params['id_order']) {
+        if (isset($params['id_order']) && $params['id_order']) {
+            $order = new Order($params['id_order']);
+        }
+
+        if (!isset($order) && is_object($params['order'])) {
+            $order = $params['order'];
+        }
+
+        if (!isset($order) || $order->payment !== $this->displayName) {
             return;
         }
-        $order = new Order($params['id_order']);
-        if ($order->payment !== $this->displayName) {
-            return;
-        }
+
         $currency = new Currency($order->id_currency);
         $txn = SezzleTransaction::getByReference($order->reference);
         $templateParams = [
@@ -676,8 +681,28 @@ class Sezzle extends PaymentModule
      */
     private function render($template, array $params = [])
     {
-        /** @var Twig_Environment $twig */
-        $twig = $this->get('twig');
+        try {
+            if (!method_exists($this, 'get')) {
+                throw new Exception('Method ::get() does not exist');
+            }
+            /** @var Twig_Environment $twig */
+            $twig = $this->get('twig');
+        } catch (Exception $e) {
+            $twig = $this->getLegacyTwig();
+        }
         return $twig->render($template, $params);
+    }
+
+    /**
+     * @return Twig_Environment
+     */
+    private function getLegacyTwig()
+    {
+        global $kernel;
+        $container = $kernel->getContainer();
+        /** @var Twig_Environment $twig */
+        $twig = $container->get('twig');
+        $twig->getLoader()->setPaths([__DIR__ . '/../'], 'Modules');
+        return $twig;
     }
 }

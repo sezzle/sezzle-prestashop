@@ -40,12 +40,6 @@ use Tools;
  */
 class Util
 {
-    /**
-     * Round Amount
-     *
-     * @param float $amount
-     * @return float
-     */
     public static function round($amount)
     {
         $context = Context::getContext();
@@ -55,10 +49,7 @@ class Util
             $precision = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
         }
 
-        return number_format(
-            Tools::ps_round($amount, $precision),
-            2
-        );
+        return Tools::ps_round($amount, $precision);
     }
 
     /**
@@ -70,7 +61,7 @@ class Util
      */
     public static function getFormattedAmount($amount, $currencySynbol)
     {
-        $amount = self::round($amount);
+        $amount = number_format(self::round($amount), 2);
         return sprintf("%s" . $amount, $currencySynbol);
     }
 
@@ -83,4 +74,5 @@ class Util
     {
         return sprintf('@Modules/%s/views/templates/hook/', Sezzle::MODULE_NAME);
     }
+
 }

@@ -27,6 +27,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use PrestaShop\Module\Sezzle\Handler\Util;
 use Sezzle\HttpClient\RequestException;
 use PrestaShop\Module\Sezzle\Handler\Service\Order as OrderService;
 use Sezzle\Model\CustomerOrder;
@@ -85,14 +86,7 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
      */
     public function isAmountMatched($prevAmount, $newAmount)
     {
-        $context = Context::getContext();
-        if(method_exists($context, 'getComputingPrecision')){
-            $precision = $context->getComputingPrecision();
-        }else{
-            $precision = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
-        }
-
-        $authorizedAmount = Tools::ps_round($prevAmount, $precision);
+        $authorizedAmount = Util::round($prevAmount);
         if ($authorizedAmount !== $newAmount) {
             return false;
         }
