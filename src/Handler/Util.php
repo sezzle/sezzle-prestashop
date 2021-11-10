@@ -40,6 +40,12 @@ use Tools;
  */
 class Util
 {
+    /**
+     * Round Amount
+     *
+     * @param float $amount
+     * @return float
+     */
     public static function round($amount)
     {
         $context = Context::getContext();
