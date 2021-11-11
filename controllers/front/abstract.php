@@ -87,10 +87,7 @@ abstract class SezzleAbstractModuleFrontController extends ModuleFrontController
     public function isAmountMatched($prevAmount, $newAmount)
     {
         $authorizedAmount = Util::round($prevAmount);
-        if ($authorizedAmount !== $newAmount) {
-            return false;
-        }
-        return true;
+        return $authorizedAmount === $newAmount;
     }
 
     /**

@@ -694,6 +694,8 @@ class Sezzle extends PaymentModule
     }
 
     /**
+     * Get a legacy twig instance with registered template paths for older PS versions (1.7.0 to 1.7.6)
+     *
      * @return Twig_Environment
      */
     private function getLegacyTwig()
