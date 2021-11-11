@@ -49,12 +49,7 @@ class Util
     public static function round($amount)
     {
         $context = Context::getContext();
-        if(method_exists($context, 'getComputingPrecision')){
-            $precision = $context->getComputingPrecision();
-        }else{
-            $precision = Configuration::get('PS_PRICE_DISPLAY_PRECISION');
-        }
-
+        $precision = method_exists($context, 'getComputingPrecision') ? $context->getComputingPrecision() : Configuration::get('PS_PRICE_DISPLAY_PRECISION');
         return Tools::ps_round($amount, $precision);
     }
 
