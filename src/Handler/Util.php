@@ -29,6 +29,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
+use Configuration;
 use Context;
 use Sezzle;
 use Tools;
@@ -47,10 +48,9 @@ class Util
      */
     public static function round($amount)
     {
-        return number_format(
-            Tools::ps_round($amount, Context::getContext()->getComputingPrecision()),
-            2
-        );
+        $context = Context::getContext();
+        $precision = method_exists($context, 'getComputingPrecision') ? $context->getComputingPrecision() : Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+        return Tools::ps_round($amount, $precision);
     }
 
     /**
@@ -62,7 +62,7 @@ class Util
      */
     public static function getFormattedAmount($amount, $currencySynbol)
     {
-        $amount = self::round($amount);
+        $amount = number_format(self::round($amount), 2);
         return sprintf("%s" . $amount, $currencySynbol);
     }
 
@@ -75,4 +75,5 @@ class Util
     {
         return sprintf('@Modules/%s/views/templates/hook/', Sezzle::MODULE_NAME);
     }
+
 }

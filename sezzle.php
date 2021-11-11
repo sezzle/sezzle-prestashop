@@ -84,7 +84,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.5';
+        $this->version = '1.0.6';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -108,7 +108,7 @@ class Sezzle extends PaymentModule
         );
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
         $this->limited_countries = array('US', 'CA', 'DE', 'FR', 'ES', 'IT');
-        $this->ps_versions_compliancy = array('min' => '1.7.7.0', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
     }
 
     /**
@@ -619,13 +619,18 @@ class Sezzle extends PaymentModule
      */
     public function hookDisplayAdminOrderContentOrder($params)
     {
-        if (!isset($params['id_order']) || !$params['id_order']) {
+        if (isset($params['id_order']) && $params['id_order']) {
+            $order = new Order($params['id_order']);
+        }
+
+        if (!isset($order) && is_object($params['order'])) {
+            $order = $params['order'];
+        }
+
+        if (!isset($order) || $order->payment !== $this->displayName) {
             return;
         }
-        $order = new Order($params['id_order']);
-        if ($order->payment !== $this->displayName) {
-            return;
-        }
+
         $currency = new Currency($order->id_currency);
         $txn = SezzleTransaction::getByReference($order->reference);
         $templateParams = [
@@ -676,8 +681,30 @@ class Sezzle extends PaymentModule
      */
     private function render($template, array $params = [])
     {
-        /** @var Twig_Environment $twig */
-        $twig = $this->get('twig');
+        try {
+            if (!method_exists($this, 'get')) {
+                throw new Exception('Method ::get() does not exist');
+            }
+            /** @var Twig_Environment $twig */
+            $twig = $this->get('twig');
+        } catch (Exception $e) {
+            $twig = $this->getLegacyTwig();
+        }
         return $twig->render($template, $params);
+    }
+
+    /**
+     * Get a legacy twig instance with registered template paths for older PS versions (1.7.0 to 1.7.6)
+     *
+     * @return Twig_Environment
+     */
+    private function getLegacyTwig()
+    {
+        global $kernel;
+        $container = $kernel->getContainer();
+        /** @var Twig_Environment $twig */
+        $twig = $container->get('twig');
+        $twig->getLoader()->setPaths([__DIR__ . '/../'], 'Modules');
+        return $twig;
     }
 }
