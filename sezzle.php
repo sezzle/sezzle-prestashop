@@ -702,7 +702,7 @@ class Sezzle extends PaymentModule
      */
     private function getLegacyTwig()
     {
-        $kernel = new AppKernel(_PS_MODE_DEV_?'dev':'prod', _PS_MODE_DEV_);
+        $kernel = new AppKernel(_PS_MODE_DEV_ ? 'dev' : 'prod', _PS_MODE_DEV_);
         $kernel->loadClassCache();
         $kernel->boot();
 
@@ -710,11 +710,11 @@ class Sezzle extends PaymentModule
         $twig = $kernel->getContainer()->get('twig');
 
         $loader = $twig->getLoader();
-        if($loader instanceof FilesystemLoader){
-            $twig->getLoader()->setPaths([$this->getLocalPath() . '../'], 'Modules');
-        }elseif($loader instanceof ChainLoader){
-            foreach($loader->getLoaders() as $subLoader){
-                if($subLoader instanceof FilesystemLoader){
+        if ($loader instanceof FilesystemLoader) {
+            $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+        } elseif ($loader instanceof ChainLoader) {
+            foreach ($loader->getLoaders() as $subLoader) {
+                if ($subLoader instanceof FilesystemLoader) {
                     $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
                 }
             }
