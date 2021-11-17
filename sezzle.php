@@ -41,6 +41,8 @@ use Sezzle\Config;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use Twig\Loader\ChainLoader;
+use Twig\Loader\FilesystemLoader;
 
 require_once _PS_MODULE_DIR_ . 'sezzle/vendor/autoload.php';
 
@@ -700,11 +702,24 @@ class Sezzle extends PaymentModule
      */
     private function getLegacyTwig()
     {
-        global $kernel;
-        $container = $kernel->getContainer();
+        $kernel = new AppKernel(_PS_MODE_DEV_ ? 'dev' : 'prod', _PS_MODE_DEV_);
+        $kernel->loadClassCache();
+        $kernel->boot();
+
         /** @var Twig_Environment $twig */
-        $twig = $container->get('twig');
-        $twig->getLoader()->setPaths([__DIR__ . '/../'], 'Modules');
+        $twig = $kernel->getContainer()->get('twig');
+
+        $loader = $twig->getLoader();
+        if ($loader instanceof FilesystemLoader) {
+            $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+        } elseif ($loader instanceof ChainLoader) {
+            foreach ($loader->getLoaders() as $subLoader) {
+                if ($subLoader instanceof FilesystemLoader) {
+                    $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+                }
+            }
+        }
+
         return $twig;
     }
 }

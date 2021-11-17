@@ -49,7 +49,8 @@ class Util
     public static function round($amount)
     {
         $context = Context::getContext();
-        $precision = method_exists($context, 'getComputingPrecision') ? $context->getComputingPrecision() : Configuration::get('PS_PRICE_DISPLAY_PRECISION');
+        $precision = method_exists($context, 'getComputingPrecision') ?
+            $context->getComputingPrecision() : Configuration::get('PS_PRICE_DISPLAY_PRECISION');
         return Tools::ps_round($amount, $precision);
     }
 
@@ -75,5 +76,4 @@ class Util
     {
         return sprintf('@Modules/%s/views/templates/hook/', Sezzle::MODULE_NAME);
     }
-
 }
