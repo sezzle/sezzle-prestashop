@@ -38,7 +38,6 @@ use OrderCore as CoreOrder;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Capture as CaptureServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Util;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -70,15 +69,14 @@ class Capture extends Order
      * @param float $amount
      * @throws RequestException
      * @throws PrestaShopException
-     * @throws OrderException
      * @throws Exception
      */
     public function execute($amount)
     {
         if ($amount <= 0) {
-            throw new OrderException("Invalid capture amount.");
+            throw new PrestaShopException("Invalid capture amount.");
         } elseif ($amount > $this->order->total_paid) {
-            throw new OrderException("Capture amount is greater than the order amount.");
+            throw new PrestaShopException("Capture amount is greater than the order amount.");
         }
 
         // auth expiry check
@@ -88,7 +86,7 @@ class Capture extends Order
             $dateTimeNow = new DateTime();
             $dateTimeExpire = new DateTime($txn->getAuthExpiration());
             if ($dateTimeNow > $dateTimeExpire) {
-                throw new OrderException("Cannot process payment. Auth Expired.");
+                throw new PrestaShopException("Cannot process payment. Auth Expired.");
             }
         }
 

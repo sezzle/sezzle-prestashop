@@ -36,7 +36,6 @@ use Payment;
 use PrestaShop\Module\Sezzle\Handler\Order;
 use PrestaShop\Module\Sezzle\Handler\Service\Refund as RefundServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Util;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
 use PrestaShopException;
 use Sezzle;
 use Sezzle\HttpClient\RequestException;
@@ -68,33 +67,33 @@ class Refund extends Order
      * @param bool $isPartial
      * @throws PrestaShopException
      * @throws RequestException
-     * @throws OrderException
      */
     public function execute($isPartial = false)
     {
         $payments = $this->order->getOrderPayments();
         if (count($payments) === 0) {
-            throw new OrderException("Order Payments not found.");
+            throw new PrestaShopException("Order Payments not found.");
         }
         $txn = SezzleTransaction::getByReference($this->order->reference);
 
         // full refund
         if (!$isPartial) {
             if ($txn->getReleaseAmount() != 0 || $txn->getCaptureAmount() !== $txn->getAuthorizedAmount()) {
-                throw new OrderException("Invalid refund request.");
+                throw new PrestaShopException("Invalid refund request.");
             }
             $amount = $this->order->total_paid;
         } else {
             // bypass if payment is not still captured or in case full refund is done
             if ($txn->getCaptureAmount() == 0 || $txn->getRefundAmount() === $txn->getCaptureAmount()) {
-                throw new OrderException("Invalid refund request.");
+                throw new PrestaShopException("Invalid refund request.");
             }
             /** @var OrderSlip $orderSlip */
-            $orderSlip = $this->order->getOrderSlipsCollection()->getLast();
+            $orderSlip = $this->getLastOrderSlip();
             $amount = $orderSlip->amount + $orderSlip->shipping_cost_amount;
         }
 
         $refundPayload = $this->buildRefundPayload($amount);
+
         // refund action
         $response = RefundServiceHandler::refundPayment(
             $txn->getOrderUUID(),
@@ -130,5 +129,23 @@ class Refund extends Order
     public static function removeRefundTransaction($orderId)
     {
         Payment::deleteRefund($orderId);
+    }
+
+    /**
+     * @return bool|\ObjectModel|null
+     */
+    private function getLastOrderSlip()
+    {
+        $orderSlipsCollection = $this->order->getOrderSlipsCollection();
+        if (method_exists($orderSlipsCollection, 'getLast')) {
+            return $orderSlipsCollection->getLast();
+        }
+
+        $orderSlips = $orderSlipsCollection->getAll();
+        if (!count($orderSlips)) {
+            return false;
+        }
+
+        return $orderSlips[count($orderSlips) - 1];
     }
 }
