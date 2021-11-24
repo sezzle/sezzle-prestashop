@@ -86,7 +86,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.6';
+        $this->version = '1.0.7';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -635,11 +635,14 @@ class Sezzle extends PaymentModule
 
         $currency = new Currency($order->id_currency);
         $txn = SezzleTransaction::getByReference($order->reference);
+        $currencySymbol = method_exists($currency, 'getSymbol')
+            ? $currency->getSymbol() :
+            $currency->getSign();
         $templateParams = [
-            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currency->symbol),
-            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currency->symbol),
-            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currency->symbol),
-            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currency->symbol)
+            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
+            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
+            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currencySymbol),
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol)
         ];
         if ($txn->getAuthExpiration() > 0) {
             $dateTimeNow = new DateTime();
@@ -712,7 +715,7 @@ class Sezzle extends PaymentModule
         $loader = $twig->getLoader();
         if ($loader instanceof FilesystemLoader) {
             $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
-        } elseif ($loader instanceof ChainLoader) {
+        } elseif ($loader instanceof ChainLoader && method_exists($loader, "getLoaders")) {
             foreach ($loader->getLoaders() as $subLoader) {
                 if ($subLoader instanceof FilesystemLoader) {
                     $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
