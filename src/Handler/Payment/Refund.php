@@ -30,6 +30,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use Currency;
+use ObjectModel;
 use OrderSlip;
 use OrderCore as CoreOrder;
 use Payment;
@@ -132,7 +133,9 @@ class Refund extends Order
     }
 
     /**
-     * @return bool|\ObjectModel|null
+     * Get last order slip
+     *
+     * @return bool|ObjectModel|null
      */
     private function getLastOrderSlip()
     {
