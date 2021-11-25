@@ -33,9 +33,6 @@ use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
-use PrestaShop\PrestaShop\Core\Domain\CreditSlip\Exception\CreditSlipException;
-use PrestaShop\PrestaShop\Core\Domain\Order\Exception\OrderException;
-use PrestaShop\PrestaShop\Core\Domain\Order\Payment\Exception\PaymentException;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Sezzle\Config;
 use Twig\Error\LoaderError;
@@ -86,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.6';
+        $this->version = '1.0.7';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -467,8 +464,8 @@ class Sezzle extends PaymentModule
         $gatewayRegion = $gatewayRegion === 'US/CA' ? 'US' : $gatewayRegion;
 
         $additionalInformation = '<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div>
-          <script>document.sezzleMerchantRegion = '.json_encode($gatewayRegion).';</script>
-          <script src="'.__PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript">
+          <script>document.sezzleMerchantRegion = ' . json_encode($gatewayRegion) . ';</script>
+          <script src="' . __PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript">
           </script>';
 
         $option = new PaymentOption();
@@ -485,7 +482,7 @@ class Sezzle extends PaymentModule
      * Manual Capture
      *
      * @param array|null $params
-     * @throws PaymentException
+     * @throws PrestaShopPaymentException
      */
     public function hookActionPaymentCCAdd($params)
     {
@@ -511,7 +508,7 @@ class Sezzle extends PaymentModule
             // bypass for auth and capture action
             if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
                 $txn->getReleaseAmount() > 0) {
-                throw new PaymentException("Payment has been already processed.");
+                throw new PrestaShopPaymentException("Payment has been already processed.");
             }
             $captureHandler = new Capture($order);
             $captureHandler->execute($amount);
@@ -519,7 +516,7 @@ class Sezzle extends PaymentModule
             if ($order instanceof Order && $order) {
                 Capture::removeCaptureTransaction($order->reference);
             }
-            throw new PaymentException("Error while capturing payment.");
+            throw new PrestaShopPaymentException("Error while capturing payment.");
         }
     }
 
@@ -527,7 +524,7 @@ class Sezzle extends PaymentModule
      * Release Payment
      *
      * @param array $params
-     * @throws OrderException
+     * @throws PrestaShopPaymentException
      * @throws PrestaShopDatabaseException
      * @throws PrestaShopException
      */
@@ -547,7 +544,7 @@ class Sezzle extends PaymentModule
                 $releaseHandler = new Release($order);
                 $releaseHandler->execute();
             } catch (Exception $e) {
-                throw new OrderException("Error while releasing payment.");
+                throw new PrestaShopPaymentException("Error while releasing payment.");
             }
         }
     }
@@ -556,7 +553,7 @@ class Sezzle extends PaymentModule
      * Partial Refund
      *
      * @param array $params
-     * @throws CreditSlipException
+     * @throws PrestaShopPaymentException
      */
     public function hookActionOrderSlipAdd($params)
     {
@@ -578,7 +575,7 @@ class Sezzle extends PaymentModule
             if ($order instanceof Order && $order) {
                 Refund::removeRefundTransaction($order->id);
             }
-            throw new CreditSlipException("Error while refunding amount.");
+            throw new PrestaShopPaymentException("Error while refunding amount.");
         }
     }
 
@@ -635,11 +632,14 @@ class Sezzle extends PaymentModule
 
         $currency = new Currency($order->id_currency);
         $txn = SezzleTransaction::getByReference($order->reference);
+        $currencySymbol = method_exists($currency, 'getSymbol')
+            ? $currency->getSymbol() :
+            $currency->getSign();
         $templateParams = [
-            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currency->symbol),
-            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currency->symbol),
-            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currency->symbol),
-            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currency->symbol)
+            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
+            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
+            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currencySymbol),
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol)
         ];
         if ($txn->getAuthExpiration() > 0) {
             $dateTimeNow = new DateTime();
@@ -712,7 +712,7 @@ class Sezzle extends PaymentModule
         $loader = $twig->getLoader();
         if ($loader instanceof FilesystemLoader) {
             $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
-        } elseif ($loader instanceof ChainLoader) {
+        } elseif ($loader instanceof ChainLoader && method_exists($loader, "getLoaders")) {
             foreach ($loader->getLoaders() as $subLoader) {
                 if ($subLoader instanceof FilesystemLoader) {
                     $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
