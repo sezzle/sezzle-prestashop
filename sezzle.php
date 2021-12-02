@@ -718,6 +718,10 @@ class Sezzle extends PaymentModule
                     $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
                 }
             }
+        } else {
+            $loader = new FilesystemLoader();
+            $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+            $twig->setLoader($loader);
         }
 
         return $twig;
