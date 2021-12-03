@@ -30,23 +30,26 @@
                 'is_expired': sezzle.is_auth_expired,
             } %}
         {% endif %}
-        <table class="table" style="text-align: center">
-            <thead>
+        <h2>{{ 'Payment Information'|trans({}, 'Modules.Sezzle.Admin' )}}</h2>
+        <table class="table table-striped table-bordered">
             <tr>
-                <th class="table-head-authorized-amount">{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-                <th class="table-head-captured-amount">{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-                <th class="table-head-refunded-amount">{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-                <th class="table-head-released-amount">{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-                <th class="table-head-auth-expiration">{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-                <th class="table-head-auth-customer-uuid">{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
+                <td>{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{{ sezzle.authorized_amount }}</td>
+            </tr>
+            <tr>
+                <td>{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{{ sezzle.captured_amount }}</td>
+            </tr>
+            <tr>
+                <td>{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{{ sezzle.refunded_amount }}</td>
+            </tr>
+            <tr>
+                <td>{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{{ sezzle.released_amount }}</td>
+            </tr>
+            <tr>
+                <td>{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{% if sezzle.auth_expiration is defined %}
                         {% if sezzle.is_auth_expired %}
                             <span style="color: #FF0000">{{ sezzle.auth_expiration }}</span>
@@ -57,6 +60,9 @@
                         {{ "-" }}
                     {% endif %}
                 </td>
+            </tr>
+            <tr>
+                <td>{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</td>
                 <td>{% if sezzle.customer_uuid is defined %}
                         {{ sezzle.customer_uuid }}
                     {% else %}
@@ -64,8 +70,19 @@
                     {% endif %}
                 </td>
             </tr>
-            </tbody>
-        </table>
 
+            <tr>
+                <td></td>
+                <td>
+                    <input type="text" id="amount" name="amount" placeholder="{{ 'Amount'|trans({}, 'Modules.Sezzle.Admin')}}" class="form-control"/>
+                    <br/>
+                    <div id="msg" style="font-size: 15px"></div>
+                    <br/>
+                        <button type="button" class="button btn btn-primary" id="button-capture">{{ 'Capture'|trans({}, 'Modules.Sezzle.Admin')}}</button>
+                        <button type="button" class="button btn btn-primary" id="button-refund">{{ 'Refund'|trans({}, 'Modules.Sezzle.Admin') }}</button>
+                        <button type="button" class="button btn btn-primary" id="button-release">{{ 'Release'|trans({}, 'Modules.Sezzle.Admin') }}</button>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>
