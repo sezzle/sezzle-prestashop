@@ -83,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.7';
+        $this->version = '1.0.8';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -718,6 +718,10 @@ class Sezzle extends PaymentModule
                     $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
                 }
             }
+        } else {
+            $loader = new FilesystemLoader();
+            $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+            $twig->setLoader($loader);
         }
 
         return $twig;
