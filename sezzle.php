@@ -429,28 +429,15 @@ class Sezzle extends PaymentModule
             $merchantId
         );
 
-        echo "<script>
-                document.sezzleConfig = {
-						'configGroups': [
-							{
-								'targetXPath': '.product-prices/.product-price/.current-price/SPAN-0',
-								'renderToPath': '..'
-							},
-							{
-								'targetXPath': '.cart-summary-totals/.cart-total/.value',
-								'renderToPath': '../../DIV-2/SPAN-1',
-								'urlMatch': 'cart',
-								'alignment': 'right'
-							}
-						]
-					}
-               </script>";
         $this->context->controller->registerJavascript(
-            $this->name . '-sezzle-widget',
+            $this->name . '-widget-config',
+            '/modules/sezzle/views/js/widget-config.js',
+            ['position' => 'top']
+        );
+        $this->context->controller->registerJavascript(
+            $this->name . '-widget',
             $widgetURL,
-            array(
-                'server' => 'remote'
-            )
+            ['server' => 'remote']
         );
     }
 
