@@ -83,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.8';
+        $this->version = '1.0.9';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -428,6 +428,23 @@ class Sezzle extends PaymentModule
             $sezzleDomain,
             $merchantId
         );
+
+        echo "<script>
+                document.sezzleConfig = {
+						'configGroups': [
+							{
+								'targetXPath': '.product-prices/.product-price/.current-price/SPAN-0',
+								'renderToPath': '..'
+							},
+							{
+								'targetXPath': '.cart-summary-totals/.cart-total/.value',
+								'renderToPath': '../../DIV-2/SPAN-1',
+								'urlMatch': 'cart',
+								'alignment': 'right'
+							}
+						]
+					}
+               </script>";
         $this->context->controller->registerJavascript(
             $this->name . '-sezzle-widget',
             $widgetURL,
