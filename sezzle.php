@@ -83,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.8';
+        $this->version = '1.0.9';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -428,12 +428,16 @@ class Sezzle extends PaymentModule
             $sezzleDomain,
             $merchantId
         );
+
         $this->context->controller->registerJavascript(
-            $this->name . '-sezzle-widget',
+            $this->name . '-widget-config',
+            '/modules/sezzle/views/js/widget-config.js',
+            ['position' => 'top']
+        );
+        $this->context->controller->registerJavascript(
+            $this->name . '-widget',
             $widgetURL,
-            array(
-                'server' => 'remote'
-            )
+            ['server' => 'remote']
         );
     }
 
