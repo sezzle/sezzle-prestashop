@@ -639,6 +639,7 @@ class Sezzle extends PaymentModule
         $currencySymbol = method_exists($currency, 'getSymbol')
             ? $currency->getSymbol() :
             $currency->getSign();
+
         $templateParams = [
             'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
             'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
@@ -648,9 +649,13 @@ class Sezzle extends PaymentModule
         if ($txn->getAuthExpiration() > 0) {
             $dateTimeNow = new DateTime();
             $dateTimeExpire = new DateTime($txn->getAuthExpiration());
+            $auth_expired = $dateTimeNow > $dateTimeExpire;
+            $actual_authorized_amount = $txn->getAuthorizedAmount() - $txn->getReleaseAmount();
+            $can_capture = !$auth_expired && ($actual_authorized_amount > $txn->getCaptureAmount());
             $templateParams = array_merge($templateParams, [
                 'auth_expiration' => $txn->getAuthExpiration(),
-                'is_auth_expired' => $dateTimeNow > $dateTimeExpire
+                'is_auth_expired' => $auth_expired,
+                'can_capture' => $can_capture
             ]);
         }
         $tokenizeTxn = SezzleTokenization::getByCustomerId($order->id_customer);
