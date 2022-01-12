@@ -33,23 +33,23 @@
         {#        <h2>{{ 'Payment Information'|trans({}, 'Modules.Sezzle.Admin' )}}</h2>#}
         <table class="table">
             <tr>
-                <td>{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
+                <td><b>{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
                 <td>{{ sezzle.authorized_amount }}</td>
             </tr>
             <tr>
-                <td>{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
-                <td>{{ sezzle.captured_amount }}</td>
+                <td><b>{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td id="capture_amount">{{ sezzle.captured_amount }}</td>
             </tr>
             <tr>
-                <td>{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
+                <td><b>{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
                 <td>{{ sezzle.refunded_amount }}</td>
             </tr>
             <tr>
-                <td>{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</td>
+                <td><b>{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
                 <td>{{ sezzle.released_amount }}</td>
             </tr>
             <tr>
-                <td>{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</td>
+                <td><b>{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
                 <td>{% if sezzle.auth_expiration is defined %}
                         {% if sezzle.is_auth_expired %}
                             <span style="color: #FF0000">{{ sezzle.auth_expiration }}</span>
@@ -62,7 +62,7 @@
                 </td>
             </tr>
             <tr>
-                <td>{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</td>
+                <td><b>{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
                 <td>{% if sezzle.customer_uuid is defined %}
                         {{ sezzle.customer_uuid }}
                     {% else %}
@@ -76,14 +76,12 @@
                     <td>
                         <input type="text" id="amount" name="amount"
                                placeholder="{{ 'Amount'|trans({}, 'Modules.Sezzle.Admin') }}" class="form-control"/>
-                        <br/>
+                        <input type="hidden" id="order_reference" name="order_reference"
+                               value="{{ sezzle.order_reference }}" class="form-control"/>
                         <div id="msg" style="font-size: 15px"></div>
-                        <button type="button" class="button btn btn-primary"
+                        <br/>
+                        <button type="submit" class="button btn btn-primary"
                                 id="button-capture">{{ 'Capture'|trans({}, 'Modules.Sezzle.Admin') }}</button>
-                        {#                    <button type="button" class="button btn btn-primary"#}
-                        {#                            id="button-refund">{{ 'Refund'|trans({}, 'Modules.Sezzle.Admin') }}</button>#}
-                        {#                    <button type="button" class="button btn btn-primary"#}
-                        {#                            id="button-release">{{ 'Release'|trans({}, 'Modules.Sezzle.Admin') }}</button>#}
                     </td>
                 </tr>
             {% endif %}
@@ -91,5 +89,49 @@
     </div>
 </div>
 <script>
-    doAdminAjax()
+    $('#button-capture').click(function () {
+        var capture_amount = parseFloat($('#amount').val());
+        if (isNaN(capture_amount)) {
+            $('#msg').text('Invalid amount provided.');
+            $('#msg').css('color', '#FF0000');
+            return;
+        }
+
+        var sezzle = {{ sezzle|json_encode|raw }},
+            ajax_url = sezzle.ajax_url,
+            controller = sezzle.controller,
+            currency_symbol = sezzle.currency_symbol;
+
+        $('#button-capture').text('Capturing payment....').attr('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: ajax_url,
+            dataType: 'json',
+            data: {
+                controller: controller,
+                action: 'capturePayment',
+                ajax: true,
+                amount: capture_amount,
+                order_reference: $('#order_reference').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#msg').text('Payment has been successfully captured.');
+                    $('#msg').css('color', '#008000');
+                    $('#button-capture').text('Capture').attr('disabled', true);
+                    $('#capture_amount').text(currency_symbol + capture_amount.toFixed(2));
+                } else {
+                    $('#msg').text('There was an error capturing the payment. Please try again.');
+                    $('#msg').css('color', '#FF0000');
+                    $('#button-capture').text('Capture').attr('disabled', false);
+                }
+            },
+            error: function () {
+                $('#msg').text('There was an error capturing the payment. Please try again.');
+                $('#msg').css('color', '#FF0000');
+                $('#button-capture').text('Capture').attr('disabled', false);
+            }
+        });
+    })
+
 </script>

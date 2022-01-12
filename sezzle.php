@@ -83,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.9';
+        $this->version = '1.0.10';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -644,7 +644,11 @@ class Sezzle extends PaymentModule
             'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
             'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
             'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currencySymbol),
-            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol)
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol),
+            'order_reference' => $order->reference,
+            'currency_symbol' => $currencySymbol,
+            'controller' => 'AdminSezzle',
+            'ajax_url' => $this->context->link->getAdminLink('AdminSezzle')
         ];
         if ($txn->getAuthExpiration() > 0) {
             $dateTimeNow = new DateTime();
