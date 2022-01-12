@@ -35,8 +35,8 @@ class AdminSezzleController extends ModuleAdminController
     {
         try {
             $amount = Tools::getValue('amount');
-            $reference = Tools::getValue('order_reference');
-            $orders = Order::getByReference($reference);
+            $orderReference = Tools::getValue('order_reference');
+            $orders = Order::getByReference($orderReference);
             if ($orders->count() !== 1) {
                 throw new PrestaShopPaymentException("Order not found.");
             }
@@ -47,13 +47,13 @@ class AdminSezzleController extends ModuleAdminController
                 throw new PrestaShopPaymentException("Invalid payment method.");
             }
 
-            $txn = SezzleTransaction::getByReference($reference);
+            $txn = SezzleTransaction::getByReference($orderReference);
             // bypass for auth and capture action
             if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
                 $txn->getReleaseAmount() > 0) {
                 throw new PrestaShopPaymentException("Payment has been already captured.");
             }
-            
+
             $captureHandler = new Capture($order);
             $captureHandler->execute($amount);
             $response['success'] = true;
