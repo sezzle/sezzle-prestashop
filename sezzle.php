@@ -483,48 +483,6 @@ class Sezzle extends PaymentModule
     }
 
     /**
-     * Manual Capture
-     *
-     * @param array|null $params
-     * @throws PrestaShopPaymentException
-     */
-    public function hookActionPaymentCCAdd($params)
-    {
-        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
-            return;
-        }
-
-        $amount = $payment->amount;
-        $reference = $payment->order_reference;
-        $orders = Order::getByReference($reference);
-        if ($orders->count() !== 1) {
-            return;
-        }
-        /** @var Order $order */
-        $order = $orders[0];
-        if ($order->payment !== $this->displayName ||
-            in_array($order->current_state, [_PS_OS_PAYMENT_, _PS_OS_DELIVERED_])) {
-            return;
-        }
-
-        try {
-            $txn = SezzleTransaction::getByReference($reference);
-            // bypass for auth and capture action
-            if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
-                $txn->getReleaseAmount() > 0) {
-                throw new PrestaShopPaymentException("Payment has been already processed.");
-            }
-            $captureHandler = new Capture($order);
-            $captureHandler->execute($amount);
-        } catch (Exception $e) {
-            if ($order instanceof Order && $order) {
-                Capture::removeCaptureTransaction($order->reference);
-            }
-            throw new PrestaShopPaymentException("Error while capturing payment.");
-        }
-    }
-
-    /**
      * Release Payment
      *
      * @param array $params
