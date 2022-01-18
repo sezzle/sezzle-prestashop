@@ -34,7 +34,7 @@ class AdminSezzleController extends ModuleAdminController
     public function ajaxProcessCapturePayment()
     {
         try {
-            $amount = Tools::getValue('amount');
+            $amount = (float)Tools::getValue('amount');
             $orderReference = Tools::getValue('order_reference');
             $orders = Order::getByReference($orderReference);
             if ($orders->count() !== 1) {
@@ -48,6 +48,14 @@ class AdminSezzleController extends ModuleAdminController
             }
 
             $txn = SezzleTransaction::getByReference($orderReference);
+
+            // amount validation
+            $amtAvailableForCapture = $txn->getAuthorizedAmount() - $txn->getReleaseAmount() - $txn->getCaptureAmount();
+            $amountExceedsMaxValue = Sezzle\Util::formatToCents($amount) > Sezzle\Util::formatToCents($amtAvailableForCapture);
+            if ($amount <= 0 || $amountExceedsMaxValue) {
+                throw new PrestaShopException("Invalid amount.");
+            }
+
             // bypass for auth and capture action
             if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
                 $txn->getReleaseAmount() > 0) {
@@ -62,6 +70,7 @@ class AdminSezzleController extends ModuleAdminController
                 Capture::removeCaptureTransaction($order->reference);
             }
             $response['success'] = false;
+            $response['msg'] = $e->getMessage();
         }
 
         echo json_encode($response);

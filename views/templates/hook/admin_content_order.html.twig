@@ -30,23 +30,22 @@
                 'is_expired': sezzle.is_auth_expired,
             } %}
         {% endif %}
-        {#        <h2>{{ 'Payment Information'|trans({}, 'Modules.Sezzle.Admin' )}}</h2>#}
         <table class="table">
             <tr>
                 <td><b>{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
-                <td>{{ sezzle.authorized_amount }}</td>
+                <td>{{ sezzle.currency_symbol }}<span id="authorized_amount">{{ sezzle.authorized_amount }}</span></td>
             </tr>
             <tr>
                 <td><b>{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
-                <td id="capture_amount">{{ sezzle.captured_amount }}</td>
+                <td>{{ sezzle.currency_symbol }}<span id="captured_amount">{{ sezzle.captured_amount }}</span></td>
             </tr>
             <tr>
                 <td><b>{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
-                <td>{{ sezzle.refunded_amount }}</td>
+                <td>{{ sezzle.currency_symbol }}<span id="refunded_amount">{{ sezzle.refunded_amount }}</span></td>
             </tr>
             <tr>
                 <td><b>{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
-                <td>{{ sezzle.released_amount }}</td>
+                <td>{{ sezzle.currency_symbol }}<span id="released_amount">{{ sezzle.released_amount }}</span></td>
             </tr>
             <tr>
                 <td><b>{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
@@ -100,7 +99,16 @@
         var sezzle = {{ sezzle|json_encode|raw }},
             ajax_url = sezzle.ajax_url,
             controller = sezzle.controller,
-            currency_symbol = sezzle.currency_symbol;
+            currency_symbol = sezzle.currency_symbol,
+            capture_amount_available = parseFloat($('#authorized_amount').text()) -
+                parseFloat($('#released_amount').text()) -
+                parseFloat($('#captured_amount').text());
+
+        if (capture_amount.toFixed(2) > capture_amount_available.toFixed(2)) {
+            $('#msg').text(`Failed to capture ${currency_symbol}${capture_amount}. Please try again.`);
+            $('#msg').css('color', '#FF0000');
+            return;
+        }
 
         $('#button-capture').text('Capturing payment....').attr('disabled', true);
         $.ajax({
@@ -118,10 +126,17 @@
                 if (response.success) {
                     $('#msg').text('Payment has been successfully captured.');
                     $('#msg').css('color', '#008000');
-                    $('#button-capture').text('Capture').attr('disabled', true);
-                    $('#capture_amount').text(currency_symbol + capture_amount.toFixed(2));
+                    var final_capture_amount = parseFloat($('#captured_amount').text()) + capture_amount;
+                    $('#captured_amount').text(final_capture_amount.toFixed(2));
+                    var actual_auth_amount = parseFloat($('#authorized_amount').text()) - parseFloat($('#released_amount').text());
+                    var disable_button = actual_auth_amount.toFixed(2) === parseFloat($('#captured_amount').text()).toFixed(2);
+                    $('#button-capture').text('Capture').attr('disabled', disable_button);
+                    $('#amount').val('');
                 } else {
-                    $('#msg').text('There was an error capturing the payment. Please try again.');
+                    var msg = response.msg === 'Invalid amount.' ?
+                        `Failed to capture ${currency_symbol}${capture_amount}. Please try again.` :
+                        'There was an error capturing the payment. Please try again.';
+                    $('#msg').text(msg);
                     $('#msg').css('color', '#FF0000');
                     $('#button-capture').text('Capture').attr('disabled', false);
                 }

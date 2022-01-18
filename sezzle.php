@@ -599,10 +599,10 @@ class Sezzle extends PaymentModule
             $currency->getSign();
 
         $templateParams = [
-            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
-            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
-            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currencySymbol),
-            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol),
+            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), ''),
+            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), ''),
+            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), ''),
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), ''),
             'order_reference' => $order->reference,
             'currency_symbol' => $currencySymbol,
             'controller' => 'AdminSezzle',
