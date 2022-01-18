@@ -133,9 +133,7 @@
                     $('#button-capture').text('Capture').attr('disabled', disable_button);
                     $('#amount').val('');
                 } else {
-                    var msg = response.msg === 'Invalid amount.' ?
-                        `Failed to capture ${currency_symbol}${capture_amount}. Please try again.` :
-                        'There was an error capturing the payment. Please try again.';
+                    var msg = response.msg || `Failed to capture ${currency_symbol}${capture_amount}. Please try again.`;
                     $('#msg').text(msg);
                     $('#msg').css('color', '#FF0000');
                     $('#button-capture').text('Capture').attr('disabled', false);
