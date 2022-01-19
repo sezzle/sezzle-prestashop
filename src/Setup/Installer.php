@@ -201,7 +201,6 @@ class Installer
         $hooks = [
             'header',
             'paymentOptions',
-            'actionPaymentCCAdd',
             'actionOrderStatusPostUpdate',
             'actionOrderSlipAdd',
             'displayAdminOrderTabOrder',

@@ -1,6 +1,6 @@
 <?php
 /**
- * 2007-2021 PrestaShop
+ * 2007-2022 PrestaShop
  *
  * NOTICE OF LICENSE
  *
@@ -83,7 +83,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '1.0.9';
+        $this->version = '2.0.0';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -483,48 +483,6 @@ class Sezzle extends PaymentModule
     }
 
     /**
-     * Manual Capture
-     *
-     * @param array|null $params
-     * @throws PrestaShopPaymentException
-     */
-    public function hookActionPaymentCCAdd($params)
-    {
-        if (!isset($params['paymentCC']) || !$payment = $params['paymentCC']) {
-            return;
-        }
-
-        $amount = $payment->amount;
-        $reference = $payment->order_reference;
-        $orders = Order::getByReference($reference);
-        if ($orders->count() !== 1) {
-            return;
-        }
-        /** @var Order $order */
-        $order = $orders[0];
-        if ($order->payment !== $this->displayName ||
-            in_array($order->current_state, [_PS_OS_PAYMENT_, _PS_OS_DELIVERED_])) {
-            return;
-        }
-
-        try {
-            $txn = SezzleTransaction::getByReference($reference);
-            // bypass for auth and capture action
-            if ($txn->getAuthorizedAmount() === $txn->getCaptureAmount() ||
-                $txn->getReleaseAmount() > 0) {
-                throw new PrestaShopPaymentException("Payment has been already processed.");
-            }
-            $captureHandler = new Capture($order);
-            $captureHandler->execute($amount);
-        } catch (Exception $e) {
-            if ($order instanceof Order && $order) {
-                Capture::removeCaptureTransaction($order->reference);
-            }
-            throw new PrestaShopPaymentException("Error while capturing payment.");
-        }
-    }
-
-    /**
      * Release Payment
      *
      * @param array $params
@@ -639,18 +597,27 @@ class Sezzle extends PaymentModule
         $currencySymbol = method_exists($currency, 'getSymbol')
             ? $currency->getSymbol() :
             $currency->getSign();
+
         $templateParams = [
-            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), $currencySymbol),
-            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), $currencySymbol),
-            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), $currencySymbol),
-            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), $currencySymbol)
+            'authorized_amount' => Util::getFormattedAmount($txn->getAuthorizedAmount(), ''),
+            'captured_amount' => Util::getFormattedAmount($txn->getCaptureAmount(), ''),
+            'refunded_amount' => Util::getFormattedAmount($txn->getRefundAmount(), ''),
+            'released_amount' => Util::getFormattedAmount($txn->getReleaseAmount(), ''),
+            'order_reference' => $order->reference,
+            'currency_symbol' => $currencySymbol,
+            'controller' => 'AdminSezzle',
+            'ajax_url' => $this->context->link->getAdminLink('AdminSezzle')
         ];
         if ($txn->getAuthExpiration() > 0) {
             $dateTimeNow = new DateTime();
             $dateTimeExpire = new DateTime($txn->getAuthExpiration());
+            $auth_expired = $dateTimeNow > $dateTimeExpire;
+            $actual_authorized_amount = $txn->getAuthorizedAmount() - $txn->getReleaseAmount();
+            $can_capture = !$auth_expired && ($actual_authorized_amount > $txn->getCaptureAmount());
             $templateParams = array_merge($templateParams, [
                 'auth_expiration' => $txn->getAuthExpiration(),
-                'is_auth_expired' => $dateTimeNow > $dateTimeExpire
+                'is_auth_expired' => $auth_expired,
+                'can_capture' => $can_capture
             ]);
         }
         $tokenizeTxn = SezzleTokenization::getByCustomerId($order->id_customer);
