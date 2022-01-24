@@ -28,13 +28,14 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
-use PrestaShop\Module\Sezzle\Handler\Payment\Capture;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
+use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 use Sezzle\Config;
+use Sezzle\HttpClient\RequestException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -57,6 +58,8 @@ class Sezzle extends PaymentModule
 
     const SUPPORTED_REGIONS = ['US', 'EU'];
     const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
+    const SEZZLE_WIDGET_TICKET_CREATED_AT_KEY = "SEZZLE_WIDGET_TICKET_CREATED_AT_KEY";
+    const WIDGET_QUEUE_SLA = " +7 days";
 
     public static $formFields = [
         "live_mode" => "SEZZLE_LIVE_MODE",
@@ -175,11 +178,16 @@ class Sezzle extends PaymentModule
                     $this->html .= $this->displayError($err);
                 }
             }
+        } elseif ((bool)Tools::isSubmit('submitWidgetQueueRequest')) {
+            $this->html .= $this->addToWidgetQueue() ?
+                $this->displayConfirmation('Your request for help was successfully submitted. 
+                Please allow 2 business days for a response.') :
+                $this->displayError('There was an error submitting your request. Please try again.');
         } else {
             $this->html .= '<br />';
         }
 
-        return $this->html . $this->renderForm();
+        return $this->html . $this->renderForm() . $this->renderWidgetSupportForm();
     }
 
     /**
@@ -208,6 +216,21 @@ class Sezzle extends PaymentModule
         );
 
         return $helper->generateForm(array($this->getConfigForm()));
+    }
+
+    /**
+     * Render Widget Support Form
+     *
+     * @return string
+     */
+    protected function renderWidgetSupportForm()
+    {
+        $this->smarty->assign([
+            'sezzle_can_add_to_widget_queue' => $this->canAddToWidgetQueue(),
+            'sezzle_widget_queue_form_action' => './index.php?tab=AdminModules&configure=sezzle&token=' . Tools::getAdminTokenLite('AdminModules') . '&tab_module=payments_gateways&module_name=sezzle',
+        ]);
+
+        return $this->fetch('module:' . $this->name . '/views/templates/admin/widget_support.tpl');
     }
 
     /**
@@ -389,6 +412,45 @@ class Sezzle extends PaymentModule
             return;
         }
         $this->gatewayRegion = $gatewayRegion;
+    }
+
+    /**
+     * Add to Widget Queue
+     *
+     * @return bool
+     */
+    private function addToWidgetQueue()
+    {
+        try {
+            if (!WidgetServiceHandler::addToWidgetQueue()) {
+                throw new RequestException('Unable to add to widget queue.');
+            }
+
+            $dateTime = new DateTime();
+            Configuration::updateValue(self::SEZZLE_WIDGET_TICKET_CREATED_AT_KEY, $dateTime->format('Y-m-d H:i:s'));
+            return true;
+        } catch (RequestException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if merchant can request to add to widget queue
+     *
+     * @return bool
+     */
+    private function canAddToWidgetQueue()
+    {
+        if (!$widgetTicketCreatedAt = Configuration::get(self::SEZZLE_WIDGET_TICKET_CREATED_AT_KEY)) {
+            return true;
+        }
+        $dateTime = new DateTime();
+        try {
+            $widgetTicketCreatedAt = new DateTime($widgetTicketCreatedAt . self::WIDGET_QUEUE_SLA);
+            return $dateTime > $widgetTicketCreatedAt;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     /**

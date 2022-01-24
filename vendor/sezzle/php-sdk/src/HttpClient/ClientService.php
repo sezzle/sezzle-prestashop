@@ -42,7 +42,8 @@ class ClientService
         GuzzleFactory $factory,
         string $apiMode,
         string $gatewayRegion = ""
-    ) {
+    )
+    {
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
         $this->gatewayRegion = $gatewayRegion;
@@ -75,26 +76,27 @@ class ClientService
 
         switch ($type) {
             case Config::POST:
-                $response = $this->client->post($resourceUri, $this->headers, $data)->getBody();
+                $response = $this->client->post($resourceUri, $this->headers, $data);
                 break;
 
             case Config::GET:
-                $response = $this->client->get($resourceUri, $this->headers)->getBody();
+                $response = $this->client->get($resourceUri, $this->headers);
                 break;
 
             case Config::PATCH:
-                $response = $this->client->patch($resourceUri, $this->headers, $data)->getBody();
+                $response = $this->client->patch($resourceUri, $this->headers, $data);
                 break;
 
             case Config::PUT:
-                $response = $this->client->put($resourceUri, $this->headers, $data)->getBody();
+                $response = $this->client->put($resourceUri, $this->headers, $data);
                 break;
 
             default:
                 throw new RuntimeException('An unsupported request type was provided. The type was: ' . $type);
         }
 
-        return json_decode($response, true);
+        $responseBody = $response->getStatusCode() === '204' && !$response->getBody() ? '{"statusCode": "204"}' : $response->getBody();
+        return json_decode($responseBody, true);
     }
 
     /**
