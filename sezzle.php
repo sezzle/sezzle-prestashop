@@ -444,10 +444,10 @@ class Sezzle extends PaymentModule
         if (!$widgetTicketCreatedAt = Configuration::get(self::SEZZLE_WIDGET_TICKET_CREATED_AT_KEY)) {
             return true;
         }
-        $dateTime = new DateTime();
+        $now = new DateTime();
         try {
-            $widgetTicketCreatedAt = new DateTime($widgetTicketCreatedAt . self::WIDGET_QUEUE_SLA);
-            return $dateTime > $widgetTicketCreatedAt;
+            $addToQueueDisabledExpiration = new DateTime($widgetTicketCreatedAt . self::WIDGET_QUEUE_SLA);
+            return $now > $addToQueueDisabledExpiration;
         } catch (Exception $e) {
             return false;
         }
