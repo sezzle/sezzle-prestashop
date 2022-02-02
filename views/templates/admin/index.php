@@ -1,4 +1,5 @@
-{**
+<?php
+/**
 * 2007-2022 PrestaShop
 *
 * NOTICE OF LICENSE
@@ -17,16 +18,17 @@
 * versions in the future. If you wish to customize PrestaShop for your
 * needs please refer to http://www.prestashop.com for more information.
 *
-* @author    Sezzle <dev@sezzle.com>
-* @copyright Copyright (c) Sezzle
-* @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
-*}
+*  @author    PrestaShop SA <contact@prestashop.com>
+*  @copyright 2007-2022 PrestaShop SA
+*  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+*  International Registered Trademark & Property of PrestaShop SA
+*/
+header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
 
-<div>
-    <h3>{l s='An error occurred' mod='sezzle'}:</h3>
-    <ul class="alert alert-danger">
-        {foreach from=$errors item='error'}
-            <li>{$error|escape:'htmlall':'UTF-8'}.</li>
-        {/foreach}
-    </ul>
-</div>
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Cache-Control: post-check=0, pre-check=0', false);
+header('Pragma: no-cache');
+
+header('Location: ../');
+exit;

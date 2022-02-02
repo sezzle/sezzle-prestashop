@@ -227,7 +227,8 @@ class Sezzle extends PaymentModule
     {
         $this->smarty->assign([
             'sezzle_can_add_to_widget_queue' => $this->canAddToWidgetQueue(),
-            'sezzle_widget_queue_form_action' => './index.php?tab=AdminModules&configure=sezzle&token=' . Tools::getAdminTokenLite('AdminModules') . '&tab_module=payments_gateways&module_name=sezzle',
+            'sezzle_widget_queue_form_action' => './index.php?tab=AdminModules&configure=sezzle&token=' .
+                Tools::getAdminTokenLite('AdminModules') . '&tab_module=payments_gateways&module_name=sezzle',
         ]);
 
         return $this->fetch('module:' . $this->name . '/views/templates/admin/widget_support.tpl');
