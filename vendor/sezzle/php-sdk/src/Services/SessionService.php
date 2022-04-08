@@ -41,7 +41,7 @@ class SessionService
             Config::POST,
             sprintf(Config::SESSION_RESOURCE, ""),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Session::fromArray($response);
     }
@@ -60,7 +60,7 @@ class SessionService
             Config::POST,
             sprintf(Config::SESSION_RESOURCE, $orderUUID),
             [],
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Session::fromArray($response);
     }

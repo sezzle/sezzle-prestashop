@@ -58,7 +58,7 @@ class OrderService
             Config::PATCH,
             sprintf(Config::ORDER_RESOURCE, $orderUUID),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return isset($response['statusCode']) && $response['statusCode'] === strval(http_response_code(204));
     }

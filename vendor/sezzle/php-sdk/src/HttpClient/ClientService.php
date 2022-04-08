@@ -54,17 +54,25 @@ class ClientService
      * Sends a request and returns the response.
      * The type can be obtained from RequestType.php
      *
-     * @param string $type
+     * @param string $method
      * @param string $resourceUri
      * @param array $data
-     * @param string $token
+     * @param array $headers
      * @return array
      * @throws RequestException
      */
-    public function sendRequest($type, $resourceUri, array $data = [], $token = "")
+    public function sendRequest($method, $resourceUri, $data = [], $headers = [])
     {
-        if (!$this->getHeader('Authorization') && $token) {
-            $this->setHeader('Authorization', 'Bearer ' . $token);
+        if (count($headers) > 0 ) {
+            foreach ($headers as $key => $value) {
+                if ($key === 'Authorization') {
+                    if (!$this->getHeader('Authorization') && $value) {
+                        $this->setHeader($key, $value);
+                    }
+                } else {
+                    $this->setHeader($key, $value);
+                }
+            }
         }
 
         $resourceUri = $this->gatewayUrl . '/' . $resourceUri;
@@ -74,7 +82,7 @@ class ClientService
             $this->setHeader('Content-Type', 'application/json');
         }
 
-        switch ($type) {
+        switch ($method) {
             case Config::POST:
                 $response = $this->client->post($resourceUri, $this->headers, $data);
                 break;

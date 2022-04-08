@@ -40,7 +40,7 @@ class ReleaseService
             Config::POST,
             sprintf(Config::RELEASE_RESOURCE, $orderUUID),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Release::fromArray($response);
     }
