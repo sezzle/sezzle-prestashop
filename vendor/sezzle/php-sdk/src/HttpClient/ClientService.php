@@ -40,14 +40,39 @@ class ClientService
      */
     public function __construct(
         GuzzleFactory $factory,
-        string $apiMode,
-        string $gatewayRegion = ""
+        string        $apiMode,
+        string        $gatewayRegion = ""
     )
     {
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
         $this->gatewayRegion = $gatewayRegion;
         $this->gatewayUrl = Config::getGatewayUrl($this->apiMode, Config::API_V2, $this->gatewayRegion);
+    }
+
+    /**
+     * Configure headers
+     *
+     * @param array|null $headers
+     * @return void
+     */
+    private function configureHeaders($headers = [])
+    {
+        foreach ($headers as $key => $value) {
+            if (!$value) {
+                break;
+            }
+
+            switch ($key) {
+                case 'Authorization':
+                    if (!$this->getHeader('Authorization')) {
+                        $this->setHeader($key, $value);
+                    }
+                    break;
+                default:
+                    $this->setHeader($key, $value);
+            }
+        }
     }
 
     /**
@@ -63,17 +88,7 @@ class ClientService
      */
     public function sendRequest($method, $resourceUri, $data = [], $headers = [])
     {
-        if (count($headers) > 0 ) {
-            foreach ($headers as $key => $value) {
-                if ($key === 'Authorization') {
-                    if (!$this->getHeader('Authorization') && $value) {
-                        $this->setHeader($key, $value);
-                    }
-                } else {
-                    $this->setHeader($key, $value);
-                }
-            }
-        }
+        $this->configureHeaders($headers);
 
         $resourceUri = $this->gatewayUrl . '/' . $resourceUri;
 
@@ -100,7 +115,7 @@ class ClientService
                 break;
 
             default:
-                throw new RuntimeException('An unsupported request type was provided. The type was: ' . $type);
+                throw new RuntimeException('An unsupported request type was provided. The type was: ' . $method);
         }
 
         $responseBody = $response->getStatusCode() === '204' && !$response->getBody() ? '{"statusCode": "204"}' : $response->getBody();
@@ -123,6 +138,6 @@ class ClientService
      */
     public function getHeader($key)
     {
-        return $this->headers[$key];
+        return $this->headers[$key] ?? '';
     }
 }

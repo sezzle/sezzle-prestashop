@@ -38,7 +38,7 @@ class OrderService
             Config::GET,
             sprintf(Config::ORDER_RESOURCE, $orderUUID),
             [],
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Order::fromArray($response);
     }
