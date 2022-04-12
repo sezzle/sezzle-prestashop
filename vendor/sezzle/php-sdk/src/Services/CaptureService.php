@@ -24,7 +24,8 @@ class CaptureService
 
     public function __construct(
         ClientService $clientService
-    ) {
+    )
+    {
         $this->clientService = $clientService;
     }
 
@@ -43,7 +44,7 @@ class CaptureService
             Config::POST,
             sprintf(Config::CAPTURE_RESOURCE, $orderUUID),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Capture::fromArray($response);
     }

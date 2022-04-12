@@ -37,7 +37,7 @@ class WidgetService
             Config::POST,
             Config::WIDGET_QUEUE_RESOURCE,
             [],
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return isset($response['statusCode']) && $response['statusCode'] === "204";
     }

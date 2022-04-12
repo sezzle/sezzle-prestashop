@@ -44,7 +44,7 @@ class TokenizationService
             Config::GET,
             sprintf(Config::TOKENIZE_RESOURCE, $tokenizeToken),
             [],
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Tokenize::fromArray($response);
     }
@@ -64,7 +64,7 @@ class TokenizationService
             Config::POST,
             sprintf(Config::CUSTOMER_ORDER_RESOURCE, $customerUUID),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return CustomerOrder::fromArray($response);
     }

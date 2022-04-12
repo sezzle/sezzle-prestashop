@@ -28,15 +28,17 @@ class AuthenticationService
 
     /**
      * @param array $credentials
+     * @param array $platformData
      * @return Token
      * @throws RequestException
      */
-    public function get(array $credentials)
+    public function get(array $credentials, array $platformData)
     {
         $response = $this->clientService->sendRequest(
             Config::POST,
             Config::AUTHENTICATION_RESOURCE,
-            $credentials
+            $credentials,
+            ["Sezzle-Platform" => base64_encode(json_encode($platformData))]
         );
         return Token::fromArray($response);
     }

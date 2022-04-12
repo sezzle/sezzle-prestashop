@@ -40,7 +40,7 @@ class RefundService
             Config::POST,
             sprintf(Config::REFUND_RESOURCE, $orderUUID),
             $payload,
-            $token
+            ["Authorization" => "Bearer " . $token]
         );
         return Refund::fromArray($response);
     }

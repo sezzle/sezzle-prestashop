@@ -36,6 +36,7 @@ use Sezzle\HttpClient\GuzzleFactory;
 use Sezzle\HttpClient\RequestException;
 use Sezzle\Model\AuthCredentials;
 use Sezzle\Services\AuthenticationService;
+use PrestaShop\Module\Sezzle\Handler\Util;
 
 /**
  * Class Authentication
@@ -71,7 +72,9 @@ class Authentication
         ));
 
         // get token
-        $tokenModel = $tokenService->get($authModel->toArray());
+        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
         return $tokenModel->getToken();
     }
+
+
 }

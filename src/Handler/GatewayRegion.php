@@ -121,7 +121,7 @@ class GatewayRegion
         ));
 
         // get token
-        $tokenModel = $tokenService->get($authModel->toArray());
+        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
         return $tokenModel->getToken();
     }
 }
