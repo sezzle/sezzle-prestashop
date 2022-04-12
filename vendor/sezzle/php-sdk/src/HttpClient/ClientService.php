@@ -63,15 +63,7 @@ class ClientService
                 break;
             }
 
-            switch ($key) {
-                case 'Authorization':
-                    if (!$this->getHeader('Authorization')) {
-                        $this->setHeader($key, $value);
-                    }
-                    break;
-                default:
-                    $this->setHeader($key, $value);
-            }
+            $this->setHeader($key, $value);
         }
     }
 
