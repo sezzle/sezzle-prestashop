@@ -1,0 +1,150 @@
+{#**
+ * 2007-2022 PrestaShop
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@prestashop.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade PrestaShop to newer
+ * versions in the future. If you wish to customize PrestaShop for your
+ * needs please refer to http://www.prestashop.com for more information.
+ *
+ * @author    Sezzle <dev@sezzle.com>
+ * @copyright Copyright (c) Sezzle
+ * @license   https://www.apache.org/licenses/LICENSE-2.0.txt  Apache 2.0 License
+ *#}
+
+<div class="card mt-2 tab-pane" id="SezzlePayment">
+
+    <div class="card-body">
+        {% if sezzle.auth_expiration is defined %}
+            {% include '@Modules/sezzle/views/templates/hook/auth_expiration_alert.html.twig' with {
+                'is_expired': sezzle.is_auth_expired,
+            } %}
+        {% endif %}
+        <table class="table">
+            <tr>
+                <td><b>{{ 'Authorized Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{{ sezzle.currency_symbol }}<span id="authorized_amount">{{ sezzle.authorized_amount }}</span></td>
+            </tr>
+            <tr>
+                <td><b>{{ 'Captured Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{{ sezzle.currency_symbol }}<span id="captured_amount">{{ sezzle.captured_amount }}</span></td>
+            </tr>
+            <tr>
+                <td><b>{{ 'Refunded Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{{ sezzle.currency_symbol }}<span id="refunded_amount">{{ sezzle.refunded_amount }}</span></td>
+            </tr>
+            <tr>
+                <td><b>{{ 'Released Amount'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{{ sezzle.currency_symbol }}<span id="released_amount">{{ sezzle.released_amount }}</span></td>
+            </tr>
+            <tr>
+                <td><b>{{ 'Auth Expiration'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{% if sezzle.auth_expiration is defined %}
+                        {% if sezzle.is_auth_expired %}
+                            <span style="color: #FF0000">{{ sezzle.auth_expiration }}</span>
+                        {% else %}
+                            <span style="color: #008000">{{ sezzle.auth_expiration }}</span>
+                        {% endif %}
+                    {% else %}
+                        {{ "-" }}
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td><b>{{ 'Customer UUID'|trans({}, 'Modules.Sezzle.Admin') }}</b></td>
+                <td>{% if sezzle.customer_uuid is defined %}
+                        {{ sezzle.customer_uuid }}
+                    {% else %}
+                        {{ "-" }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% if sezzle.can_capture is defined and sezzle.can_capture %}
+                <tr>
+                    <td></td>
+                    <td>
+                        <input type="text" id="amount" name="amount"
+                               placeholder="{{ 'Amount'|trans({}, 'Modules.Sezzle.Admin') }}" class="form-control"/>
+                        <input type="hidden" id="order_reference" name="order_reference"
+                               value="{{ sezzle.order_reference }}" class="form-control"/>
+                        <div id="msg" style="font-size: 15px"></div>
+                        <br/>
+                        <button type="submit" class="button btn btn-primary"
+                                id="button-capture">{{ 'Capture'|trans({}, 'Modules.Sezzle.Admin') }}</button>
+                    </td>
+                </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+<script>
+    $('#button-capture').click(function () {
+        var capture_amount = parseFloat($('#amount').val());
+        if (isNaN(capture_amount)) {
+            $('#msg').text('Invalid amount provided.');
+            $('#msg').css('color', '#FF0000');
+            return;
+        }
+
+        var sezzle = {{ sezzle|json_encode|raw }},
+            ajax_url = sezzle.ajax_url,
+            controller = sezzle.controller,
+            currency_symbol = sezzle.currency_symbol,
+            capture_amount_available = parseFloat($('#authorized_amount').text()) -
+                parseFloat($('#released_amount').text()) -
+                parseFloat($('#captured_amount').text());
+
+        if (capture_amount.toFixed(2) > capture_amount_available.toFixed(2)) {
+            $('#msg').text(`Failed to capture ${currency_symbol}${capture_amount}. Please try again.`);
+            $('#msg').css('color', '#FF0000');
+            return;
+        }
+
+        $('#button-capture').text('Capturing payment....').attr('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: ajax_url,
+            dataType: 'json',
+            data: {
+                controller: controller,
+                action: 'capturePayment',
+                ajax: true,
+                amount: capture_amount,
+                order_reference: $('#order_reference').val()
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('#msg').text('Payment has been successfully captured.');
+                    $('#msg').css('color', '#008000');
+                    var final_capture_amount = parseFloat($('#captured_amount').text()) + capture_amount;
+                    $('#captured_amount').text(final_capture_amount.toFixed(2));
+                    var actual_auth_amount = parseFloat($('#authorized_amount').text()) - parseFloat($('#released_amount').text());
+                    var disable_button = actual_auth_amount.toFixed(2) === parseFloat($('#captured_amount').text()).toFixed(2);
+                    $('#button-capture').text('Capture').attr('disabled', disable_button);
+                    $('#amount').val('');
+                } else {
+                    var msg = response.msg || `Failed to capture ${currency_symbol}${capture_amount}. Please try again.`;
+                    $('#msg').text(msg);
+                    $('#msg').css('color', '#FF0000');
+                    $('#button-capture').text('Capture').attr('disabled', false);
+                }
+            },
+            error: function () {
+                $('#msg').text('There was an error capturing the payment. Please try again.');
+                $('#msg').css('color', '#FF0000');
+                $('#button-capture').text('Capture').attr('disabled', false);
+            }
+        });
+    })
+
+</script>
