@@ -4,5 +4,6 @@
     "config:base",
     "preview:dockerCompose",
     "preview:dockerVersions"
-  ]
+  ],
+  "enabled": false
 }
