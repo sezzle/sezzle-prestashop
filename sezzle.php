@@ -86,7 +86,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.1';
+        $this->version = '2.0.2';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -527,12 +527,14 @@ class Sezzle extends PaymentModule
             return;
         }
 
-        $gatewayRegion = Configuration::get(self::SEZZLE_GATEWAY_REGION_KEY);
-        $gatewayRegion = $gatewayRegion === 'US/CA' ? 'US' : $gatewayRegion;
-
         $additionalInformation = '<div id="sezzle-checkout-widget"><div id="sezzle-installment-widget-box"></div></div>
-          <script>document.sezzleMerchantRegion = ' . json_encode($gatewayRegion) . ';</script>
-          <script src="' . __PS_BASE_URI__ . 'modules/sezzle/views/js/installment-widget.js" type="text/javascript">
+          <script src="https://checkout-sdk.sezzle.com/installment-widget.min.js" type="text/javascript">
+          </script>
+          <script>
+                new SezzleInstallmentWidget({
+                    "merchantLocale": "US",
+                    "platform": "prestashop"
+                });
           </script>';
 
         $option = new PaymentOption();
