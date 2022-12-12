@@ -68,14 +68,18 @@ class Config
         );
     }
 
+    /**
+     * @return array
+     */
     private static function buildConfigPayload()
     {
         return array(
+            'sezzle_enabled' => true,
             'merchant_uuid' => Configuration::get(Sezzle::$formFields['merchant_id']),
             'payment_acton' => Configuration::get(Sezzle::$formFields['payment_action']),
-            'tokenization_enabled' => Configuration::get(Sezzle::$formFields['tokenize']),
-            'pdp_widget_enabled' => Configuration::get(Sezzle::$formFields['widget_enable']),
-            'cart_widget_enabled' => Configuration::get(Sezzle::$formFields['widget_enable']),
+            'tokenization_enabled' => (bool)Configuration::get(Sezzle::$formFields['tokenize']),
+            'pdp_widget_enabled' => (bool)Configuration::get(Sezzle::$formFields['widget_enable']),
+            'cart_widget_enabled' => (bool)Configuration::get(Sezzle::$formFields['widget_enable']),
         );
     }
 }
