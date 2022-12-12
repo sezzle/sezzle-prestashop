@@ -35,38 +35,47 @@ use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 
 /**
- * Class Capture
+ * Class Config
  * @package PrestaShop\Module\Sezzle\Handler\Service
  */
 class Config
 {
 
     /**
-     * Capture Payment
+     * Send config
      *
-     * @param string $orderUUID
-     * @param Sezzle\Model\Order\Capture $payload
      * @return bool
      * @throws Sezzle\HttpClient\RequestException
      */
-    public static function sendConfig(Sezzle\Model\Order\Capture $payload)
+    public static function sendConfig()
     {
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
         $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
-        // instantiate capture service
+        // instantiate config service
         $configService = new Sezzle\Services\ConfigService(new ClientService(
             new GuzzleFactory(),
             $apiMode,
             $gatewayRegion
         ));
 
-        // get capture response
+        // get config response
         return $configService->sendConfig(
             Authentication::getToken(),
-            $payload->toArray()
+            self::buildConfigPayload()
+        );
+    }
+
+    private static function buildConfigPayload()
+    {
+        return array(
+            'merchant_uuid' => Configuration::get(Sezzle::$formFields['merchant_id']),
+            'payment_acton' => Configuration::get(Sezzle::$formFields['payment_action']),
+            'tokenization_enabled' => Configuration::get(Sezzle::$formFields['tokenize']),
+            'pdp_widget_enabled' => Configuration::get(Sezzle::$formFields['widget_enable']),
+            'cart_widget_enabled' => Configuration::get(Sezzle::$formFields['widget_enable']),
         );
     }
 }

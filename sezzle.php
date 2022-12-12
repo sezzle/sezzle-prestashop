@@ -31,6 +31,7 @@ use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Config as ConfigServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
@@ -173,6 +174,9 @@ class Sezzle extends PaymentModule
             $this->validateConfigForm();
             if (!count($this->postErrors)) {
                 $this->postProcess();
+                try {
+                    ConfigServiceHandler::sendConfig();
+                } catch (Exception $e) {}
             } else {
                 foreach ($this->postErrors as $err) {
                     $this->html .= $this->displayError($err);
