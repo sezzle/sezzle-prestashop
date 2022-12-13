@@ -33,6 +33,7 @@ class Config
     const TOKENIZE_RESOURCE = 'token/%s/session';
     const ORDER_RESOURCE = 'order/%s';
     const WIDGET_QUEUE_RESOURCE = 'widget/queue';
+    const CONFIG_RESOURCE = 'configuration';
 
     const GATEWAY_URL = "https://%sgateway.%s/%s";
     const SEZZLE_DOMAIN = "%ssezzle.com";
