@@ -75,7 +75,6 @@ class Config
     {
         return array(
             'sezzle_enabled' => true,
-            'merchant_uuid' => Configuration::get(Sezzle::$formFields['merchant_id']),
             'payment_acton' => Configuration::get(Sezzle::$formFields['payment_action']),
             'tokenization_enabled' => (bool)Configuration::get(Sezzle::$formFields['tokenize']),
             'pdp_widget_enabled' => (bool)Configuration::get(Sezzle::$formFields['widget_enable']),
