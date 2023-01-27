@@ -76,5 +76,36 @@ class Authentication
         return $tokenModel->getToken();
     }
 
+    /**
+     * Get Merchant UUID
+     *
+     * @return string
+     * @throws RequestException
+     */
+    public static function getMerchantUUID()
+    {
+        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+        $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
+        $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
+        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
+
+        // auth credentials set
+        $authModel = new AuthCredentials();
+        $authModel->setPublicKey($publicKey)->setPrivateKey($privateKey);
+
+        // instantiate authentication service
+        $tokenService = new AuthenticationService(new ClientService(
+            new GuzzleFactory(),
+            $apiMode,
+            $gatewayRegion
+        ));
+
+        // get token
+        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
+        return $tokenModel->getMerchantUuid();
+    }
+
 
 }

@@ -32,6 +32,7 @@ use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Config as ConfigServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Authentication as AuthenticationHandler;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
@@ -59,6 +60,7 @@ class Sezzle extends PaymentModule
 
     const SUPPORTED_REGIONS = ['US', 'EU'];
     const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
+    const SEZZLE_MERCHANT_ID_KEY = "SEZZLE_MERCHANT_ID";
     const SEZZLE_WIDGET_TICKET_CREATED_AT_KEY = "SEZZLE_WIDGET_TICKET_CREATED_AT_KEY";
     const WIDGET_QUEUE_SLA = " +7 days";
 
@@ -79,6 +81,10 @@ class Sezzle extends PaymentModule
      * @var string
      */
     private $gatewayRegion;
+    /**
+     * @var string
+     */
+    private $merchantUUID;
 
     /**
      * Sezzle constructor.
@@ -272,14 +278,6 @@ class Sezzle extends PaymentModule
                     array(
                         'col' => 3,
                         'type' => 'text',
-                        'name' => static::$formFields['merchant_id'],
-                        'desc' => $this->l('Enter a valid merchant id'),
-                        'label' => $this->l('Merchant Id'),
-                        'required' => true,
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
                         'name' => static::$formFields['public_key'],
                         'desc' => $this->l('Enter a valid public key'),
                         'label' => $this->l('Public Key'),
@@ -386,6 +384,7 @@ class Sezzle extends PaymentModule
             Configuration::updateValue($key, Tools::getValue($key));
         }
         Configuration::updateValue(self::SEZZLE_GATEWAY_REGION_KEY, $this->gatewayRegion);
+        Configuration::updateValue(self::SEZZLE_MERCHANT_ID_KEY, $this->merchantUUID);
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
@@ -411,6 +410,13 @@ class Sezzle extends PaymentModule
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
+        $merchantUUID = AuthenticationHandler::getMerchantUUID();
+        if (!$merchantUUID) {
+            $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
+            return;
+        }
+        $this->merchantUUID = $merchantUUID;
+
         $gatewayRegion = new GatewayRegion();
         if (!$gatewayRegion = $gatewayRegion->get()) {
             $this->postErrors[] = sprintf("Invalid API Keys.");
