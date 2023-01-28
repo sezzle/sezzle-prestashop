@@ -80,16 +80,10 @@ class Authentication
      * Get Merchant UUID
      *
      * @return string
-     * @throws RequestException
      */
-    public static function getMerchantUUID()
+    public static function getMerchantUUID($apiMode, $publicKey, $privateKey, $gatewayRegion)
     {
-        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
-        $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
+        $apiMode = $apiMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
 
         // auth credentials set
         $authModel = new AuthCredentials();
@@ -102,10 +96,13 @@ class Authentication
             $gatewayRegion
         ));
 
-        // get token
-        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
-        return $tokenModel->getMerchantUuid();
+        try {
+            // get token
+            $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
+            return $tokenModel->getMerchantUuid();
+        } catch (RequestException $e) {
+            return "";
+        }
     }
-
 
 }

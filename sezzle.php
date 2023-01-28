@@ -93,7 +93,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.3';
+        $this->version = '2.0.4';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -182,7 +182,8 @@ class Sezzle extends PaymentModule
                 $this->postProcess();
                 try {
                     ConfigServiceHandler::sendConfig();
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
             } else {
                 foreach ($this->postErrors as $err) {
                     $this->html .= $this->displayError($err);
@@ -397,7 +398,8 @@ class Sezzle extends PaymentModule
         foreach (array_keys($formValues) as $key) {
             if ($key === static::$formFields['live_mode']
                 || $key === static::$formFields['tokenize']
-                || $key === static::$formFields['widget_enable']) {
+                || $key === static::$formFields['widget_enable']
+                || $key === static::$formFields['merchant_id']) {
                 continue;
             }
 
@@ -410,12 +412,6 @@ class Sezzle extends PaymentModule
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
-        $merchantUUID = AuthenticationHandler::getMerchantUUID();
-        if (!$merchantUUID) {
-            $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
-            return;
-        }
-        $this->merchantUUID = $merchantUUID;
 
         $gatewayRegion = new GatewayRegion();
         if (!$gatewayRegion = $gatewayRegion->get()) {
@@ -423,6 +419,17 @@ class Sezzle extends PaymentModule
             return;
         }
         $this->gatewayRegion = $gatewayRegion;
+
+        $merchantUUID = AuthenticationHandler::getMerchantUUID(
+            Tools::getValue(self::$formFields['live_mode']),
+            Tools::getValue(self::$formFields['public_key']),
+            Tools::getValue(self::$formFields['private_key']),
+            $gatewayRegion);
+        if (!$merchantUUID) {
+            $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
+            return;
+        }
+        $this->merchantUUID = $merchantUUID;
     }
 
     /**
