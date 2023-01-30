@@ -49,18 +49,22 @@ class Authentication
     /**
      * Authenticate keys
      *
+     * @param string $gwRegion
+     * @param bool $stored
      * @return Sezzle\Model\Token
      * @throws RequestException
      */
-    public static function authenticate($gwRegion = "", $storedData = true)
+    public static function authenticate($gwRegion = "", $stored = true)
     {
-        $liveMode = $storedData ? Configuration::get(Sezzle::$formFields["live_mode"]) :
-            Tools::getValue(Sezzle::$formFields['live_mode']);
+        function get($key, $stored = true)
+        {
+            return $stored ? Configuration::get(Sezzle::$formFields[$key]) : Tools::getValue(Sezzle::$formFields[$key]);
+        }
+
+        $liveMode = get("live_mode", $stored);
+        $publicKey = get("public_key", $stored);
+        $privateKey = get("public_key", $stored);
         $apiMode = $liveMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
-        $publicKey = $storedData ? Configuration::get(Sezzle::$formFields["public_key"]) :
-            Tools::getValue(Sezzle::$formFields['public_key']);
-        $privateKey = $storedData ? Configuration::get(Sezzle::$formFields["private_key"]) :
-            Tools::getValue(Sezzle::$formFields['private_key']);
         $gatewayRegion = $gwRegion ?: Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // auth credentials set
