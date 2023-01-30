@@ -56,14 +56,10 @@ class Authentication
      */
     public static function authenticate($gwRegion = "", $stored = true)
     {
-        function get($key, $stored = true)
-        {
-            return $stored ? Configuration::get(Sezzle::$formFields[$key]) : Tools::getValue(Sezzle::$formFields[$key]);
-        }
+        $liveMode = self::getConfigValue("live_mode", $stored);
+        $publicKey = self::getConfigValue("public_key", $stored);
+        $privateKey = self::getConfigValue("private_key", $stored);
 
-        $liveMode = get("live_mode", $stored);
-        $publicKey = get("public_key", $stored);
-        $privateKey = get("public_key", $stored);
         $apiMode = $liveMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
         $gatewayRegion = $gwRegion ?: Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
@@ -80,6 +76,18 @@ class Authentication
 
         // get token model
         return $tokenService->get($authModel->toArray(), Util::getPlatformData());
+    }
+
+    /**
+     * Get config value
+     *
+     * @param string $key
+     * @param bool $stored
+     * @return false|mixed|string
+     */
+    private static function getConfigValue($key, $stored = true)
+    {
+        return $stored ? Configuration::get(Sezzle::$formFields[$key]) : Tools::getValue(Sezzle::$formFields[$key]);
     }
 
 }
