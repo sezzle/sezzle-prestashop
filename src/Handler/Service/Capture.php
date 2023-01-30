@@ -65,7 +65,7 @@ class Capture
 
         // get capture response
         return $captureService->capturePayment(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $orderUUID,
             $payload->toArray()
         );

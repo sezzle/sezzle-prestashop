@@ -65,7 +65,7 @@ class Release
 
         // get release response
         return $releaseService->releasePayment(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $orderUUID,
             $payload->toArray()
         );

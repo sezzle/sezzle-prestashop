@@ -64,7 +64,7 @@ class Order
 
         // order response
         return $orderService->getOrder(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $orderUUID
         );
     }
@@ -93,7 +93,7 @@ class Order
 
         // get response status
         return $orderService->updateOrder(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $orderUUID,
             ['reference_id' => $referenceId]
         );

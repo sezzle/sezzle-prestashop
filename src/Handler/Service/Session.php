@@ -79,6 +79,6 @@ class Session
         ));
 
         // session response
-        return $sessionService->createSession(Authentication::getToken(), $payload->toArray());
+        return $sessionService->createSession(Authentication::authenticate()->getToken(), $payload->toArray());
     }
 }

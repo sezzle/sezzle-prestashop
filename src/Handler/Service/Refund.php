@@ -65,7 +65,7 @@ class Refund
 
         // get refund response
         return $refundService->refundPayment(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $orderUUID,
             $payload->toArray()
         );

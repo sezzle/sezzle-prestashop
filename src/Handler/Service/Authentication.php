@@ -37,6 +37,7 @@ use Sezzle\HttpClient\RequestException;
 use Sezzle\Model\AuthCredentials;
 use Sezzle\Services\AuthenticationService;
 use PrestaShop\Module\Sezzle\Handler\Util;
+use Tools;
 
 /**
  * Class Authentication
@@ -46,19 +47,21 @@ class Authentication
 {
 
     /**
-     * Get Authentication Token
+     * Authenticate keys
      *
-     * @return string
+     * @return Sezzle\Model\Token
      * @throws RequestException
      */
-    public static function getToken()
+    public static function authenticate($gwRegion = "", $storedData = true)
     {
-        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
-        $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
+        $liveMode = $storedData ? Configuration::get(Sezzle::$formFields["live_mode"]) :
+            Tools::getValue(Sezzle::$formFields['live_mode']);
+        $apiMode = $liveMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
+        $publicKey = $storedData ? Configuration::get(Sezzle::$formFields["public_key"]) :
+            Tools::getValue(Sezzle::$formFields['public_key']);
+        $privateKey = $storedData ? Configuration::get(Sezzle::$formFields["private_key"]) :
+            Tools::getValue(Sezzle::$formFields['private_key']);
+        $gatewayRegion = $gwRegion ?: Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // auth credentials set
         $authModel = new AuthCredentials();
@@ -71,38 +74,8 @@ class Authentication
             $gatewayRegion
         ));
 
-        // get token
-        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
-        return $tokenModel->getToken();
-    }
-
-    /**
-     * Get Merchant UUID
-     *
-     * @return string
-     */
-    public static function getMerchantUUID($apiMode, $publicKey, $privateKey, $gatewayRegion)
-    {
-        $apiMode = $apiMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
-
-        // auth credentials set
-        $authModel = new AuthCredentials();
-        $authModel->setPublicKey($publicKey)->setPrivateKey($privateKey);
-
-        // instantiate authentication service
-        $tokenService = new AuthenticationService(new ClientService(
-            new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
-        ));
-
-        try {
-            // get token
-            $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
-            return $tokenModel->getMerchantUuid();
-        } catch (RequestException $e) {
-            return "";
-        }
+        // get token model
+        return $tokenService->get($authModel->toArray(), Util::getPlatformData());
     }
 
 }

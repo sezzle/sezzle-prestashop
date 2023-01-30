@@ -420,16 +420,12 @@ class Sezzle extends PaymentModule
         }
         $this->gatewayRegion = $gatewayRegion;
 
-        $merchantUUID = AuthenticationHandler::getMerchantUUID(
-            Tools::getValue(self::$formFields['live_mode']),
-            Tools::getValue(self::$formFields['public_key']),
-            Tools::getValue(self::$formFields['private_key']),
-            $gatewayRegion);
-        if (!$merchantUUID) {
+        $auth = AuthenticationHandler::authenticate($gatewayRegion, false);
+        if (!$auth->getMerchantUuid()) {
             $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
             return;
         }
-        $this->merchantUUID = $merchantUUID;
+        $this->merchantUUID = $auth->getMerchantUuid();
     }
 
     /**

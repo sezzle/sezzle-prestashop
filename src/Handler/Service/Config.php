@@ -63,7 +63,7 @@ class Config
 
         // get config response
         return $configService->sendConfig(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             self::buildConfigPayload()
         );
     }

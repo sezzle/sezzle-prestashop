@@ -64,7 +64,7 @@ class Tokenization
 
         // get tokenization response
         return $tokenizationService->getTokenDetails(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $tokenizeToken
         );
     }
@@ -92,7 +92,7 @@ class Tokenization
         ));
         // get order response
         return $tokenizationService->createOrder(
-            Authentication::getToken(),
+            Authentication::authenticate()->getToken(),
             $customerUUID,
             $payload->toArray()
         );
