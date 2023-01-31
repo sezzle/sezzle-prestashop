@@ -30,6 +30,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 use Configuration;
+use PrestaShop\Module\Sezzle\Handler\Service\Authentication;
 use Sezzle;
 use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
@@ -54,7 +55,7 @@ class GatewayRegion
 
         foreach (Sezzle::SUPPORTED_REGIONS as $region) {
             try {
-                if ($this->validateAPIKeys($region)) {
+                if (Authentication::authenticate($region, false)->getToken()) {
                     return $region;
                 }
             } catch (Sezzle\HttpClient\RequestException $e) {
@@ -92,36 +93,5 @@ class GatewayRegion
             return false;
         }
         return true;
-    }
-
-    /**
-     * Validate API Keys
-     *
-     * @param string $region
-     * @return string
-     * @throws Sezzle\HttpClient\RequestException
-     */
-    private function validateAPIKeys($region = "")
-    {
-        $apiMode = Tools::getValue(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $publicKey = Tools::getValue(Sezzle::$formFields["public_key"]);
-        $privateKey = Tools::getValue(Sezzle::$formFields["private_key"]);
-
-        // auth credentials set
-        $authModel = new AuthCredentials();
-        $authModel->setPublicKey($publicKey)->setPrivateKey($privateKey);
-
-        // instantiate authentication service
-        $tokenService = new AuthenticationService(new ClientService(
-            new GuzzleFactory(),
-            $apiMode,
-            $region
-        ));
-
-        // get token
-        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
-        return $tokenModel->getToken();
     }
 }

@@ -32,6 +32,7 @@ use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
 use PrestaShop\Module\Sezzle\Handler\Service\Config as ConfigServiceHandler;
+use PrestaShop\Module\Sezzle\Handler\Service\Authentication as AuthenticationHandler;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
@@ -59,6 +60,7 @@ class Sezzle extends PaymentModule
 
     const SUPPORTED_REGIONS = ['US', 'EU'];
     const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
+    const SEZZLE_MERCHANT_ID_KEY = "SEZZLE_MERCHANT_ID";
     const SEZZLE_WIDGET_TICKET_CREATED_AT_KEY = "SEZZLE_WIDGET_TICKET_CREATED_AT_KEY";
     const WIDGET_QUEUE_SLA = " +7 days";
 
@@ -79,6 +81,10 @@ class Sezzle extends PaymentModule
      * @var string
      */
     private $gatewayRegion;
+    /**
+     * @var string
+     */
+    private $merchantUUID;
 
     /**
      * Sezzle constructor.
@@ -87,7 +93,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.3';
+        $this->version = '2.0.4';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -176,7 +182,8 @@ class Sezzle extends PaymentModule
                 $this->postProcess();
                 try {
                     ConfigServiceHandler::sendConfig();
-                } catch (Exception $e) {}
+                } catch (Exception $e) {
+                }
             } else {
                 foreach ($this->postErrors as $err) {
                     $this->html .= $this->displayError($err);
@@ -268,14 +275,6 @@ class Sezzle extends PaymentModule
                                 'label' => $this->l('Disabled')
                             )
                         ),
-                    ),
-                    array(
-                        'col' => 3,
-                        'type' => 'text',
-                        'name' => static::$formFields['merchant_id'],
-                        'desc' => $this->l('Enter a valid merchant id'),
-                        'label' => $this->l('Merchant Id'),
-                        'required' => true,
                     ),
                     array(
                         'col' => 3,
@@ -386,6 +385,7 @@ class Sezzle extends PaymentModule
             Configuration::updateValue($key, Tools::getValue($key));
         }
         Configuration::updateValue(self::SEZZLE_GATEWAY_REGION_KEY, $this->gatewayRegion);
+        Configuration::updateValue(self::SEZZLE_MERCHANT_ID_KEY, $this->merchantUUID);
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
     }
 
@@ -398,7 +398,8 @@ class Sezzle extends PaymentModule
         foreach (array_keys($formValues) as $key) {
             if ($key === static::$formFields['live_mode']
                 || $key === static::$formFields['tokenize']
-                || $key === static::$formFields['widget_enable']) {
+                || $key === static::$formFields['widget_enable']
+                || $key === static::$formFields['merchant_id']) {
                 continue;
             }
 
@@ -411,12 +412,20 @@ class Sezzle extends PaymentModule
                 $this->postErrors[] = sprintf("Invalid %s", $readableKey);
             }
         }
+
         $gatewayRegion = new GatewayRegion();
         if (!$gatewayRegion = $gatewayRegion->get()) {
             $this->postErrors[] = sprintf("Invalid API Keys.");
             return;
         }
         $this->gatewayRegion = $gatewayRegion;
+
+        $auth = AuthenticationHandler::authenticate($gatewayRegion, false);
+        if (!$auth->getMerchantUuid()) {
+            $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
+            return;
+        }
+        $this->merchantUUID = $auth->getMerchantUuid();
     }
 
     /**

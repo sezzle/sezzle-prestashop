@@ -37,6 +37,7 @@ use Sezzle\HttpClient\RequestException;
 use Sezzle\Model\AuthCredentials;
 use Sezzle\Services\AuthenticationService;
 use PrestaShop\Module\Sezzle\Handler\Util;
+use Tools;
 
 /**
  * Class Authentication
@@ -46,19 +47,21 @@ class Authentication
 {
 
     /**
-     * Get Authentication Token
+     * Authenticate keys
      *
-     * @return string
+     * @param string $gwRegion
+     * @param bool $stored
+     * @return Sezzle\Model\Token
      * @throws RequestException
      */
-    public static function getToken()
+    public static function authenticate($gwRegion = "", $stored = true)
     {
-        $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
-            ? Sezzle::MODE_PRODUCTION
-            : Sezzle::MODE_SANDBOX;
-        $publicKey = Configuration::get(Sezzle::$formFields["public_key"]);
-        $privateKey = Configuration::get(Sezzle::$formFields["private_key"]);
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
+        $liveMode = self::getConfigValue("live_mode", $stored);
+        $publicKey = self::getConfigValue("public_key", $stored);
+        $privateKey = self::getConfigValue("private_key", $stored);
+
+        $apiMode = $liveMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
+        $gatewayRegion = $gwRegion ?: Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // auth credentials set
         $authModel = new AuthCredentials();
@@ -71,10 +74,20 @@ class Authentication
             $gatewayRegion
         ));
 
-        // get token
-        $tokenModel = $tokenService->get($authModel->toArray(), Util::getPlatformData());
-        return $tokenModel->getToken();
+        // get token model
+        return $tokenService->get($authModel->toArray(), Util::getPlatformData());
     }
 
+    /**
+     * Get config value
+     *
+     * @param string $key
+     * @param bool $stored
+     * @return false|mixed|string
+     */
+    private static function getConfigValue($key, $stored = true)
+    {
+        return $stored ? Configuration::get(Sezzle::$formFields[$key]) : Tools::getValue(Sezzle::$formFields[$key]);
+    }
 
 }

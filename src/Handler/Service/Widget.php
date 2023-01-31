@@ -62,6 +62,6 @@ class Widget
         ));
 
         // get widget queue response
-        return $widgetService->addToWidgetQueue(Authentication::getToken());
+        return $widgetService->addToWidgetQueue(Authentication::authenticate()->getToken());
     }
 }
