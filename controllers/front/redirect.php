@@ -63,7 +63,10 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
         // tokenized order handling
         if ($customerUUID = Tokenization::getCustomerUUID($cart->id_customer)) {
             $tokenizeHandler = new Tokenization();
-            $order = $tokenizeHandler->createOrder($customerUUID, $cart);
+            $order = $tokenizeHandler->createOrder($customerUUID, $cart);if (!$order->getAuthorization()->isApproved()) {
+                $this->handleError('Sezzle payment not approved.');
+                           
+            }
             $this->postTokenizedOrderCreation($order);
             Tools::redirectLink($this->context->link->getModuleLink(
                 Sezzle::MODULE_NAME,
