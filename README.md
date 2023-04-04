@@ -34,3 +34,14 @@ Documentation for the Sezzle payment module can be found on <a href="https://doc
 - Default port for PrestaShop is `3306`
 - The default port for MySQL is `8889`.  Make sure to add to end of Database Server Address `127.0.0.1:8889`
 4. Delete installation folder from folder you created in htdocs earlier, now your shop is ready to use!
+
+### CREATING RELEASE PACKAGE
+
+1. Go inside the `sezzle` directory and execute the below command.
+```
+    cd ../ 
+    && zip -r v<module-version>-sezzle.zip sezzle 
+    && mv v<module-version>-sezzle.zip sezzle/ 
+    && cd sezzle
+    && zip -d v<module-version>-sezzle.zip "__MACOSX*" DS_Store*
+```
