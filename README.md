@@ -37,10 +37,11 @@ Documentation for the Sezzle payment module can be found on <a href="https://doc
 
 ### CREATING RELEASE PACKAGE
 
-1. Go inside the `sezzle` directory and execute the below command.
+1. If Sezzle is already installed inside PrestaShop, then, go to `<root-dir>/modules/sezzle` else
+copy the project contents to a new directory `sezzle` and execute the below command from `sezzle` directory.
 ```
     cd ../ 
-    && zip -r v<module-version>-sezzle.zip sezzle 
+    && zip -r v<module-version>-sezzle.zip sezzle -x '.git/*'
     && mv v<module-version>-sezzle.zip sezzle/ 
     && cd sezzle
     && zip -d v<module-version>-sezzle.zip "__MACOSX*" DS_Store*
