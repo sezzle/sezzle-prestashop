@@ -6,7 +6,7 @@
 
 ## Sezzle module for PrestaShop
 
-Documentation for the Sezzle payment module can be found on <a href="https://docs.sezzle.com/sezzle-integration/docs/prestashop">docs.sezzle.com</a>.
+Documentation for the Sezzle payment module can be found on <a href="https://docs.sezzle.com/#prestashop">docs.sezzle.com</a>.
 
 # Setting up a local PrestaShop store
 
