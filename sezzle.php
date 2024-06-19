@@ -27,7 +27,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use PrestaShop\Module\Sezzle\Handler\Merchant;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
