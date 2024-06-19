@@ -52,13 +52,11 @@ class Config
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate config service
         $configService = new Sezzle\Services\ConfigService(new ClientService(
             new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
+            $apiMode
         ));
 
         // get config response

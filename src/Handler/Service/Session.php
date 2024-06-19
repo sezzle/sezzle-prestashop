@@ -69,13 +69,11 @@ class Session
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate session service
         $sessionService = new SessionService(new ClientService(
             new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
+            $apiMode
         ));
 
         // session response

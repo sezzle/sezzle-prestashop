@@ -52,13 +52,11 @@ class Widget
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate widget service
         $widgetService = new Sezzle\Services\WidgetService(new ClientService(
             new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
+            $apiMode
         ));
 
         // get widget queue response

@@ -54,13 +54,11 @@ class Refund
         $apiMode = Configuration::get(Sezzle::$formFields["live_mode"])
             ? Sezzle::MODE_PRODUCTION
             : Sezzle::MODE_SANDBOX;
-        $gatewayRegion = Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // instantiate refund service
         $refundService = new Sezzle\Services\RefundService(new ClientService(
             new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
+            $apiMode
         ));
 
         // get refund response
