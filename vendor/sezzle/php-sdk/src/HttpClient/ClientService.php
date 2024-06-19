@@ -34,7 +34,7 @@ class ClientService
      */
     public function __construct(
         GuzzleFactory $factory,
-        string        $apiMode,
+        string        $apiMode
     )
     {
         $this->client = new GuzzleClient($factory);

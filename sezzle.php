@@ -434,9 +434,18 @@ class Sezzle extends PaymentModule
             }
         }
 
-        $auth = AuthenticationHandler::authenticate( false);
-        if ($this->hasKeysConfigurationChanged() && !$this->merchantUUID = $auth->getMerchantUuid()) {
-            $this->postErrors[] = "Invalid API Keys. Could not get merchant UUID";
+        if ($this->hasKeysConfigurationChanged()) {
+            try {
+                $auth = AuthenticationHandler::authenticate(false);
+                $this->merchantUUID = $auth->getMerchantUuid();
+            } catch (RequestException $e) {
+                $this->postErrors[] = "Invalid API Keys.";
+                return;
+            }
+
+            if (!$this->merchantUUID) {
+                $this->postErrors[] = "Invalid API Keys. Could not get merchant UUID";
+            }
         }
     }
 
