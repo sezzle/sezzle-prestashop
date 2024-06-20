@@ -28,26 +28,18 @@ class ClientService
     private $apiMode;
 
     /**
-     * @var string
-     */
-    private $gatewayRegion;
-
-    /**
      * ClientService constructor.
      * @param GuzzleFactory $factory
      * @param string $apiMode
-     * @param string $gatewayRegion
      */
     public function __construct(
         GuzzleFactory $factory,
-        string        $apiMode,
-        string        $gatewayRegion = ""
+        string        $apiMode
     )
     {
         $this->client = new GuzzleClient($factory);
         $this->apiMode = $apiMode;
-        $this->gatewayRegion = $gatewayRegion;
-        $this->gatewayUrl = Config::getGatewayUrl($this->apiMode, Config::API_V2, $this->gatewayRegion);
+        $this->gatewayUrl = Config::getGatewayUrl($this->apiMode, Config::API_V2);
     }
 
     /**

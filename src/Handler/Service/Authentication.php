@@ -35,6 +35,7 @@ use Sezzle\HttpClient\ClientService;
 use Sezzle\HttpClient\GuzzleFactory;
 use Sezzle\HttpClient\RequestException;
 use Sezzle\Model\AuthCredentials;
+use Sezzle\Model\Token;
 use Sezzle\Services\AuthenticationService;
 use PrestaShop\Module\Sezzle\Handler\Util;
 use Tools;
@@ -49,19 +50,17 @@ class Authentication
     /**
      * Authenticate keys
      *
-     * @param string $gwRegion
      * @param bool $stored
-     * @return Sezzle\Model\Token
+     * @return Token
      * @throws RequestException
      */
-    public static function authenticate($gwRegion = "", $stored = true)
+    public static function authenticate($stored = true)
     {
         $liveMode = self::getConfigValue("live_mode", $stored);
         $publicKey = self::getConfigValue("public_key", $stored);
         $privateKey = self::getConfigValue("private_key", $stored);
 
         $apiMode = $liveMode ? Sezzle::MODE_PRODUCTION : Sezzle::MODE_SANDBOX;
-        $gatewayRegion = $gwRegion ?: Configuration::get(Sezzle::SEZZLE_GATEWAY_REGION_KEY);
 
         // auth credentials set
         $authModel = new AuthCredentials();
@@ -70,8 +69,7 @@ class Authentication
         // instantiate authentication service
         $tokenService = new AuthenticationService(new ClientService(
             new GuzzleFactory(),
-            $apiMode,
-            $gatewayRegion
+            $apiMode
         ));
 
         // get token model

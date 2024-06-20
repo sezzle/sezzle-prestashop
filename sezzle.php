@@ -27,7 +27,6 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-use PrestaShop\Module\Sezzle\Handler\GatewayRegion;
 use PrestaShop\Module\Sezzle\Handler\Payment\Refund;
 use PrestaShop\Module\Sezzle\Handler\Payment\Release;
 use PrestaShop\Module\Sezzle\Handler\Service\Widget as WidgetServiceHandler;
@@ -36,7 +35,6 @@ use PrestaShop\Module\Sezzle\Handler\Service\Authentication as AuthenticationHan
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Sezzle\Config;
 use Sezzle\HttpClient\RequestException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -58,8 +56,6 @@ class Sezzle extends PaymentModule
     const ACTION_AUTHORIZE = "authorize";
     const ACTION_AUTHORIZE_CAPTURE = "authorize_capture";
 
-    const SUPPORTED_REGIONS = ['US', 'EU'];
-    const SEZZLE_GATEWAY_REGION_KEY = "SEZZLE_GATEWAY_REGION";
     const SEZZLE_MERCHANT_ID_KEY = "SEZZLE_MERCHANT_ID";
     const SEZZLE_WIDGET_TICKET_CREATED_AT_KEY = "SEZZLE_WIDGET_TICKET_CREATED_AT_KEY";
     const WIDGET_QUEUE_SLA = " +7 days";
@@ -77,10 +73,6 @@ class Sezzle extends PaymentModule
      * @var string
      */
     private $logo_url;
-    /**
-     * @var string
-     */
-    private $gatewayRegion;
     /**
      * @var string
      */
@@ -118,6 +110,7 @@ class Sezzle extends PaymentModule
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
         $this->limited_countries = array('US', 'CA', 'DE', 'FR', 'ES', 'IT');
         $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
+        $this->merchantUUID = Configuration::get(static::$formFields['merchant_id']);
     }
 
     /**
@@ -165,7 +158,6 @@ class Sezzle extends PaymentModule
         foreach (static::$formFields as $field) {
             Configuration::deleteByName($field);
         }
-        Configuration::deleteByName(self::SEZZLE_GATEWAY_REGION_KEY);
 
         return $result;
     }
@@ -384,9 +376,37 @@ class Sezzle extends PaymentModule
         foreach (array_keys($formValues) as $key) {
             Configuration::updateValue($key, Tools::getValue($key));
         }
-        Configuration::updateValue(self::SEZZLE_GATEWAY_REGION_KEY, $this->gatewayRegion);
         Configuration::updateValue(self::SEZZLE_MERCHANT_ID_KEY, $this->merchantUUID);
         $this->html .= $this->displayConfirmation($this->l('Settings updated'));
+    }
+
+    /**
+     * Checking API Keys Configuration has changed or not
+     *
+     * @return bool
+     */
+    private function hasKeysConfigurationChanged()
+    {
+        // stored data
+        $storedApiMode = Configuration::get(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+        $storedPublicKey = Configuration::get(Sezzle::$formFields["public_key"]);
+        $storedPrivateKey = Configuration::get(Sezzle::$formFields["private_key"]);
+
+        // input data
+        $apiMode = Tools::getValue(Sezzle::$formFields["live_mode"])
+            ? Sezzle::MODE_PRODUCTION
+            : Sezzle::MODE_SANDBOX;
+        $publicKey = Tools::getValue(Sezzle::$formFields["public_key"]);
+        $privateKey = Tools::getValue(Sezzle::$formFields["private_key"]);
+
+        if ($storedPublicKey === $publicKey
+            && $storedPrivateKey === $privateKey
+            && $storedApiMode === $apiMode) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -413,19 +433,19 @@ class Sezzle extends PaymentModule
             }
         }
 
-        $gatewayRegion = new GatewayRegion();
-        if (!$gatewayRegion = $gatewayRegion->get()) {
-            $this->postErrors[] = sprintf("Invalid API Keys.");
-            return;
-        }
-        $this->gatewayRegion = $gatewayRegion;
+        if ($this->hasKeysConfigurationChanged()) {
+            try {
+                $auth = AuthenticationHandler::authenticate(false);
+                $this->merchantUUID = $auth->getMerchantUuid();
+            } catch (RequestException $e) {
+                $this->postErrors[] = "Invalid API Keys.";
+                return;
+            }
 
-        $auth = AuthenticationHandler::authenticate($gatewayRegion, false);
-        if (!$auth->getMerchantUuid()) {
-            $this->postErrors[] = sprintf("Invalid API Keys. Could not get merchant UUID");
-            return;
+            if (!$this->merchantUUID) {
+                $this->postErrors[] = "Invalid API Keys. Could not get merchant UUID";
+            }
         }
-        $this->merchantUUID = $auth->getMerchantUuid();
     }
 
     /**
@@ -497,13 +517,7 @@ class Sezzle extends PaymentModule
         if (!$isWidgetEnabled || !$merchantId) {
             return;
         }
-        $gatewayRegion = Configuration::get(self::SEZZLE_GATEWAY_REGION_KEY);
-        $sezzleDomain = Config::getSezzleDomain($gatewayRegion);
-        $widgetURL = sprintf(
-            "https://widget.%s/v1/javascript/price-widget?uuid=%s",
-            $sezzleDomain,
-            $merchantId
-        );
+        $widgetURL = sprintf("https://widget.sezzle.com/v1/javascript/price-widget?uuid=%s", $merchantId);
 
         $this->context->controller->registerJavascript(
             $this->name . '-widget-config',

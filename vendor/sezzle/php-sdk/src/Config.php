@@ -35,41 +35,20 @@ class Config
     const WIDGET_QUEUE_RESOURCE = 'widget/queue';
     const CONFIG_RESOURCE = 'configuration';
 
-    const GATEWAY_URL = "https://%sgateway.%s/%s";
-    const SEZZLE_DOMAIN = "%ssezzle.com";
-    public static $supportedRegions = ['US', 'EU'];
-
-    /**
-     * Get Sezzle Domain
-     *
-     * @param string $gatewayRegion
-     * @return string
-     */
-    public static function getSezzleDomain($gatewayRegion = '')
-    {
-        switch ($gatewayRegion) {
-            case self::$supportedRegions[1]:
-                return sprintf(Config::SEZZLE_DOMAIN, 'eu.');
-            case self::$supportedRegions[0]:
-            default:
-                return sprintf(Config::SEZZLE_DOMAIN, '');
-        }
-    }
+    const GATEWAY_URL = "https://%sgateway.sezzle.com/%s";
 
     /**
      * Get Gateway URL
      *
      * @param string $apiMode
      * @param string $apiVersion
-     * @param string $gatewayRegion
      * @return string
      */
-    public static function getGatewayUrl($apiMode, $apiVersion, $gatewayRegion = '')
+    public static function getGatewayUrl($apiMode, $apiVersion)
     {
-        $sezzleDomain = self::getSezzleDomain($gatewayRegion);
         if ($apiMode === Config::SANDBOX) {
-            return sprintf(Config::GATEWAY_URL, 'sandbox.', $sezzleDomain, $apiVersion);
+            return sprintf(Config::GATEWAY_URL, 'sandbox.', $apiVersion);
         }
-        return sprintf(Config::GATEWAY_URL, "", $sezzleDomain, $apiVersion);
+        return sprintf(Config::GATEWAY_URL, "", $apiVersion);
     }
 }

@@ -14,17 +14,17 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
     );
 
     public static $prefixLengthsPsr4 = array (
-        'S' => 
+        'S' =>
         array (
             'Sezzle\\' => 7,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psr\\Http\\Message\\' => 17,
             'Psr\\Http\\Client\\' => 16,
             'PrestaShop\\Module\\Sezzle\\' => 25,
         ),
-        'G' => 
+        'G' =>
         array (
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
@@ -33,31 +33,31 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
     );
 
     public static $prefixDirsPsr4 = array (
-        'Sezzle\\' => 
+        'Sezzle\\' =>
         array (
             0 => __DIR__ . '/..' . '/sezzle/php-sdk/src',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Http\\Client\\' => 
+        'Psr\\Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
-        'PrestaShop\\Module\\Sezzle\\' => 
+        'PrestaShop\\Module\\Sezzle\\' =>
         array (
             0 => __DIR__ . '/../..' . '/src',
         ),
-        'GuzzleHttp\\Psr7\\' => 
+        'GuzzleHttp\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
-        'GuzzleHttp\\Promise\\' => 
+        'GuzzleHttp\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
         ),
-        'GuzzleHttp\\' => 
+        'GuzzleHttp\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
@@ -147,7 +147,6 @@ class ComposerStaticInitb9bcbd94097e02a1b8ce760410dfd6c2
         'GuzzleHttp\\TransferStats' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/TransferStats.php',
         'GuzzleHttp\\Utils' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/Utils.php',
         'Payment' => __DIR__ . '/../..' . '/classes/Payment.php',
-        'PrestaShop\\Module\\Sezzle\\Handler\\GatewayRegion' => __DIR__ . '/../..' . '/src/Handler/GatewayRegion.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Order' => __DIR__ . '/../..' . '/src/Handler/Order.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Authorization' => __DIR__ . '/../..' . '/src/Handler/Payment/Authorization.php',
         'PrestaShop\\Module\\Sezzle\\Handler\\Payment\\Capture' => __DIR__ . '/../..' . '/src/Handler/Payment/Capture.php',
