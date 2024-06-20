@@ -35,7 +35,6 @@ use PrestaShop\Module\Sezzle\Handler\Service\Authentication as AuthenticationHan
 use PrestaShop\Module\Sezzle\Handler\Util;
 use PrestaShop\Module\Sezzle\Setup\InstallerFactory;
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
-use Sezzle\Config;
 use Sezzle\HttpClient\RequestException;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
