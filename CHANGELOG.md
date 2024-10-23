@@ -6,9 +6,33 @@
 
 # Sezzle Prestashop Module Changelog
 
+## Version 2.0.7
+
+_Wed 23 Oct 2024_
+
+### Supported Editions & Versions
+
+Tested and verified in clean installations of Prestashop 1.7.x.x and 8.x.x.
+
+### Highlights
+
+- FIX: Error creating checkout when customer UUID expire.
+
+## Version 2.0.6
+
+_Thu 20 Jun 2024_
+
+### Supported Editions & Versions
+
+Tested and verified in clean installations of Prestashop 1.7.x.x and 8.x.x.
+
+### Highlights
+
+- Removed EU codes because we don't support EU regions anymore.
+
 ## Version 2.0.5
 
-_Thu 7 Feb 2023_
+_Tue 7 Feb 2023_
 
 ### Supported Editions & Versions
 
