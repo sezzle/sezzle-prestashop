@@ -224,11 +224,11 @@ class SezzleTokenization extends ObjectModel
     public static function deleteTokenizationRecord($customerId)
     {
         Db::getInstance()->delete(
-            OrderPayment::$definition['table'],
+            self::$definition['table'],
             sprintf(
                 'id_customer = %d ORDER BY %s DESC',
                 (int)$customerId,
-                pSQL(OrderPayment::$definition['primary'])
+                pSQL(self::$definition['primary'])
             ),
             1
         );
