@@ -5,4 +5,4 @@ include:
       - '.compile/php.yml'
 
 variables:
-  JIRA_PROJECT_NAME: "PLAT"
+  JIRA_PROJECT_NAME: "MERCHANT"
