@@ -1,0 +1,8 @@
+include:
+  - project: 'DevOps/templates'
+    ref: 'v2.0.4'
+    file:
+      - '.compile/php.yml'
+
+variables:
+  JIRA_PROJECT_NAME: "MERCHANT"
