@@ -12,11 +12,11 @@
 
 ### Install PrestaShop to MAMP
 
-1. Download [PrestaShop](https://prestashop.com/versions/)
-    <!-- - Note: https://prestashop.com/prestashop-offers/classic/ should be the latest stable version, but the download is not working
+1. Download [PrestaShop](https://prestashop.com/prestashop-offers/classic/)
     - Enter your email address
     - Select `I want to create modules for PrestaShop`
-    - Click Download -->
+    - Click Download
+    - To download a specific version, see https://prestashop.com/versions/
 1. `cd /Applications/MAMP/htdocs && mkdir prestashop`
 1. Unzip the downloaded file, then drag & drop `prestashop.zip` and `index.php` to the `Applications/MAMP/htdocs/prestashop` folder
 
@@ -34,6 +34,7 @@
 ### Create Database
 
 *Ensure other MySQL instances are not running.*
+*If you already have a `mamp` connection established, skip to the `Create New Database` step*
 
 1. Open DBeaver or equivalent
 1. Click `New Database connection`
@@ -69,35 +70,26 @@
    - `Database name`: `prestashop_local_db`
    - `Database login`: `root`
    - `Database password`: `root`
+   - `Table prefix: `sz_`
    - `Drop Existing Tables`: `TRUE`
 1. Click `Test your database connection now!`
 1. Click `Next`
-1. Delete the `install` folder 
+1. Once Store Installation has completed, delete the `install` folder from `/Applications/MAMP/htdocs/prestashop`
+    - If Store Installation fails, try again.
 
 ### Install Sezzle Extension
 
 1. `cd /Applications/MAMP/htdocs/prestashop/modules && git clone ssh://git@gitlab.sezzle.com:10022/sezzle/prestashop.git sezzle && cd ..`
 
-### Generate Sezzle API Keys
-
-In Postman, create the following request:
-    - `POST` `https://sandbox.gateway.sezzle.com/v2/authentication`
-    - `Authorization`: `OAuth 2.0` (admin-auth-token-v2 from Sandbox ADash)
-    - `Body` (raw):
-        ```
-        {
-        "public_key": "qxorvmr7zbww7yw8vvhlxi8s3uko18q7",
-        "private_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjEsInNjb3BlIjoibWVyY2hhbnRhcGkiLCJleHAiOjQ2MzM3MTg3MDYsImlzcyI6IlNlenpsZSJ9.Ez4-gbBpb5iTRJ9VCVD97IrjS98v1NalZlL2fHU2KSA"
-        }
-        ```
-
 ### Sezzle Configuration
 
-2. Navigate to `http://localhost:8888/admin/`
-3. Log in with Username `admin@admin.com` and Password `sezzleadmin`
-4. Go to `Modules` > `Module Manager`
-5. Under `Payment`, find `Sezzle` and click `Install` then click `Configure`
-6. Enter `Public Key` and `Private Key` from Postman body, then click `Save`
+1. Navigate to `http://localhost:8888/admin/`
+1. Log in with Username `admin@admin.com` and Password `sezzleadmin`
+1. Go to `Modules` > `Module Manager`
+1. Under `Payment`, find `Sezzle` and click `Install` then click `Configure`
+1. Enter `Public Key`: `qxorvmr7zbww7yw8vvhlxi8s3uko18q7`
+1. Enter `Private Key`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyaWQiOjEsInNjb3BlIjoibWVyY2hhbnRhcGkiLCJleHAiOjQ2MzM3MTg3MDYsImlzcyI6IlNlenpsZSJ9.Ez4-gbBpb5iTRJ9VCVD97IrjS98v1NalZlL2fHU2KSA`
+1. Click `Save`
 
 
 ## Troubleshooting
