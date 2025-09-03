@@ -1,0 +1,53 @@
+services:
+  mysql:
+    container_name: presta-mysql
+    image: mysql:5.7
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: prestashop
+    platform: linux/x86_64
+    networks:
+      - prestashop_network
+    volumes:
+      - dbdata:/var/tmp/prestashop
+  prestashop:
+    container_name: prestashop
+    image: prestashop/prestashop:latest
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - 8090:80
+    platform: linux/x86_64
+    volumes:
+      - psdata:/var/tmp/prestashop
+    environment:
+      DB_SERVER: presta-mysql
+      DB_NAME: prestashop
+      DB_USER: root
+      DB_PASSWD: admin
+      PS_FOLDER_ADMIN: backoffice
+      PS_FOLDER_INSTALL: install-ps
+    networks:
+      - prestashop_network
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: unless-stopped
+    ports:
+      - 8085:80
+    platform: linux/x86_64
+    networks:
+      - prestashop_network
+networks:
+  prestashop_network:
+volumes:
+  psdata:
+  dbdata:
