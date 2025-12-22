@@ -61,16 +61,16 @@
     - `First Name`: `Admin`
     - `Last Name`: `Admin`
     - `Email Address`: `admin@admin.com`
-    - `Store password`: `sezzleadmin`
+    - `Store password`: `abcd.1234`
     - Retype to confirm: (same as above)
 1. Click `Next`
 1. On the next screen, accept defaults by clicking `Next`
 1. Enter the Database info:
    - `Database server address`: `localhost`
-   - `Database name`: `prestashop_local_db`
+   - `Database name`: `prestashop`
    - `Database login`: `root`
    - `Database password`: `root`
-   - `Table prefix: `sz_`
+   - `Table prefix`: `sz_`
    - `Drop Existing Tables`: `TRUE`
 1. Click `Test your database connection now!`
 1. Click `Next`
