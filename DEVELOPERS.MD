@@ -19,11 +19,12 @@
     - To download a specific version, see https://prestashop.com/versions/
 1. `cd /Applications/MAMP/htdocs && mkdir prestashop`
 1. Unzip the downloaded file, then drag & drop `prestashop.zip` and `index.php` to the `Applications/MAMP/htdocs/prestashop` folder
+    - The installer will unzip this subfolder for you.
 
 ### Configure MAMP
 
 1. Open MAMP app
-1. Select `Web server`: `Apache` and `PHP version`: `8.3.14`
+1. Select `Web server`: `Apache` and `PHP version`: `8.4.1`
 1. Click Preferences
 1. In the `Ports` tab, set `Apache Port` and `Nginx Port` to `8888` and `MySQL Port` to `8889`
 1. In the `Server` tab, select `Use MySQL server`: `8.0.40`
@@ -61,7 +62,7 @@
     - `First Name`: `Admin`
     - `Last Name`: `Admin`
     - `Email Address`: `admin@admin.com`
-    - `Store password`: `abcd.1234`
+    - `Store password`: `sezzleadmin`
     - Retype to confirm: (same as above)
 1. Click `Next`
 1. On the next screen, accept defaults by clicking `Next`
@@ -83,7 +84,10 @@
 
 ### Sezzle Configuration
 
-1. Navigate to `http://localhost:8888/admin/`
+Note: Prestashop is fickle - if the page does not load properly, refresh to try again.
+
+1. Navigate to `http://localhost:8888/admin`
+    - Note: Prestashop's Admin URL now uses an alphanumeric string for security purposes. To confirm the URL for your store's admin, open the root folder and copy the folder name into the URL path (ex: `localhost:8888/admin003dy3ilgmgwiz75kdk`)
 1. Log in with Username `admin@admin.com` and Password `sezzleadmin`
 1. Go to `Modules` > `Module Manager`
 1. Under `Payment`, find `Sezzle` and click `Install` then click `Configure`
