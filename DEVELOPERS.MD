@@ -45,7 +45,7 @@
 1. Secondary-click on the newly created connection and select `Rename`
 1. Enter `mamp` then click `OK`
 1. Click the connection to expand, then Secondary-click on `Databases` and select `Create New Database`
-1. Enter `Database name`: `prestashop_local_db` then click `OK`
+1. Enter `Database name`: `prestashop` then click `OK`
 
 ### Configure PrestaShop
 
