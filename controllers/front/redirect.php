@@ -70,7 +70,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                     $this->handleError('Sezzle payment not approved.');           
                 }
                 $this->postTokenizedOrderCreation($order);
-                Tools::redirectLink($this->context->link->getModuleLink(
+                Tools::redirect($this->context->link->getModuleLink(
                     Sezzle::MODULE_NAME,
                     'complete'
                 ));
@@ -81,7 +81,7 @@ class SezzleRedirectModuleFrontController extends SezzleAbstractModuleFrontContr
                 $this->handleError('Error while creating checkout. Please try again.');
             }
             $this->postCheckoutSessionCreation($checkoutSession);
-            Tools::redirectLink($checkoutSession->getOrder()->getCheckoutUrl());
+            Tools::redirect($checkoutSession->getOrder()->getCheckoutUrl());
         } catch (Exception $e) {
             PrestaShopLogger::addLog($e->getMessage(), 3, null, "Sezzle", 1);
             $this->handleError('Unexpected error processing Sezzle. Please try again');
