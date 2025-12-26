@@ -12,7 +12,7 @@ _Mon 29 Dec 2025_
 
 ### Supported Editions & Versions
 
-Tested and verified in clean installations of Prestashop 9.x.x.
+Tested and verified in clean installations of Prestashop 1.7.x.x, 8.x.x, and 9.x.x.
 
 ### Highlights
 
