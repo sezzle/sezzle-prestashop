@@ -103,3 +103,8 @@ Note: Prestashop is fickle - if the page does not load properly, refresh to try 
 `open /Applications/MAMP/bin/php/php8.3.14/conf/php.ini`
 Search the document for `memory_limit` and increase the capacity as required
 You might need to restart MAMP
+
+
+## Release instructions
+
+See here: https://gitlab.sezzle.com/sezzle/prestashop/-/wikis/home/release
