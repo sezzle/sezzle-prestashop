@@ -6,7 +6,6 @@
 
 # Sezzle Prestashop Module Changelog
 
-
 ## Version 3.0.0
 
 _Mon 29 Dec 2025_
