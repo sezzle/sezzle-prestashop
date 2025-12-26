@@ -6,6 +6,20 @@
 
 # Sezzle Prestashop Module Changelog
 
+
+## Version 3.0.0
+
+_Mon 29 Dec 2025_
+
+### Supported Editions & Versions
+
+Tested and verified in clean installations of Prestashop 9.x.x.
+
+### Highlights
+
+- Update deprecated redirectLink to redirect
+- Update Twig/Kernel
+
 ## Version 2.0.7
 
 _Wed 23 Oct 2024_
