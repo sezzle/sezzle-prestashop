@@ -85,7 +85,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '2.0.7';
+        $this->version = '3.0.0';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
@@ -750,7 +750,7 @@ class Sezzle extends PaymentModule
             if (!method_exists($this, 'get')) {
                 throw new Exception('Method ::get() does not exist');
             }
-            /** @var Twig_Environment $twig */
+            /** @var \Twig\Environment $twig */
             $twig = $this->get('twig');
         } catch (Exception $e) {
             $twig = $this->getLegacyTwig();
@@ -761,15 +761,42 @@ class Sezzle extends PaymentModule
     /**
      * Get a legacy twig instance with registered template paths for older PS versions (1.7.0 to 1.7.6)
      *
-     * @return Twig_Environment
+     * @return \Twig\Environment
      */
     private function getLegacyTwig()
     {
+        // For PrestaShop 9+, use the modern Twig service container approach
+        if (version_compare(_PS_VERSION_, '9.0.0', '>=')) {
+            try {
+                $container = \PrestaShop\PrestaShop\Adapter\SymfonyContainer::getInstance();
+                if ($container !== null) {
+                    /** @var \Twig\Environment $twig */
+                    $twig = $container->get('twig');
+
+                    $loader = $twig->getLoader();
+                    if ($loader instanceof FilesystemLoader) {
+                        $loader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+                    } elseif ($loader instanceof ChainLoader && method_exists($loader, "getLoaders")) {
+                        foreach ($loader->getLoaders() as $subLoader) {
+                            if ($subLoader instanceof FilesystemLoader) {
+                                $subLoader->setPaths([$this->getLocalPath() . '../'], 'Modules');
+                            }
+                        }
+                    }
+
+                    return $twig;
+                }
+            } catch (Exception $e) {
+                // Fall through to legacy method if modern approach fails
+            }
+        }
+
+        // Legacy approach for PrestaShop 1.7.0 to 1.7.6
         $kernel = new AppKernel(_PS_MODE_DEV_ ? 'dev' : 'prod', _PS_MODE_DEV_);
         $kernel->loadClassCache();
         $kernel->boot();
 
-        /** @var Twig_Environment $twig */
+        /** @var \Twig\Environment $twig */
         $twig = $kernel->getContainer()->get('twig');
 
         $loader = $twig->getLoader();
