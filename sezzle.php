@@ -85,7 +85,7 @@ class Sezzle extends PaymentModule
     {
         $this->name = 'sezzle';
         $this->tab = 'payments_gateways';
-        $this->version = '3.0.0';
+        $this->version = '3.0.1';
         $this->author = 'Sezzle';
         $this->module_key = 'de1effcde804e599e716e0eefcb6638c';
         $this->need_instance = 1;
