@@ -15,45 +15,6 @@ All Sezzle developers should already have completed [Docker](https://gitlab.sezz
 1. Clone `prestashop` into `go/src/sezzle` as normal
 1. Ensure Docker Desktop is open, then run `docker-compose up -d`
 
-### Configure Prestashop
-
-1. Navigate to http://localhost:8090/install-ps/
-1. If prompted to upgrade, click `No thanks`
-1. Select Language, then click `Next`
-1. Click `I agree to the above terms and conditions` then click `Next`
-1. Enter store info:
- - Store name: sezzle-test
- - Country: United States
- - Store Timezone: (any)
- - Enable SSL: No
- - First Name: Admin
- - Last Name: Admin
- - Email Address: admin@admin.com
- - Store password: sezzleadmin
- - Retype to confirm: (same as above)
-1. Click `Next`
-1. On the next screen, accept defaults by clicking `Next`
-1. Enter the Database info:
- - Database server address: presta-mysql
- - Database name: prestashop
- - Database login: root
- - Database password: admin
- - Table prefix: sz_
- - Drop Existing Tables: TRUE
-1. Click `Test your database connection now!`
-1. Click `Next`
-1. Select the `Classic` theme
-1. Once Store Installation has completed, click `Manage your store` to open the login screen
- - If Store Installation fails, try again.
-
-### Install Sezzle
-
-1. Run `docker exec prestashop php /var/www/html/bin/console prestashop:module install sezzle`
-1. Go to Payment > Payment Methods. Next to Sezzle, click `Configure`
-1. Enter `Public Key` and `Private Key` (Use https://sandbox.admin.sezzle.com/merchants/1)
-1. Click `Save`
-
-You should now be able to complete sandbox checkouts on the storefront: http://localhost:8090/
 
 ## MAMP Installation Method
 
@@ -101,9 +62,9 @@ You should now be able to complete sandbox checkouts on the storefront: http://l
 1. Click the connection to expand, then Secondary-click on `Databases` and select `Create New Database`
 1. Enter `Database name`: `prestashop` then click `OK`
 
-### Configure PrestaShop
+## Configure PrestaShop
 
-1. Navigate to http://localhost:8888/
+1. Navigate to http://localhost:8888/ (MAMP) or http://localhost:8090/install-ps/ (Docker)
 1. If prompted to upgrade, click `No thanks`
 1. Select Language, then click `Next`
 1. Click `I agree to the above terms and conditions` then click `Next`
@@ -120,32 +81,42 @@ You should now be able to complete sandbox checkouts on the storefront: http://l
 1. Click `Next`
 1. On the next screen, accept defaults by clicking `Next`
 1. Enter the Database info:
-   - `Database server address`: `localhost`
+   - `Database server address`: `localhost` (MAMP) or `presta-mysql` (Docker)
    - `Database name`: `prestashop`
    - `Database login`: `root`
-   - `Database password`: `root`
+   - `Database password`: `root` (MAMP) or `admin` (Docker)
    - `Table prefix`: `sz_`
    - `Drop Existing Tables`: `TRUE`
 1. Click `Test your database connection now!`
 1. Click `Next`
 1. Select the Classic theme
-1. Once Store Installation has completed, delete the `install` folder from `/Applications/MAMP/htdocs/prestashop` then click `Manage your store` to open the login screen
+1. Once Store Installation has completed, delete the `install` folder from `/Applications/MAMP/htdocs/prestashop` (MAMP only) then click `Manage your store` to open the login screen
     - If Store Installation fails, try again.
-    - Note: Prestashop's Admin URL now uses an alphanumeric string for security purposes. You can confirm the URL for your store's admin by opening the root folder and finding the `admin.....` folder name(ex: `localhost:8888/admin003dy3ilgmgwiz75kdk`). Alternatively, you can rename the folder here, and use the new name as your URL path - it just can't be called "admin".
+> MAMP Note: Prestashop's Admin URL now uses an alphanumeric string for security purposes. You can confirm the URL for your store's admin by opening the root folder and finding the `admin.....` folder name(ex: `localhost:8888/admin003dy3ilgmgwiz75kdk`). Alternatively, you can rename the folder here, and use the new name as your URL path - it just can't be called "admin".
 > If you get a "Page not found" error, you need to enable mod_rewrites in Apache. Try using this command: `sed -i '' 's/^#\(LoadModule rewrite_module\)/\1/' /Applications/MAMP/conf/apache/httpd.conf` then restart MAMP
 
-### Install Sezzle
+
+## Install Sezzle
+
+### Docker
+
+1. Run `docker exec prestashop php /var/www/html/bin/console prestashop:module install sezzle`
+
+### MAMP
 
 1. `ln -s ~/go/src/sezzle/prestashop /Applications/MAMP/htdocs/prestashop/9.1/modules/sezzle`
 1. Go to `Modules` > `Module Manager`
+
+### Both
+
 1. Under `Payment`, find `Sezzle` and click `Install`
 1. Go to `Payment` > `Payment Methods`. Next to `Sezzle`, click `Configure`
 1. Enter `Public Key` and `Private Key` (Use https://sandbox.admin.sezzle.com/merchants/1)
 1. Click `Save`
 
-You should now be able to complete sandbox checkouts on the storefront: http://localhost:8888/
+You should now be able to complete sandbox checkouts on the storefront: http://localhost:8888/ (MAMP) OR http://localhost:8090/ (Docker)
 
-# Release Process
+# Releasing a New Version
 
 1. In sezzle.php, find `public function __construct()` item `$this->version` and bump the version as appropriate
 1. Bump version in composer.json
