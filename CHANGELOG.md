@@ -6,18 +6,6 @@
 
 # Sezzle Prestashop Module Changelog
 
-## Version 3.0.1
-
-_Wed 8 Apr 2026_
-
-### Supported Editions & Versions
-
-Tested and verified in clean installations of Prestashop 1.7.x.x, 8.x.x, 9.0.x, and 9.1.x.
-
-### Highlights
-
-- Add compatibility for Prestashop 9.1
-
 ## Version 3.0.0
 
 _Mon 29 Dec 2025_

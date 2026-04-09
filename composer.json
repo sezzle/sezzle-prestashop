@@ -1,6 +1,6 @@
 {
   "name": "sezzle/prestashop",
-  "version": "3.0.1",
+  "version": "3.0.0",
   "type": "prestashop-module",
   "description": "Sezzle module for PrestaShop",
   "authors": [
