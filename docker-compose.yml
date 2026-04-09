@@ -22,12 +22,13 @@ services:
     platform: linux/x86_64
     volumes:
       - psdata:/var/tmp/prestashop
+      - ./:/var/www/html/modules/sezzle
     environment:
       DB_SERVER: presta-mysql
       DB_NAME: prestashop
       DB_USER: root
       DB_PASSWD: admin
-      PS_FOLDER_ADMIN: backoffice
+      PS_FOLDER_ADMIN: admin-dev
       PS_FOLDER_INSTALL: install-ps
     networks:
       - prestashop_network
