@@ -152,6 +152,13 @@ You should now be able to complete sandbox checkouts on the storefront: http://l
 1. Add an entry for the new version in CHANGELOG.md
 1. Delete the current zip file.
 1. In the root directory of this folder, execute the below command, update `<sezzle-module-version>` to reflect the new version:
-```
-    cd .. && zip -r v<sezzle-module-version>-sezzle.zip sezzle -x '.git/*' -x 'CODEOWNERS' -x 'DEVELOPERS' -x 'renovate.json' -x '__MACOSX/*' -x '.DS_Store'
-```
+`cd .. && zip -r v<sezzle-module-version>-sezzle.zip sezzle -x '.git/*' -x 'CODEOWNERS' -x 'DEVELOPERS' -x 'renovate.json' -x '__MACOSX/*' -x '.DS_Store'`
+1. In Gitlab, go to `Code` > `Tags` and click `New Tag`
+1. Name the tag in the format `vX.X.X` with the message in the format `Version X.X.X`
+1. In `Create From`, select the branch name for this release, then click `Create tag`
+1. Review, approve, and merge as normal.
+1. Once the MR has been merged to production and mirrors to [Github](https://github.com/sezzle/sezzle-prestashop), go to `Releases` on the Github project
+1. Click `Draft a new Release`
+1. Select the tag that corresponds to the new version
+1. Name the release in the format `vX.X.X` and copy+paste the entry from CHANGELOG.md into the `Write` tab
+1. Click `Publish Release`
