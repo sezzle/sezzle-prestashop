@@ -15,6 +15,9 @@ All Sezzle developers should already have completed [Docker](https://gitlab.sezz
 1. Clone `prestashop` into `go/src/sezzle` as normal
 1. Ensure Docker Desktop is open, then run `docker-compose up -d`
 
+>To close run `docker-compose down --rmi local -v --remove-orphans`
+
+Jump to [Installation](#configure-prestashop)
 
 ## MAMP Installation Method
 
@@ -101,15 +104,19 @@ All Sezzle developers should already have completed [Docker](https://gitlab.sezz
 ### Docker
 
 1. Run `docker exec prestashop php /var/www/html/bin/console prestashop:module install sezzle`
+1. Run `docker exec prestashop chown -R www-data:www-data /var/www/html/var/cache` to fix cache permissions
+
+>Note: you can replace `install` in the first command with `uninstall` to delete, or `reset` to re-install.
 
 ### MAMP
 
 1. `ln -s ~/go/src/sezzle/prestashop /Applications/MAMP/htdocs/prestashop/9.1/modules/sezzle`
 1. Go to `Modules` > `Module Manager`
+1. Under `Payment`, find `Sezzle` and click `Install`
 
 ### Both
 
-1. Under `Payment`, find `Sezzle` and click `Install`
+
 1. Go to `Payment` > `Payment Methods`. Next to `Sezzle`, click `Configure`
 1. Enter `Public Key` and `Private Key` (Use https://sandbox.admin.sezzle.com/merchants/1)
 1. Click `Save`
