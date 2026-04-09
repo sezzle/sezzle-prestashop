@@ -2,6 +2,7 @@
 
 *The following documentation is written for Sezzle internal developers only. Merchant developers should refer to README.md for instructions.*
 
+
 ## Docker Installation Method
 
 > See docker-compose.yml for values. PHPMyAdmin runs on localhost:8085 and can be used for DB management, so you don't have to set up a connection in DBeaver.
@@ -18,6 +19,7 @@ All Sezzle developers should already have completed [Docker](https://gitlab.sezz
 >To close run `docker-compose down --rmi local -v --remove-orphans`
 
 Jump to [Installation](#configure-prestashop)
+
 
 ## MAMP Installation Method
 
@@ -64,6 +66,7 @@ Jump to [Installation](#configure-prestashop)
 1. Enter `mamp` then click `OK`
 1. Click the connection to expand, then Secondary-click on `Databases` and select `Create New Database`
 1. Enter `Database name`: `prestashop` then click `OK`
+
 
 ## Configure PrestaShop
 
@@ -116,12 +119,12 @@ Jump to [Installation](#configure-prestashop)
 
 ### Both
 
-
 1. Go to `Payment` > `Payment Methods`. Next to `Sezzle`, click `Configure`
 1. Enter `Public Key` and `Private Key` (Use https://sandbox.admin.sezzle.com/merchants/1)
 1. Click `Save`
 
 You should now be able to complete sandbox checkouts on the storefront: http://localhost:8888/ (MAMP) OR http://localhost:8090/ (Docker)
+
 
 # Releasing a New Version
 
