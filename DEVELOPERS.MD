@@ -23,6 +23,8 @@ Jump to [Installation](#configure-prestashop)
 
 ## MAMP Installation Method
 
+> Warning: The MAMP installation method is notoriously fickle. If you need to use this method and encounter any errors but error messages are unhelpful, simply refresh the page and/or retry the action.
+
 ### Install MAMP
 
 1. [Download MAMP](https://www.mamp.info/en/downloads/)
@@ -35,19 +37,21 @@ Jump to [Installation](#configure-prestashop)
     - Select `I want to create modules for PrestaShop`
     - Click Download
     - To download a specific version, see https://prestashop.com/versions/
-1. `cd /Applications/MAMP/htdocs && mkdir prestashop`
-1. Unzip the downloaded file, then drag & drop `prestashop.zip` and `index.php` to the `Applications/MAMP/htdocs/prestashop` folder
-    - The installer will unzip this subfolder for you.
+1. `cd /Applications/MAMP/htdocs && mkdir prestashop && cd prestashop`
+1. Create a folder for the version you are installing (ex: `9.1`)
+1. Unzip the downloaded file, then drag & drop `prestashop.zip` and `index.php` to the `Applications/MAMP/htdocs/prestashop/{version}` folder
+    - Do not unzip `prestashop.zip` - the installer will unzip this subfolder for you.
 
 ### Configure MAMP
 
+> More information regarding version compatibility [here](https://gitlab.sezzle.com/sezzle/prestashop/-/wikis/home/testing)
+
 1. Open MAMP app
-1. Select `Web server`: `Apache` and `PHP version`: `8.4.1` (or later, up to 8.5 for Prestashop 9.1)
-    - More information regarding version compatibility [here](https://gitlab.sezzle.com/sezzle/prestashop/-/wikis/home/testing)
+1. Select `Web server`: `Apache` and `PHP version`: `8.4.1`
 1. Click Preferences
 1. In the `Ports` tab, set `Apache Port` and `Nginx Port` to `8888` and `MySQL Port` to `8889`
 1. In the `Server` tab, select `Use MySQL server`: `8.0.40`
-1. For `Document Root`, click `Choose` and navigate to `Applications › MAMP › htdocs > prestashop`. Click `Choose` to save.
+1. For `Document Root`, click `Choose` and navigate to `Applications › MAMP › htdocs > prestashop > {version}`. Click `Choose` to save.
 1. Click `OK`
 1. Click `Start`
 
@@ -99,6 +103,7 @@ Jump to [Installation](#configure-prestashop)
 1. Once Store Installation has completed, delete the `install` folder from `/Applications/MAMP/htdocs/prestashop` (MAMP only) then click `Manage your store` to open the login screen
     - If Store Installation fails, try again.
 > MAMP Note: Prestashop's Admin URL now uses an alphanumeric string for security purposes. You can confirm the URL for your store's admin by opening the root folder and finding the `admin.....` folder name(ex: `localhost:8888/admin003dy3ilgmgwiz75kdk`). Alternatively, you can rename the folder here, and use the new name as your URL path - it just can't be called "admin".
+
 > If you get a "Page not found" error, you need to enable mod_rewrites in Apache. Try using this command: `sed -i '' 's/^#\(LoadModule rewrite_module\)/\1/' /Applications/MAMP/conf/apache/httpd.conf` then restart MAMP
 
 
@@ -113,7 +118,7 @@ Jump to [Installation](#configure-prestashop)
 
 ### MAMP
 
-1. `ln -s ~/go/src/sezzle/prestashop /Applications/MAMP/htdocs/prestashop/9.1/modules/sezzle`
+1. `ln -s ~/go/src/sezzle/prestashop /Applications/MAMP/htdocs/prestashop/{version}/modules/sezzle`
 1. Go to `Modules` > `Module Manager`
 1. Under `Payment`, find `Sezzle` and click `Install`
 
