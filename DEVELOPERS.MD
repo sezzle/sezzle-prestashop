@@ -134,6 +134,7 @@ You should now be able to complete sandbox checkouts on the storefront: http://l
 # Releasing a New Version
 
 1. In sezzle.php, find `public function __construct()` item `$this->version` and bump the version as appropriate
+    - If Prestashop has changed major versions since the last release, also update the max value of `$this->ps_versions_compliancy`
 1. Bump version in composer.json
 1. Add an entry for the new version in CHANGELOG.md
 1. Delete the current zip file.

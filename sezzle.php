@@ -109,7 +109,7 @@ class Sezzle extends PaymentModule
         );
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall Sezzle?');
         $this->limited_countries = array('US', 'CA', 'DE', 'FR', 'ES', 'IT');
-        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => _PS_VERSION_);
+        $this->ps_versions_compliancy = array('min' => '1.7.0.0', 'max' => '9.99.99');
         $this->merchantUUID = Configuration::get(static::$formFields['merchant_id']);
     }
 
